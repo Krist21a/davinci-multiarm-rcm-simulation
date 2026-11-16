@@ -1,0 +1,118 @@
+{
+  "runs": [
+    {
+      "name": "nominal",
+      "args": [],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.378,
+      "servo_cycles": 36,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.184935296028181e-08
+    },
+    {
+      "name": "perturbed_s1",
+      "args": [
+        "--calib-rot-deg",
+        "2",
+        "--calib-trans-m",
+        "0.003",
+        "--depth-noise-m",
+        "0.0005",
+        "--seed",
+        "1"
+      ],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.467,
+      "servo_cycles": 39,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.393593960225049e-08
+    },
+    {
+      "name": "perturbed_s2",
+      "args": [
+        "--calib-rot-deg",
+        "2",
+        "--calib-trans-m",
+        "0.003",
+        "--depth-noise-m",
+        "0.0005",
+        "--seed",
+        "2"
+      ],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.224,
+      "servo_cycles": 37,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.184935296028181e-08
+    },
+    {
+      "name": "perturbed_s3",
+      "args": [
+        "--calib-rot-deg",
+        "2",
+        "--calib-trans-m",
+        "0.003",
+        "--depth-noise-m",
+        "0.0005",
+        "--seed",
+        "3"
+      ],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.182,
+      "servo_cycles": 40,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.184935296028181e-08
+    },
+    {
+      "name": "perturbed_s4",
+      "args": [
+        "--calib-rot-deg",
+        "2",
+        "--calib-trans-m",
+        "0.003",
+        "--depth-noise-m",
+        "0.0005",
+        "--seed",
+        "4"
+      ],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.304,
+      "servo_cycles": 36,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.184935296028181e-08
+    },
+    {
+      "name": "perturbed_s5",
+      "args": [
+        "--calib-rot-deg",
+        "2",
+        "--calib-trans-m",
+        "0.003",
+        "--depth-noise-m",
+        "0.0005",
+        "--seed",
+        "5"
+      ],
+      "exit_code": 0,
+      "success": true,
+      "final_block_to_target_mm": 0.579,
+      "servo_cycles": 38,
+      "commands_rejected": 0,
+      "unexpected_contacts": 0,
+      "max_psm_rcm_error_m": 8.184935296028181e-08
+    }
+  ],
+  "successes": 6,
+  "total": 6,
+  "perturbation": "camera pose error 2 deg + 3 mm (random direction per seed), depth noise sigma 0.5 mm per pixel"
+}

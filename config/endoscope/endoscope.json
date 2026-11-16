@@ -1,0 +1,82 @@
+{
+  "_note": "Hand-authored inputs for the endoscope scene. ECM joint limits and the PSM2 re-posture are exploratory simulation choices, not verified hardware travel or a clinical setup.",
+  "ecm": {
+    "arm": "ecm",
+    "lift_joint": "ecm_lift_joint",
+    "rcm_joints": [
+      "ecm_setup1_joint",
+      "ecm_setup2_joint",
+      "ecm_setup3_joint",
+      "ecm_mount_joint",
+      "ecm_shoulder_joint",
+      "ecm_elbow_joint",
+      "ecm_carrier_joint"
+    ],
+    "insertion_joint": "ecm_insertion_joint",
+    "scope_link": "ecm_insertion",
+    "scope_shape": "ecm_insertion_visual",
+    "joint_limits": {
+      "ecm_lift_joint": [-0.2, 0.25],
+      "ecm_setup1_joint": [-3.141592653589793, 3.141592653589793],
+      "ecm_setup2_joint": [-3.141592653589793, 3.141592653589793],
+      "ecm_setup3_joint": [-3.141592653589793, 3.141592653589793],
+      "ecm_mount_joint": [-3.141592653589793, 3.141592653589793],
+      "ecm_shoulder_joint": [-1.6, 1.6],
+      "ecm_elbow_joint": [-1.6, 1.6],
+      "ecm_carrier_joint": [-1.6, 1.6],
+      "ecm_insertion_joint": [-0.03, 0.10]
+    },
+    "insertion_home": 0.08,
+    "insertion_home_basis": "The CAD carrier bar ends 59 mm behind the scope tip at insertion 0; at 50 mm it still touched the skin at the motion corners, 80 mm keeps it further out.",
+    "oblique_deg": 30.0,
+    "view_distance_candidates_m": [0.14, 0.12, 0.16],
+    "bend_azimuth_candidates_deg": [0, -30, 30, -60, 60, -90, 90],
+    "search": {
+      "random_ik_per_geometry": 30,
+      "local_starts": 3,
+      "local_iterations": 150,
+      "local_sigmas_rad": [0.05, 0.15, 0.4],
+      "co_dock_move_probability": 0.6,
+      "corner_iterations": 150,
+      "corner_sigmas_rad": [0.03, 0.08, 0.2],
+      "min_joint_margin": 0.06,
+      "min_joint_margin_basis": "Normalised distance of the RCM joints (not the lift) from their limits; the 10 deg corner test showed shoulder/carrier saturating below about 0.05."
+    },
+    "port_radius_m": 0.03,
+    "motion": {
+      "yaw_deg": 6.0,
+      "pitch_deg": 6.0,
+      "insertion_delta_m": 0.01,
+      "basis": "The 10 deg / 15 mm range made the ECM carrier touch the skin and the ECM setup links touch PSM2 at the corners; the endoscope only needs view adjustment in this task."
+    }
+  },
+  "co_dock": {
+    "arms": ["psm2"],
+    "motion_check": {"yaw_deg": 5.0, "pitch_deg": 5.0, "insertions": [0.002, 0.03]},
+    "motion_check_basis": "PSM2 pick-and-place range, checked for ECM contacts only (PSM2-anatomy contacts are left to the runtime guard). Without it the re-postured PSM2 mount touched the ECM mount as soon as PSM2 swung.",
+    "basis": "In the base scene the PSM2 mount/shoulder already intersect the parked ECM; PSM2 is re-postured in its null space with its instrument pose unchanged."
+  },
+  "camera": {
+    "alias": "EndoscopeCamera",
+    "resolution": [640, 480],
+    "view_angle_deg": 70.0,
+    "near_m": 0.002,
+    "far_m": 0.3
+  },
+  "psm": {
+    "_note": "Demo amplitudes equal the base-scene controller. Manual limits default to the same values; overrides widen them per arm (exploratory, collision-guarded at runtime).",
+    "motion": {"yaw_deg": 1.0, "pitch_deg": 0.75, "insertion_min": 0.038, "insertion_max": 0.042},
+    "demo": {"yaw_deg": 1.0, "pitch_deg": 0.75, "insertion_amp_m": 0.002},
+    "limit_overrides": {
+      "psm2": {"yaw_deg": 5.0, "pitch_deg": 5.0, "insertion_min": 0.0, "insertion_max": 0.045}
+    },
+    "limit_overrides_basis": "At the docked insertion (40 mm) the PSM2 tip is visible only through a narrow gap between the pubic bones; retracting toward the CAD lower bound (0 mm) brings it into the open, visible cavity above them.",
+    "grip_joints": ["joint10", "joint11"],
+    "grip_basis": "Setting both jaw joints to +0.5 rad opens the jaw tips about 10 mm; 0 is closed.",
+    "tcp_frame": "tcp",
+    "port_radius_m": 0.016
+  },
+  "panel": {
+    "floating_view": [0.78, 0.74, 0.42, 0.46]
+  }
+}

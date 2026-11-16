@@ -30,13 +30,14 @@ def main():
     client=RemoteAPIClient(host=args.host,port=args.port)
     sim=client.require('sim')
     config=json.loads(args.config.read_text(encoding='utf-8'))
-    handles=[sim.getObject('/'+a['arm']+'_joint8') for a in config]
+    # Older configs have no shaft_frame entry; their shaft frame is <arm>_joint8.
+    handles=[sim.getObject('/'+a.get('shaft_frame',a['arm']+'_joint8')) for a in config]
     refs=[sim.getObject('/'+a['arm']+'_RCM_reference') for a in config]
     sim.getObject('/RCMController')  # Fail before starting if this is another scene.
     if sim.getSimulationState()==sim.simulation_stopped:
         if not args.start:raise SystemExit('RCM scene is stopped; start it or pass --start.')
         sim.startSimulation()
-    maxima=[0.0]*3;reference_drift=[0.0]*3;records=[]
+    maxima=[0.0]*len(config);reference_drift=[0.0]*len(config);records=[]
     for k in range(args.samples):
         for i,arm in enumerate(config):
             m=sim.getObjectMatrix(handles[i],sim.handle_world)

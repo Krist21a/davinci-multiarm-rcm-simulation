@@ -1,0 +1,591 @@
+{
+  "scene": "scenes/davinci_endoscope_task.ttt",
+  "scene_sha256": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
+  "settings": {
+    "depth_noise_m": 0.0005,
+    "calib_rot_deg": 2.0,
+    "calib_trans_m": 0.003,
+    "seed": 2,
+    "gain": 0.6,
+    "max_step": 0.002,
+    "tol": 0.0008,
+    "max_iter": 80,
+    "success_tol": 0.002
+  },
+  "success": true,
+  "final_block_to_target_m": 0.00022370538860503515,
+  "grasp": {
+    "true_grasp_point_to_block_m": 0.001008300743851372,
+    "grasped": true
+  },
+  "released": true,
+  "static_object_measurement": {
+    "bead_initial_estimation_error_m": 0.00027604819054716077,
+    "target_estimation_error_m": 0.0004386721193513161
+  },
+  "phases": [
+    {
+      "phase": "pre-grasp",
+      "converged": true,
+      "iterations": 3,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.00029783993986701954,
+      "final_true_error_m": 0.0005356008624183505
+    },
+    {
+      "phase": "grasp",
+      "converged": true,
+      "iterations": 6,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.0007941135276499526,
+      "final_true_error_m": 0.0011115969318215059
+    },
+    {
+      "phase": "lift",
+      "converged": true,
+      "iterations": 6,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.0006382832276011164,
+      "final_true_error_m": 0.0009966674601710592
+    },
+    {
+      "phase": "pre-place",
+      "converged": true,
+      "iterations": 9,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.0003753542284228915,
+      "final_true_error_m": 0.00042579149723672013
+    },
+    {
+      "phase": "place",
+      "converged": true,
+      "iterations": 7,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.00027878946798386893,
+      "final_true_error_m": 0.00027310524463152564
+    },
+    {
+      "phase": "retract",
+      "converged": true,
+      "iterations": 6,
+      "lost_frames": 0,
+      "final_visual_error_m": 0.0008229984434617278,
+      "final_true_error_m": 0.0011906784193440048
+    }
+  ],
+  "servo_cycles": 37,
+  "commands_rejected": 0,
+  "unexpected_contacts": [],
+  "max_psm_rcm_error_m": 8.184935296028181e-08,
+  "controller_stats": {
+    "shaft_distance_m": 0.3731894668388945,
+    "max_drift_m": 1.383974313288533e-08,
+    "target": [
+      -3.1537809094313327,
+      -0.9321280698396543,
+      0.0021793865653723377
+    ],
+    "grip": 0.0,
+    "converged": true,
+    "last_collision": "",
+    "arm": "psm2",
+    "drift_m": 2.611780915152998e-10,
+    "collision_blocks": 0,
+    "failures": 0,
+    "holding": false,
+    "target_error_m": 3.073873427043072e-10
+  },
+  "estimation_error_m": {
+    "controlled_point_median": 0.0004050195370655719,
+    "controlled_point_max": 0.0009597819590184608,
+    "block_median": 0.000266281527715078,
+    "target_median": 0.00038105807430718186
+  },
+  "wall_time_s": 6.4,
+  "log": [
+    {
+      "phase": "pre-grasp",
+      "it": 0,
+      "t": 0.15000000000000002,
+      "visual_error_m": 0.0009462242428628995,
+      "ctrl_estimation_error_m": 0.0008555201277389992,
+      "block_estimation_error_m": 0.00023207704461315342,
+      "target_estimation_error_m": 0.0004354596013845163,
+      "command": [
+        -3.414807699116176,
+        -3.5389608354262605,
+        0.013992053586134007
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-grasp",
+      "it": 1,
+      "t": 0.2,
+      "visual_error_m": 0.0003277421785818532,
+      "ctrl_estimation_error_m": 0.0008516735829249884,
+      "block_estimation_error_m": 0.00017708736208883654,
+      "target_estimation_error_m": 0.0003558832079118157
+    },
+    {
+      "phase": "pre-grasp",
+      "it": 2,
+      "t": 0.25,
+      "visual_error_m": 0.00031685087709411324,
+      "ctrl_estimation_error_m": 0.0008389218307028645,
+      "block_estimation_error_m": 0.00026145861890975846,
+      "target_estimation_error_m": 0.0003437240657506848
+    },
+    {
+      "phase": "grasp",
+      "it": 0,
+      "t": 0.3,
+      "visual_error_m": 0.007958656504554656,
+      "ctrl_estimation_error_m": 0.0008525427407676887,
+      "block_estimation_error_m": 0.00017415864121069397,
+      "target_estimation_error_m": 0.0004088142440842889,
+      "command": [
+        -3.388691749973584,
+        -3.550100306898971,
+        0.015991626836817263
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "grasp",
+      "it": 1,
+      "t": 0.35,
+      "visual_error_m": 0.0059571422254826945,
+      "ctrl_estimation_error_m": 0.000796005472983202,
+      "block_estimation_error_m": 0.000266281527715078,
+      "target_estimation_error_m": 0.00031764341265730584,
+      "command": [
+        -3.385588834871848,
+        -3.562170878447276,
+        0.017991540680339785
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "grasp",
+      "it": 2,
+      "t": 0.39999999999999997,
+      "visual_error_m": 0.003917203564540204,
+      "ctrl_estimation_error_m": 0.0007971269840722189,
+      "block_estimation_error_m": 0.00028882071197935396,
+      "target_estimation_error_m": 0.0003838559719897593,
+      "command": [
+        -3.4007569169597254,
+        -3.5625048343130055,
+        0.019991407256496507
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "grasp",
+      "it": 3,
+      "t": 0.44999999999999996,
+      "visual_error_m": 0.0019765242665837415,
+      "ctrl_estimation_error_m": 0.0007857100154602452,
+      "block_estimation_error_m": 0.00042050091466674027,
+      "target_estimation_error_m": 0.0003932254907249571,
+      "command": [
+        -3.430960090224617,
+        -3.5594617869650715,
+        0.021176386633047606
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "grasp",
+      "it": 4,
+      "t": 0.49999999999999994,
+      "visual_error_m": 0.0007493921961008686,
+      "ctrl_estimation_error_m": 0.0007987515156047861,
+      "block_estimation_error_m": 0.00022814605090257283,
+      "target_estimation_error_m": 0.0003780614025098499
+    },
+    {
+      "phase": "grasp",
+      "it": 5,
+      "t": 0.5499999999999999,
+      "visual_error_m": 0.0007857297993720545,
+      "ctrl_estimation_error_m": 0.0008045326504163375,
+      "block_estimation_error_m": 0.00030112781402922065,
+      "target_estimation_error_m": 0.00044009378951281603
+    },
+    {
+      "phase": "lift",
+      "it": 0,
+      "t": 0.6,
+      "visual_error_m": 0.008031483972867483,
+      "ctrl_estimation_error_m": 0.0002502824801168828,
+      "block_estimation_error_m": 0.0002502824801168828,
+      "target_estimation_error_m": 0.0003793180098427063,
+      "command": [
+        -3.4242949088962593,
+        -3.518388007061925,
+        0.01917741716658447
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "lift",
+      "it": 1,
+      "t": 0.65,
+      "visual_error_m": 0.005952773546360502,
+      "ctrl_estimation_error_m": 0.00036650062883136916,
+      "block_estimation_error_m": 0.00036650062883136916,
+      "target_estimation_error_m": 0.00038909527635886255,
+      "command": [
+        -3.3829289733811794,
+        -3.4756747280018074,
+        0.017179423056483595
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "lift",
+      "it": 2,
+      "t": 0.7000000000000001,
+      "visual_error_m": 0.004221200932787798,
+      "ctrl_estimation_error_m": 0.00029384128247413857,
+      "block_estimation_error_m": 0.00029384128247413857,
+      "target_estimation_error_m": 0.00037454521141530264,
+      "command": [
+        -3.344327543071114,
+        -3.4299022068686806,
+        0.015181364753153265
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "lift",
+      "it": 3,
+      "t": 0.7500000000000001,
+      "visual_error_m": 0.0019909972282782435,
+      "ctrl_estimation_error_m": 0.0003171660881495544,
+      "block_estimation_error_m": 0.0003171660881495544,
+      "target_estimation_error_m": 0.00038034794790136077,
+      "command": [
+        -3.286960976531585,
+        -3.4316677325088474,
+        0.013989654500960819
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "lift",
+      "it": 4,
+      "t": 0.8000000000000002,
+      "visual_error_m": 0.0004640484816349681,
+      "ctrl_estimation_error_m": 0.0006040758363347377,
+      "block_estimation_error_m": 0.0006040758363347377,
+      "target_estimation_error_m": 0.0004231770047952915
+    },
+    {
+      "phase": "lift",
+      "it": 5,
+      "t": 0.8500000000000002,
+      "visual_error_m": 0.00042802353612532516,
+      "ctrl_estimation_error_m": 0.0006228981650407249,
+      "block_estimation_error_m": 0.0006228981650407249,
+      "target_estimation_error_m": 0.00035549374367143635
+    },
+    {
+      "phase": "pre-place",
+      "it": 0,
+      "t": 0.9000000000000002,
+      "visual_error_m": 0.012835844712962547,
+      "ctrl_estimation_error_m": 0.00033953555407441766,
+      "block_estimation_error_m": 0.00033953555407441766,
+      "target_estimation_error_m": 0.0003656652528533155,
+      "command": [
+        -3.2932167555320944,
+        -3.035364840764805,
+        0.012070410572168982
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 1,
+      "t": 0.9500000000000003,
+      "visual_error_m": 0.010892068076142044,
+      "ctrl_estimation_error_m": 0.0002631120314742053,
+      "block_estimation_error_m": 0.0002631120314742053,
+      "target_estimation_error_m": 0.0003375207524109736,
+      "command": [
+        -3.299742756131765,
+        -2.6348620089089896,
+        0.010148999836292166
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 2,
+      "t": 1.0000000000000002,
+      "visual_error_m": 0.008853378313254967,
+      "ctrl_estimation_error_m": 0.000239529435977501,
+      "block_estimation_error_m": 0.000239529435977501,
+      "target_estimation_error_m": 0.000374048062861329,
+      "command": [
+        -3.3064982703269092,
+        -2.2279800228613547,
+        0.008226210570660614
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 3,
+      "t": 1.0500000000000003,
+      "visual_error_m": 0.0067287523466086335,
+      "ctrl_estimation_error_m": 0.0004050195370655719,
+      "block_estimation_error_m": 0.0004050195370655719,
+      "target_estimation_error_m": 0.0003875691067257985,
+      "command": [
+        -3.278647085435581,
+        -1.7992221329642266,
+        0.006308150612477331
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 4,
+      "t": 1.1000000000000003,
+      "visual_error_m": 0.004793597163170541,
+      "ctrl_estimation_error_m": 0.00030161694512886644,
+      "block_estimation_error_m": 0.00030161694512886644,
+      "target_estimation_error_m": 0.00045845235568332853,
+      "command": [
+        -3.2587103408417772,
+        -1.388134554997818,
+        0.004379378813065549
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 5,
+      "t": 1.1500000000000004,
+      "visual_error_m": 0.0027630558439230737,
+      "ctrl_estimation_error_m": 0.00032759019427872223,
+      "block_estimation_error_m": 0.00032759019427872223,
+      "target_estimation_error_m": 0.0003649763920651519,
+      "command": [
+        -3.2068271103159276,
+        -1.0673716101782047,
+        0.0027724389628880075
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 6,
+      "t": 1.2000000000000004,
+      "visual_error_m": 0.0014436107370246125,
+      "ctrl_estimation_error_m": 0.00022357545341061155,
+      "block_estimation_error_m": 0.00022357545341061155,
+      "target_estimation_error_m": 0.0004005900092921382,
+      "command": [
+        -3.200943055278018,
+        -1.0070846367418285,
+        0.0019094993375323444
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "pre-place",
+      "it": 7,
+      "t": 1.2500000000000004,
+      "visual_error_m": 0.00019039079620049662,
+      "ctrl_estimation_error_m": 0.00030002042149666707,
+      "block_estimation_error_m": 0.00030002042149666707,
+      "target_estimation_error_m": 0.0003838316792198652
+    },
+    {
+      "phase": "pre-place",
+      "it": 8,
+      "t": 1.3000000000000005,
+      "visual_error_m": 0.0003324583233596758,
+      "ctrl_estimation_error_m": 0.0002170781528309302,
+      "block_estimation_error_m": 0.0002170781528309302,
+      "target_estimation_error_m": 0.0003747418692322862
+    },
+    {
+      "phase": "place",
+      "it": 0,
+      "t": 1.3500000000000005,
+      "visual_error_m": 0.007577932880277952,
+      "ctrl_estimation_error_m": 0.00023734781617744182,
+      "block_estimation_error_m": 0.00023734781617744182,
+      "target_estimation_error_m": 0.00037240854213010184,
+      "command": [
+        -3.2110108482227777,
+        -1.0567679822406193,
+        0.00390850667449813
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "place",
+      "it": 1,
+      "t": 1.4000000000000006,
+      "visual_error_m": 0.005803719634722183,
+      "ctrl_estimation_error_m": 0.00027045577672595695,
+      "block_estimation_error_m": 0.00027045577672595695,
+      "target_estimation_error_m": 0.00041386713653401315,
+      "command": [
+        -3.255220519395949,
+        -1.0994275071416215,
+        0.005906964676470283
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "place",
+      "it": 2,
+      "t": 1.4500000000000006,
+      "visual_error_m": 0.003904868072514058,
+      "ctrl_estimation_error_m": 0.0004079568733215776,
+      "block_estimation_error_m": 0.0004079568733215776,
+      "target_estimation_error_m": 0.0003990383114398198,
+      "command": [
+        -3.2956413146816192,
+        -1.0986689410288415,
+        0.007906258453919263
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "place",
+      "it": 3,
+      "t": 1.5000000000000007,
+      "visual_error_m": 0.001630545659876362,
+      "ctrl_estimation_error_m": 0.0002144809879590556,
+      "block_estimation_error_m": 0.0002144809879590556,
+      "target_estimation_error_m": 0.00034209917535456003,
+      "command": [
+        -3.343442442724794,
+        -1.1155512460840766,
+        0.008882224971374031
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "place",
+      "it": 4,
+      "t": 1.5500000000000007,
+      "visual_error_m": 0.000828026134745811,
+      "ctrl_estimation_error_m": 0.00030944367210632807,
+      "block_estimation_error_m": 0.00030944367210632807,
+      "target_estimation_error_m": 0.0003944561020342672,
+      "command": [
+        -3.3756024165544485,
+        -1.1052594036367305,
+        0.009376933447023839
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "place",
+      "it": 5,
+      "t": 1.6000000000000008,
+      "visual_error_m": 0.00022201058085800465,
+      "ctrl_estimation_error_m": 0.0003161696812010364,
+      "block_estimation_error_m": 0.0003161696812010364,
+      "target_estimation_error_m": 0.00040467283818952296
+    },
+    {
+      "phase": "place",
+      "it": 6,
+      "t": 1.6500000000000008,
+      "visual_error_m": 0.00023841574645685194,
+      "ctrl_estimation_error_m": 0.00024561848861048125,
+      "block_estimation_error_m": 0.00024561848861048125,
+      "target_estimation_error_m": 0.00036436961318743314
+    },
+    {
+      "phase": "retract",
+      "it": 0,
+      "t": 1.7000000000000008,
+      "visual_error_m": 0.008003970013515336,
+      "ctrl_estimation_error_m": 0.0008652775906506236,
+      "block_estimation_error_m": 0.00026383545744511876,
+      "target_estimation_error_m": 0.00036368190091915653,
+      "command": [
+        -3.3499142761839464,
+        -1.057237408734277,
+        0.007378261329151731
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "retract",
+      "it": 1,
+      "t": 1.7500000000000009,
+      "visual_error_m": 0.005954340630809367,
+      "ctrl_estimation_error_m": 0.0008946205207685783,
+      "block_estimation_error_m": 0.0002680354700607247,
+      "target_estimation_error_m": 0.000364758149884534,
+      "command": [
+        -3.306841171364841,
+        -1.0034378872259728,
+        0.005380279858960557
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "retract",
+      "it": 2,
+      "t": 1.800000000000001,
+      "visual_error_m": 0.004049458103132572,
+      "ctrl_estimation_error_m": 0.0009140271537661959,
+      "block_estimation_error_m": 0.0002228914677659002,
+      "target_estimation_error_m": 0.00038105807430718186,
+      "command": [
+        -3.2300129929753347,
+        -0.9586995463985556,
+        0.0033834670521995236
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "retract",
+      "it": 3,
+      "t": 1.850000000000001,
+      "visual_error_m": 0.0020137482271233476,
+      "ctrl_estimation_error_m": 0.0009273208849686335,
+      "block_estimation_error_m": 0.00013935706239863598,
+      "target_estimation_error_m": 0.00040032275905519147,
+      "command": [
+        -3.1537809094313327,
+        -0.9321280698396543,
+        0.0021793865653723377
+      ],
+      "accepted": true
+    },
+    {
+      "phase": "retract",
+      "it": 4,
+      "t": 1.900000000000001,
+      "visual_error_m": 0.0007761732387338547,
+      "ctrl_estimation_error_m": 0.0009486970672136563,
+      "block_estimation_error_m": 0.00014677337198751932,
+      "target_estimation_error_m": 0.0003911365236834316
+    },
+    {
+      "phase": "retract",
+      "it": 5,
+      "t": 1.950000000000001,
+      "visual_error_m": 0.0007763709744482973,
+      "ctrl_estimation_error_m": 0.0009597819590184608,
+      "block_estimation_error_m": 0.00013236848978661833,
+      "target_estimation_error_m": 0.0003903569986882178
+    }
+  ],
+  "notes": "Kinematic grasp (object parented to the jaw tip frame); no gravity, contact forces or tissue response. The instrument is first brought into view with one open-loop command; every later motion is vision-driven."
+}
