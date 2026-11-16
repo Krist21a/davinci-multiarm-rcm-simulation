@@ -1,0 +1,1756 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="DaVinci_MultiArm">
+  <link name="world" />
+  <link name="base" />
+  <joint name="world_fixed" type="fixed">
+    <parent link="world" />
+    <child link="base" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="cart">
+    <visual>
+      <origin xyz="-0.06961028665 -0.01017717816 -2.775557562e-17" rpy="1.570796327 0 0" />
+      <geometry>
+        <mesh filename="meshes/cad/1.stl" />
+      </geometry>
+      <material name="cad_1">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.06919169981 0.2744445578 0.11" rpy="1.570796327 0 0" />
+      <geometry>
+        <mesh filename="meshes/cad/2-.stl" />
+      </geometry>
+      <material name="cad_2-">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.06919169981 0.004058443138 0.11" rpy="1.570796327 0 3.141592654" />
+      <geometry>
+        <mesh filename="meshes/cad/3.stl" />
+      </geometry>
+      <material name="cad_3">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.07016460249 0.5758340686 0.11" rpy="1.570796327 0 0" />
+      <geometry>
+        <mesh filename="meshes/cad/17.stl" />
+      </geometry>
+      <material name="cad_17">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.03208610288 0.0412052718 0.1219995245" rpy="1.570796327 0 -1.681543793e-12" />
+      <geometry>
+        <mesh filename="meshes/cad/18.stl" />
+      </geometry>
+      <material name="cad_18">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.06933635861 0.07791679599 0.8550000119" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.4154765290383026" iyy="0.3149770873715483" izz="0.24310360281999152" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.06933635861 0.07791679599 0.8550000119" rpy="0 0 0" />
+      <geometry>
+        <box size="0.9249999821 1.435833649 1.710000024" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="cart_joint" type="fixed">
+    <parent link="base" />
+    <child link="cart" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="psm1_lift">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796327 0 3.141592654" />
+      <geometry>
+        <mesh filename="meshes/cad/4.stl" />
+      </geometry>
+      <material name="cad_4">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="5.551115123e-17 0.1053605013 0.17" rpy="1.570796327 0 0.2159104712" />
+      <geometry>
+        <mesh filename="meshes/cad/5.stl" />
+      </geometry>
+      <material name="cad_5">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0.08243025094 0.05600000083" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.020051915093044406" iyy="0.018986999615907673" izz="0.0034649153698483744" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0 0.08243025094 0.05600000083" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1199999973 0.1648605019 0.4619999957" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_lift_joint" type="prismatic">
+    <parent link="cart" />
+    <child link="psm1_lift" />
+    <origin xyz="-0.06919169981 0.07405844314 0.7693555836" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.06" upper="0.06" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_setup1">
+    <visual>
+      <origin xyz="0 0 0.112" rpy="1.570796327 0 -1.531990354" />
+      <geometry>
+        <mesh filename="meshes/cad/8.stl" />
+      </geometry>
+      <material name="cad_8">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.2997741428 -0.01163887028 -0.007" rpy="1.570796327 0 -0.09941426308" />
+      <geometry>
+        <mesh filename="meshes/cad/5.stl" />
+      </geometry>
+      <material name="cad_5">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.1498931612 -0.005819434935 0.1115000004" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.006102859392556057" iyy="0.019294175556842017" izz="0.016035534892892868" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.1498931612 -0.005819434935 0.1115000004" rpy="0 0 0" />
+      <geometry>
+        <box size="0.4187613955 0.1306342695 0.2370000007" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_setup1_joint" type="revolute">
+    <parent link="psm1_lift" />
+    <child link="psm1_setup1" />
+    <origin xyz="5.551115123e-17 0.1053605013 0.177" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_setup2">
+    <visual>
+      <origin xyz="1.537658889e-14 5.023759186e-15 -0.002" rpy="-1.570796327 0 1.631362143" />
+      <geometry>
+        <mesh filename="meshes/cad/9.stl" />
+      </geometry>
+      <material name="cad_9">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.2071143778 -0.01255744912 -0.06100000036" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.00288994385584886" iyy="0.024854733566079215" izz="0.025424010727128018" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.2071143778 -0.01255744912 -0.06100000036" rpy="0 0 0" />
+      <geometry>
+        <box size="0.5332286589 0.1440670889 0.1180000007" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_setup2_joint" type="revolute">
+    <parent link="psm1_setup1" />
+    <child link="psm1_setup2" />
+    <origin xyz="-0.2997741428 -0.01163887028 0" rpy="0 0 0" />
+    <axis xyz="-5.286537835e-17 1.799385081e-17 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_setup3">
+    <visual>
+      <origin xyz="1.110223025e-16 0 0.12" rpy="1.570796327 -4.440892099e-16 -0.1985586495" />
+      <geometry>
+        <mesh filename="meshes/cad/11.stl" />
+      </geometry>
+      <material name="cad_11">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04093039761 -0.203426137 0.1660000001" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.024769675507714445" iyy="0.005089930372635574" izz="0.02640360582026853" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04093039761 -0.203426137 0.1660000001" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2008560781 0.5258327735 0.1440000013" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_setup3_joint" type="revolute">
+    <parent link="psm1_setup2" />
+    <child link="psm1_setup3" />
+    <origin xyz="-0.4142390774 -0.02511944978 -0.12" rpy="0 0 0" />
+    <axis xyz="-5.013949516e-17 1.783788749e-17 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_setup4">
+    <visual>
+      <origin xyz="1.110223025e-15 -1.360023205e-14 -0.145" rpy="-3.141592654 1.35447209e-14 -1.270248585" />
+      <geometry>
+        <mesh filename="meshes/cad/10.stl" />
+      </geometry>
+      <material name="cad_10">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.02997314354 -0.08121628704 -0.2638546703" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.012202627137407602" iyy="0.008005088098290128" izz="0.00981525609325358" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.02997314354 -0.08121628704 -0.2638546703" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1835927622 0.2899599469 0.2497093407" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_setup4_joint" type="revolute">
+    <parent link="psm1_setup3" />
+    <child link="psm1_setup4" />
+    <origin xyz="-0.08186144978 -0.4068460434 0.238" rpy="0 0 0" />
+    <axis xyz="-6.186247825e-16 4.63305764e-17 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_mount">
+    <visual>
+      <origin xyz="0.1837629183 -0.2724419041 -0.0697872516" rpy="0.771503541 0.3491287475 -1.270248585" />
+      <geometry>
+        <mesh filename="meshes/cad/20.stl" />
+      </geometry>
+      <material name="cad_20">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.09436653192 -0.1812680675 0.004602871798" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.015826396844559745" iyy="0.008414219292126813" izz="0.018494912690732737" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.09436653192 -0.1812680675 0.004602871798" rpy="0 0 0" />
+      <geometry>
+        <box size="0.25786898 0.3942620213 0.1856723476" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_mount_joint" type="revolute">
+    <parent link="psm1_setup4" />
+    <child link="psm1_mount" />
+    <origin xyz="0.06397920537 -0.2064268136 -0.3224562468" rpy="0 0 0" />
+    <axis xyz="0.2781834671 -0.8975498581 -0.3420792466" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_shoulder">
+    <visual>
+      <origin xyz="-0.002931873177 0.1872414471 -0.03772038718" rpy="2.33285765 0.3209829702 -1.298959276" />
+      <geometry>
+        <mesh filename="meshes/cad/19.stl" />
+      </geometry>
+      <material name="cad_19">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.09525661547 0.1301214722 -0.02327751923" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.014890429959810316" iyy="0.008756347372471525" izz="0.014402934976837376" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.09525661547 0.1301214722 -0.02327751923" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2227400151 0.3510300634 0.2355059535" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_shoulder_joint" type="revolute">
+    <parent link="psm1_mount" />
+    <child link="psm1_shoulder" />
+    <origin xyz="0.2018855577 -0.3434927635 -0.04834229113" rpy="0 0 0" />
+    <axis xyz="0.7553364918 -0.01558875227 0.655151719" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_elbow">
+    <visual>
+      <origin xyz="0.07634266462 -0.3018349717 0.05743764053" rpy="2.362726888 0.4013591738 -1.2145446" />
+      <geometry>
+        <mesh filename="meshes/cad/21.stl" />
+      </geometry>
+      <material name="cad_21">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.03801720415 -0.2288709106 0.04079865514" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.03019771872769797" iyy="0.011103446446271599" izz="0.0289753277118845" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.03801720415 -0.2288709106 0.04079865514" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2434878489 0.5370452495 0.2719467315" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_elbow_joint" type="revolute">
+    <parent link="psm1_shoulder" />
+    <child link="psm1_elbow" />
+    <origin xyz="-0.175939098 0.2531899788 -0.01985166264" rpy="0 0 0" />
+    <axis xyz="0.7553364918 -0.01558875227 0.655151719" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_carrier">
+    <visual>
+      <origin xyz="0.05476189565 -0.00113018454 0.04749849963" rpy="2.431656197 0.5279201514 -1.061266983" />
+      <geometry>
+        <mesh filename="meshes/cad/22.stl" />
+      </geometry>
+      <material name="cad_22">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.06231526057 -0.001286072063 0.05405001682" rpy="2.33285765 0.3209829702 -1.298959276" />
+      <geometry>
+        <mesh filename="meshes/cad/24.stl" />
+      </geometry>
+      <material name="cad_24">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.004671693942 0.0352721578 0.1168867418" rpy="0.8608598707 0.5279201514 -1.061266983" />
+      <geometry>
+        <mesh filename="meshes/cad/23.stl" />
+      </geometry>
+      <material name="cad_23">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04600298424 0.03069160431 0.11597465" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.01729237860029041" iyy="0.011279021842394538" izz="0.016104761619994804" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04600298424 0.03069160431 0.11597465" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2460659041 0.3642920673 0.2734955812" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_carrier_joint" type="revolute">
+    <parent link="psm1_elbow" />
+    <child link="psm1_carrier" />
+    <origin xyz="0.07795377416 -0.4621571828 -0.07034368192" rpy="0 0 0" />
+    <axis xyz="0.7553364918 -0.01558875227 0.655151719" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_cad_slide">
+    <visual>
+      <origin xyz="0.0227422632 0.06112608169 0.0248412964" rpy="0.8608598707 0.5279201514 -1.061266983" />
+      <geometry>
+        <mesh filename="meshes/cad/25.stl" />
+      </geometry>
+      <material name="cad_25">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.00517511123 0.03814695763 0.04454802188" rpy="0.8608598707 0.5279201514 -1.061266983" />
+      <geometry>
+        <mesh filename="meshes/cad/26.stl" />
+      </geometry>
+      <material name="cad_26">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04230465443 0.09069596484 0.04917222104" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.006438921414102132" iyy="0.005296055023253057" izz="0.006030255458547573" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04230465443 0.09069596484 0.04917222104" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1712434945 0.2074577815 0.1850089886" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm1_joint7" type="prismatic">
+    <parent link="psm1_carrier" />
+    <child link="psm1_cad_slide" />
+    <origin xyz="-0.08978299897 0.06089273904 0.1660159229" rpy="0 0 0" />
+    <axis xyz="0.4213602677 -0.7541245342 -0.503737741" />
+    <limit lower="0" upper="0.08" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm1_tool_main_respondable">
+    <visual name="psm1_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+      <material name="psm1_psm1_shaft_metal">
+        <color rgba="0.68 0.72 0.78 1" />
+      </material>
+    </visual>
+    <collision name="psm1_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="psm1_rot_ref_respondable">
+    <collision name="rot_ref_respondable">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="rot_ref_visual">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm1_rot_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm1_wrist_ref_respondable">
+    <collision name="wrist_ref_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="wrist_ref_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm1_wrist_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm1_yaw_ref1_respondable">
+    <collision name="yaw_ref1_respondable">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref1_visual">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm1_yaw_ref1_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm1_yaw_ref2_respondable">
+    <collision name="yaw_ref2_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref2_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm1_yaw_ref2_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm1_tool_tip">
+    <visual name="tool_tip_marker">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.0005" />
+      </geometry>
+      <material name="psm1_tool_tip_marker_material">
+        <color rgba="0.000000 1.000000 0.000000 0.0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="psm1_instrument_mount" type="fixed">
+    <parent link="psm1_cad_slide" />
+    <child link="psm1_tool_main_respondable" />
+    <origin xyz="0 0 0" rpy="-2.809290438 1.008784384 2.467563177" />
+  </joint>
+  <joint name="psm1_joint8" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="4.3633231299861" lower="-4.3633231299861" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm1_tool_main_respondable" />
+    <child link="psm1_rot_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 -0.000000" rpy="3.141593 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm1_joint9" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.570796326795" lower="-1.570796326795" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm1_rot_ref_respondable" />
+    <child link="psm1_wrist_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 0.430100" rpy="-1.570800 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm1_joint10" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm1_wrist_ref_respondable" />
+    <child link="psm1_yaw_ref1_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="0.000000 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm1_joint11" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm1_wrist_ref_respondable" />
+    <child link="psm1_yaw_ref2_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="-3.141593 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm1_tool_tip_fixed_joint" type="fixed">
+    <parent link="psm1_wrist_ref_respondable" />
+    <child link="psm1_tool_tip" />
+    <origin xyz="0.000000 0.019700 0.000000" rpy="0 0 0" />
+  </joint>
+  <link name="psm2_lift">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796327 0 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/4.stl" />
+      </geometry>
+      <material name="cad_4">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.1053605013 2.133709875e-16 0.176" rpy="1.570796327 0 0" />
+      <geometry>
+        <mesh filename="meshes/cad/12.stl" />
+      </geometry>
+      <material name="cad_12">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.08243025094 0 0.0955000003" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0255900827959975" iyy="0.026654998273134233" izz="0.0034649153698483744" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.08243025094 0 0.0955000003" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1648605019 0.1199999973 0.5409999946" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_lift_joint" type="prismatic">
+    <parent link="cart" />
+    <child link="psm2_lift" />
+    <origin xyz="-0.1493027217 -0.009651686604 0.8744619037" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.06" upper="0.06" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_setup1">
+    <visual>
+      <origin xyz="-1.665334537e-16 -1.474514955e-16 0.119" rpy="-1.570796327 -2.220446049e-16 1.520002528" />
+      <geometry>
+        <mesh filename="meshes/cad/13.stl" />
+      </geometry>
+      <material name="cad_13">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.2072322753 0.01053518182 0.0610000012" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0030869596599259652" iyy="0.02516698851217709" izz="0.0253499482445525" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.2072322753 0.01053518182 0.0610000012" rpy="0 0 0" />
+      <geometry>
+        <box size="0.5334602727 0.1400696839 0.1319999984" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_setup1_joint" type="revolute">
+    <parent link="psm2_lift" />
+    <child link="psm2_setup1" />
+    <origin xyz="-0.1053605013 2.133709875e-16 0.366" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_setup2">
+    <visual>
+      <origin xyz="-1.110223025e-16 3.469446952e-18 0.002" rpy="1.570796327 0 0.1005516337" />
+      <geometry>
+        <mesh filename="meshes/cad/11.stl" />
+      </geometry>
+      <material name="cad_11">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.02083107961 -0.2064519088 0.04800000009" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.025303096997943562" iyy="0.0038788116573168613" izz="0.025725908595178936" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.02083107961 -0.2064519088 0.04800000009" rpy="0 0 0" />
+      <geometry>
+        <box size="0.160654099 0.5318845397 0.1440000013" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_setup2_joint" type="revolute">
+    <parent link="psm2_setup1" />
+    <child link="psm2_setup2" />
+    <origin xyz="-0.414464763 0.02107036365 0.119" rpy="0 0 0" />
+    <axis xyz="9.747221071e-18 -1.372863654e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_setup3">
+    <visual>
+      <origin xyz="0.01151385443 -0.02642446058 -0.05799984035" rpy="-3.141592654 0.2923737082 -1.1598749" />
+      <geometry>
+        <mesh filename="meshes/cad/14.stl" />
+      </geometry>
+      <material name="cad_14">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.03182120801 -0.06305184062 -0.2369840277" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.00994206660639715" iyy="0.006966725124584023" izz="0.009670368786765459" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.03182120801 -0.06305184062 -0.2369840277" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2004249581 0.2754528301 0.2083999464" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_setup3_joint" type="revolute">
+    <parent link="psm2_setup2" />
+    <child link="psm2_setup3" />
+    <origin xyz="0.0416586459 -0.4129038111 0.12" rpy="0 0 0" />
+    <axis xyz="-5.797090387e-18 -2.597938232e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_mount">
+    <visual>
+      <origin xyz="0.246733348 -0.3322779829 -0.2448422817" rpy="0.803798193 0.6415024557 -1.1598749" />
+      <geometry>
+        <mesh filename="meshes/cad/20.stl" />
+      </geometry>
+      <material name="cad_20">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.1528049984 -0.2622063907 -0.150124269" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.016513857907297407" iyy="0.012556486260271624" izz="0.016782248850897283" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.1528049984 -0.2622063907 -0.150124269" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2773973021 0.3527573146 0.2715300571" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_mount_joint" type="revolute">
+    <parent link="psm2_setup3" />
+    <child link="psm2_mount" />
+    <origin xyz="0.0260562349 -0.05979943171 -0.201044991" rpy="0 0 0" />
+    <axis xyz="0.3200417585 -0.7345004126 -0.5983998802" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_shoulder">
+    <visual>
+      <origin xyz="-0.02157283289 0.1890333953 0.0170813153" rpy="2.354370637 0.6140951348 -1.194300999" />
+      <geometry>
+        <mesh filename="meshes/cad/19.stl" />
+      </geometry>
+      <material name="cad_19">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.1086433525 0.1199390358 0.02689163071" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.015741751098020267" iyy="0.011435911641389096" izz="0.013269477517090754" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.1086433525 0.1199390358 0.02689163071" rpy="0 0 0" />
+      <geometry>
+        <box size="0.231909095 0.3247335859 0.2888755984" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_shoulder_joint" type="revolute">
+    <parent link="psm2_mount" />
+    <child link="psm2_shoulder" />
+    <origin xyz="0.2724289404 -0.4042210505 -0.2455297083" rpy="0 0 0" />
+    <axis xyz="0.8083089598 -0.1177675551 0.576859973" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_elbow">
+    <visual>
+      <origin xyz="0.1055828655 -0.2963978073 -0.03510318318" rpy="2.417126615 0.6914467495 -1.091115286" />
+      <geometry>
+        <mesh filename="meshes/cad/21.stl" />
+      </geometry>
+      <material name="cad_21">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.06510482188 -0.210022518 -0.04444361746" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.03179415525083611" iyy="0.016919133828139154" izz="0.02579722483189234" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.06510482188 -0.210022518 -0.04444361746" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2559945711 0.4939974469 0.3708050505" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_elbow_joint" type="revolute">
+    <parent link="psm2_shoulder" />
+    <child link="psm2_elbow" />
+    <origin xyz="-0.1971910269 0.2292517789 0.06334935554" rpy="0 0 0" />
+    <axis xyz="0.8083089598 -0.1177675551 0.576859973" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_carrier">
+    <visual>
+      <origin xyz="0.05860239958 -0.008538147747 0.04182234804" rpy="2.554866268 0.8055556457 -0.8894139701" />
+      <geometry>
+        <mesh filename="meshes/cad/22.stl" />
+      </geometry>
+      <material name="cad_22">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.06668548918 -0.009715823299 0.04759094777" rpy="2.354370637 0.6140951348 -1.194300999" />
+      <geometry>
+        <mesh filename="meshes/cad/24.stl" />
+      </geometry>
+      <material name="cad_24">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.002658639364 0.0009520795319 0.122149439" rpy="0.9840699413 0.8055556457 -0.8894139701" />
+      <geometry>
+        <mesh filename="meshes/cad/23.stl" />
+      </geometry>
+      <material name="cad_23">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04405381383 -0.01246582444 0.1301969016" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.017133440731219304" iyy="0.015336194664630235" izz="0.011812964323429506" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04405381383 -0.01246582444 0.1301969016" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2451414072 0.2857643476 0.3520511702" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_carrier_joint" type="revolute">
+    <parent link="psm2_elbow" />
+    <child link="psm2_carrier" />
+    <origin xyz="0.1092024653 -0.4141521617 -0.2028967585" rpy="0 0 0" />
+    <axis xyz="0.8083089598 -0.1177675551 0.576859973" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_cad_slide">
+    <visual>
+      <origin xyz="0.01972618942 0.05390058767 0.0397026763" rpy="0.9840699413 0.8055556457 -0.8894139701" />
+      <geometry>
+        <mesh filename="meshes/cad/25.stl" />
+      </geometry>
+      <material name="cad_25">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.005890552499 0.02468755157 0.05312555501" rpy="0.9840699413 0.8055556457 -0.8894139701" />
+      <geometry>
+        <mesh filename="meshes/cad/26.stl" />
+      </geometry>
+      <material name="cad_26">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04652945426 0.06889825762 0.07566504627" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.006808839847396207" iyy="0.006947789965306467" izz="0.005093242725688837" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04652945426 0.06889825762 0.07566504627" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1771811419 0.1724115879 0.2279919352" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm2_joint7" type="prismatic">
+    <parent link="psm2_carrier" />
+    <child link="psm2_cad_slide" />
+    <origin xyz="-0.07965940695 0.003080987456 0.1815904338" rpy="0 0 0" />
+    <axis xyz="0.4363157603 -0.538030236 -0.721215656" />
+    <limit lower="0" upper="0.08" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm2_tool_main_respondable">
+    <visual name="psm2_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+      <material name="psm2_psm2_shaft_metal">
+        <color rgba="0.68 0.72 0.78 1" />
+      </material>
+    </visual>
+    <collision name="psm2_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="psm2_rot_ref_respondable">
+    <collision name="rot_ref_respondable">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="rot_ref_visual">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm2_rot_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm2_wrist_ref_respondable">
+    <collision name="wrist_ref_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="wrist_ref_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm2_wrist_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm2_yaw_ref1_respondable">
+    <collision name="yaw_ref1_respondable">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref1_visual">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm2_yaw_ref1_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm2_yaw_ref2_respondable">
+    <collision name="yaw_ref2_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref2_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm2_yaw_ref2_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm2_tool_tip">
+    <visual name="tool_tip_marker">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.0005" />
+      </geometry>
+      <material name="psm2_tool_tip_marker_material">
+        <color rgba="0.000000 1.000000 0.000000 0.0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="psm2_instrument_mount" type="fixed">
+    <parent link="psm2_cad_slide" />
+    <child link="psm2_tool_main_respondable" />
+    <origin xyz="0 0 0" rpy="-3.065548215 0.7622186671 2.362071543" />
+  </joint>
+  <joint name="psm2_joint8" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="4.3633231299861" lower="-4.3633231299861" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm2_tool_main_respondable" />
+    <child link="psm2_rot_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 -0.000000" rpy="3.141593 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm2_joint9" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.570796326795" lower="-1.570796326795" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm2_rot_ref_respondable" />
+    <child link="psm2_wrist_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 0.430100" rpy="-1.570800 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm2_joint10" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm2_wrist_ref_respondable" />
+    <child link="psm2_yaw_ref1_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="0.000000 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm2_joint11" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm2_wrist_ref_respondable" />
+    <child link="psm2_yaw_ref2_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="-3.141593 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm2_tool_tip_fixed_joint" type="fixed">
+    <parent link="psm2_wrist_ref_respondable" />
+    <child link="psm2_tool_tip" />
+    <origin xyz="0.000000 0.019700 0.000000" rpy="0 0 0" />
+  </joint>
+  <link name="psm3_lift">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796327 2.220446049e-16 1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/4.stl" />
+      </geometry>
+      <material name="cad_4">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.1055825451 1.561251128e-16 0.176" rpy="1.570796327 0 3.141592654" />
+      <geometry>
+        <mesh filename="meshes/cad/12.stl" />
+      </geometry>
+      <material name="cad_12">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.0825214249 0 0.0955000003" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.025590082795997466" iyy="0.026660011371913785" izz="0.003469928468627958" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.0825214249 0 0.0955000003" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1650428498 0.1199999973 0.5409999946" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_lift_joint" type="prismatic">
+    <parent link="cart" />
+    <child link="psm3_lift" />
+    <origin xyz="0.01091932209 -0.009651686604 0.8744619037" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.06" upper="0.06" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_setup1">
+    <visual>
+      <origin xyz="1.387778781e-16 -1.491862189e-16 0.119" rpy="-1.570796327 0 -1.520002528" />
+      <geometry>
+        <mesh filename="meshes/cad/13.stl" />
+      </geometry>
+      <material name="cad_13">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.2072322753 0.01053518182 0.0610000012" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0030869596599259665" iyy="0.025166988512177097" izz="0.02534994824455251" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.2072322753 0.01053518182 0.0610000012" rpy="0 0 0" />
+      <geometry>
+        <box size="0.5334602727 0.1400696839 0.1319999984" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_setup1_joint" type="revolute">
+    <parent link="psm3_lift" />
+    <child link="psm3_setup1" />
+    <origin xyz="0.1055825451 1.561251128e-16 0.366" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_setup2">
+    <visual>
+      <origin xyz="-1.110223025e-16 2.949029909e-17 0.002" rpy="1.570796327 0 -0.1005516337" />
+      <geometry>
+        <mesh filename="meshes/cad/11.stl" />
+      </geometry>
+      <material name="cad_11">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.02083107961 -0.2064519088 0.04800000009" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.025303096997943555" iyy="0.00387881165731686" izz="0.025725908595178922" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.02083107961 -0.2064519088 0.04800000009" rpy="0 0 0" />
+      <geometry>
+        <box size="0.160654099 0.5318845397 0.1440000013" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_setup2_joint" type="revolute">
+    <parent link="psm3_setup1" />
+    <child link="psm3_setup2" />
+    <origin xyz="0.414464763 0.02107036365 0.119" rpy="0 0 0" />
+    <axis xyz="-9.747221071e-18 -1.372863654e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_setup3">
+    <visual>
+      <origin xyz="-0.01151380175 -0.02642448353 -0.05799984035" rpy="-3.141592654 0.2923737082 -1.981717754" />
+      <geometry>
+        <mesh filename="meshes/cad/14.stl" />
+      </geometry>
+      <material name="cad_14">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.03114648641 -0.06377416195 -0.2369840277" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.010008560221602477" iyy="0.006921804748338845" izz="0.00969194202572561" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.03114648641 -0.06377416195 -0.2369840277" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1990756623 0.2768974268 0.2083999464" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_setup3_joint" type="revolute">
+    <parent link="psm3_setup2" />
+    <child link="psm3_setup3" />
+    <origin xyz="-0.0416586459 -0.4129038111 0.12" rpy="0 0 0" />
+    <axis xyz="5.797090387e-18 -2.597938232e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_mount">
+    <visual>
+      <origin xyz="-0.06202376224 -0.3390937778 -0.3352643861" rpy="-0.3572849216 0.6415024557 -1.981717754" />
+      <geometry>
+        <mesh filename="meshes/cad/20.stl" />
+      </geometry>
+      <material name="cad_20">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.01356235173 -0.2659881406 -0.2236932939" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.01965782950922754" iyy="0.011212337802622237" izz="0.013209105516106117" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.01356235173 -0.2659881406 -0.2236932939" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1690611808 0.3604546897 0.3255247622" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_mount_joint" type="revolute">
+    <parent link="psm3_setup3" />
+    <child link="psm3_mount" />
+    <origin xyz="-0.02605618222 -0.05979945467 -0.201044991" rpy="0 0 0" />
+    <axis xyz="-0.3200417585 -0.7345004126 -0.5983998802" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_shoulder">
+    <visual>
+      <origin xyz="0.01152364475 0.189404211 0.0220007608" rpy="1.223207903 0.6048230206 -1.965106008" />
+      <geometry>
+        <mesh filename="meshes/cad/19.stl" />
+      </geometry>
+      <material name="cad_19">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.04394502346 0.1252158789 0.09885294616" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.015275272712868443" iyy="0.010566879431484502" izz="0.013578887858219625" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.04394502346 0.1252158789 0.09885294616" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2307010348 0.3312456593 0.2712555727" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_shoulder_joint" type="revolute">
+    <parent link="psm3_mount" />
+    <child link="psm3_shoulder" />
+    <origin xyz="-0.05112914136 -0.4123870264 -0.3538640617" rpy="0 0 0" />
+    <axis xyz="0.9424576138 -0.1823709478 -0.2802043603" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_elbow">
+    <visual>
+      <origin xyz="0.01925354725 -0.3010042785 -0.09621517749" rpy="1.192284965 0.7101613844 -2.015628413" />
+      <geometry>
+        <mesh filename="meshes/cad/21.stl" />
+      </geometry>
+      <material name="cad_21">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.01081756233 -0.2131007396 -0.07060121259" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.03165993453596477" iyy="0.015740859362413876" izz="0.02518228030993588" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.01081756233 -0.2131007396 -0.07060121259" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2357524779 0.4965965494 0.3651179009" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_elbow_joint" type="revolute">
+    <parent link="psm3_shoulder" />
+    <child link="psm3_elbow" />
+    <origin xyz="-0.05698917316 0.2386310437 0.187779869" rpy="0 0 0" />
+    <axis xyz="0.9424576138 -0.1823709478 -0.2802043603" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_carrier">
+    <visual>
+      <origin xyz="0.068328177 -0.01322189371 -0.02031481612" rpy="1.114984159 0.8807787384 -2.123419273" />
+      <geometry>
+        <mesh filename="meshes/cad/22.stl" />
+      </geometry>
+      <material name="cad_22">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.07775275314 -0.01504560319 -0.02311685973" rpy="1.223207903 0.6048230206 -1.965106008" />
+      <geometry>
+        <mesh filename="meshes/cad/24.stl" />
+      </geometry>
+      <material name="cad_24">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.09805047479 -0.002764092881 0.07284864061" rpy="-0.4558121679 0.8807787384 -2.123419273" />
+      <geometry>
+        <mesh filename="meshes/cad/23.stl" />
+      </geometry>
+      <material name="cad_23">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.08186821857 -0.01252468747 0.108927262" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.018017704580899144" iyy="0.01445737003130738" izz="0.010336093038143332" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.08186821857 -0.01252468747 0.108927262" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2016297372 0.2887534684 0.3644638383" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_carrier_joint" type="revolute">
+    <parent link="psm3_elbow" />
+    <child link="psm3_carrier" />
+    <origin xyz="-0.1179133958 -0.4138307279 -0.1986324391" rpy="0 0 0" />
+    <axis xyz="0.9424576138 -0.1823709478 -0.2802043603" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_cad_slide">
+    <visual>
+      <origin xyz="0.04659255736 0.0514534219 0.007237221826" rpy="-0.4558121679 0.8807787384 -2.123419273" />
+      <geometry>
+        <mesh filename="meshes/cad/25.stl" />
+      </geometry>
+      <material name="cad_25">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.04698329923 0.02273650323 0.02724186887" rpy="-0.4558121679 0.8807787384 -2.123419273" />
+      <geometry>
+        <mesh filename="meshes/cad/26.stl" />
+      </geometry>
+      <material name="cad_26">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.04546651458 0.06975975675 0.07433171014" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0066654774130606555" iyy="0.0061922306445426276" izz="0.004761487346064711" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.04546651458 0.06975975675 0.07433171014" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1604040008 0.1772241651 0.2204026412" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="psm3_joint7" type="prismatic">
+    <parent link="psm3_carrier" />
+    <child link="psm3_cad_slide" />
+    <origin xyz="0.09472691536 0.002524995483 0.1742143368" rpy="0 0 0" />
+    <axis xyz="-0.3341392076 -0.541800557 -0.7712348192" />
+    <limit lower="0" upper="0.08" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="psm3_tool_main_respondable">
+    <visual name="psm3_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+      <material name="psm3_psm3_shaft_metal">
+        <color rgba="0.68 0.72 0.78 1" />
+      </material>
+    </visual>
+    <collision name="psm3_shaft_only">
+      <origin xyz="0 0 0.21025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.0042" length="0.4205" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="psm3_rot_ref_respondable">
+    <collision name="rot_ref_respondable">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="rot_ref_visual">
+      <origin xyz="-0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_rot_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm3_rot_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm3_wrist_ref_respondable">
+    <collision name="wrist_ref_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="wrist_ref_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="0.000000 3.141593 0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_wrist_ref_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm3_wrist_ref_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm3_yaw_ref1_respondable">
+    <collision name="yaw_ref1_respondable">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref1_visual">
+      <origin xyz="0.000000 0.000000 0.000000" rpy="-3.141593 3.141593 -3.141593" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref1_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm3_yaw_ref1_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm3_yaw_ref2_respondable">
+    <collision name="yaw_ref2_respondable">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_respondable_coll_1.dae" />
+      </geometry>
+    </collision>
+    <visual name="yaw_ref2_visual">
+      <origin xyz="0.000000 -0.000000 0.000000" rpy="-3.141593 3.141593 -0.000000" />
+      <geometry>
+        <mesh filename="meshes/instrument/ur5e_new_dvrk_yaw_ref2_visual_vis_1.dae" />
+      </geometry>
+      <material name="psm3_yaw_ref2_visual_material">
+        <color rgba="0.796080 0.823530 0.937250 1.0" />
+      </material>
+    </visual>
+  </link>
+  <link name="psm3_tool_tip">
+    <visual name="tool_tip_marker">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.0005" />
+      </geometry>
+      <material name="psm3_tool_tip_marker_material">
+        <color rgba="0.000000 1.000000 0.000000 0.0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="psm3_instrument_mount" type="fixed">
+    <parent link="psm3_cad_slide" />
+    <child link="psm3_tool_main_respondable" />
+    <origin xyz="0 0 0" rpy="-2.452226067 0.03277689476 2.549233601" />
+  </joint>
+  <joint name="psm3_joint8" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="4.3633231299861" lower="-4.3633231299861" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm3_tool_main_respondable" />
+    <child link="psm3_rot_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 -0.000000" rpy="3.141593 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm3_joint9" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.570796326795" lower="-1.570796326795" effort="100.0" velocity="0.52359877559833" />
+    <parent link="psm3_rot_ref_respondable" />
+    <child link="psm3_wrist_ref_respondable" />
+    <origin xyz="-0.000000 0.000000 0.430100" rpy="-1.570800 3.141593 -0.000000" />
+  </joint>
+  <joint name="psm3_joint10" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm3_wrist_ref_respondable" />
+    <child link="psm3_yaw_ref1_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="0.000000 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm3_joint11" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit upper="1.0471975511967" lower="-1.0471975511967" effort="50.0" velocity="0.52359877559833" />
+    <parent link="psm3_wrist_ref_respondable" />
+    <child link="psm3_yaw_ref2_respondable" />
+    <origin xyz="0.000000 0.009100 0.000000" rpy="-3.141593 -1.570796 0.000000" />
+  </joint>
+  <joint name="psm3_tool_tip_fixed_joint" type="fixed">
+    <parent link="psm3_wrist_ref_respondable" />
+    <child link="psm3_tool_tip" />
+    <origin xyz="0.000000 0.019700 0.000000" rpy="0 0 0" />
+  </joint>
+  <link name="ecm_lift">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796327 0 0" />
+      <geometry>
+        <mesh filename="meshes/cad/4.stl" />
+      </geometry>
+      <material name="cad_4">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-5.551115123e-17 -0.1053605013 0.17" rpy="1.570796327 0 0.2159104712" />
+      <geometry>
+        <mesh filename="meshes/cad/5.stl" />
+      </geometry>
+      <material name="cad_5">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0 -0.08243025094 0.05600000083" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.0200519150930444" iyy="0.018986999615907666" izz="0.0034649153698483744" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0 -0.08243025094 0.05600000083" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1199999973 0.1648605019 0.4619999957" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_lift_joint" type="prismatic">
+    <parent link="cart" />
+    <child link="ecm_lift" />
+    <origin xyz="-0.06919169981 -0.07594155686 1.193729044" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.06" upper="0.06" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_setup1">
+    <visual>
+      <origin xyz="-5.093148125e-15 1.970645869e-15 0.112" rpy="1.570796327 0 1.304518165" />
+      <geometry>
+        <mesh filename="meshes/cad/15.stl" />
+      </geometry>
+      <material name="cad_15">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.1447154095 -0.03947138811 0.1675000002" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.004567194749252028" iyy="0.015199946962602398" izz="0.017162975006382652" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.1447154095 -0.03947138811 0.1675000002" rpy="0 0 0" />
+      <geometry>
+        <box size="0.4083801701 0.1979427613 0.1250000009" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_setup1_joint" type="revolute">
+    <parent link="ecm_lift" />
+    <child link="ecm_setup1" />
+    <origin xyz="-5.551115123e-17 -0.1053605013 0.177" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_setup2">
+    <visual>
+      <origin xyz="5.162537065e-15 -1.498801083e-15 0.125" rpy="1.570796327 0 -0.9937914075" />
+      <geometry>
+        <mesh filename="meshes/cad/15.stl" />
+      </geometry>
+      <material name="cad_15">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.1257150442 -0.08181658395 0.1805000002" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.007958335045085356" iyy="0.012736830150112491" izz="0.018090998489726062" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.1257150442 -0.08181658395 0.1805000002" rpy="0 0 0" />
+      <geometry>
+        <box size="0.3704280788 0.2826216911 0.1250000009" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_setup2_joint" type="revolute">
+    <parent link="ecm_setup1" />
+    <child link="ecm_setup2" />
+    <origin xyz="0.2894270851 -0.07894277944 0.107" rpy="0 0 0" />
+    <axis xyz="-1.270629789e-16 -1.302011828e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_setup3">
+    <visual>
+      <origin xyz="2.116362641e-16 -0.2065588753 0.2133679368" rpy="3.141592654 0.7552683699 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/16.stl" />
+      </geometry>
+      <material name="cad_16">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="1.387778781e-16 -0.1072764694 0.05617904876" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.01626486846846781" iyy="0.00817348856549644" izz="0.010451546678396652" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="1.387778781e-16 -0.1072764694 0.05617904876" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1190000027 0.3335529336 0.289690977" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_setup3_joint" type="revolute">
+    <parent link="ecm_setup2" />
+    <child link="ecm_setup3" />
+    <origin xyz="-0.2514300815 -0.1636548628 0.12" rpy="0 0 0" />
+    <axis xyz="3.960978719e-16 4.072470693e-16 1" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_mount">
+    <visual>
+      <origin xyz="0.09732862952 -0.178811023 -0.4352335963" rpy="-8.881784197e-16 1.104397117 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/20.stl" />
+      </geometry>
+      <material name="cad_20">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.0532909112 -0.1538952287 -0.3134052046" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.01749967654108782" iyy="0.015451366189053907" izz="0.007355101600591073" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.0532909112 -0.1538952287 -0.3134052046" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1784397587 0.2375299386 0.3918872884" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_mount_joint" type="revolute">
+    <parent link="ecm_setup3" />
+    <child link="ecm_mount" />
+    <origin xyz="1.491862189e-16 -0.174757032 0.06955873305" rpy="0 0 0" />
+    <axis xyz="3.137234524e-16 0.4496730056 0.8931932535" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_shoulder">
+    <visual>
+      <origin xyz="-0.02984598784 0.1649705882 0.09156803491" rpy="1.570796327 1.065316559 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/19.stl" />
+      </geometry>
+      <material name="cad_19">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-0.09384599041 0.07811558781 0.1178148875" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.014024383199127383" iyy="0.010587738485508228" izz="0.006797311644428777" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-0.09384599041 0.07811558781 0.1178148875" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1420000056 0.2477977767 0.3269386185" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_shoulder_joint" type="revolute">
+    <parent link="ecm_mount" />
+    <child link="ecm_shoulder" />
+    <origin xyz="0.1261746174 -0.2377174383 -0.4744060895" rpy="0 0 0" />
+    <axis xyz="1 -1.842668601e-16 -2.469697765e-16" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_elbow">
+    <visual>
+      <origin xyz="0.1 -0.2399292936 -0.1807361868" rpy="1.570796327 1.153465037 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/21.stl" />
+      </geometry>
+      <material name="cad_21">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.06000000089 -0.1541156779 -0.1607833428" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.029796256018089787" iyy="0.017780117580800024" izz="0.013082805056272719" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.06000000089 -0.1541156779 -0.1607833428" rpy="0 0 0" />
+      <geometry>
+        <box size="0.07999999821 0.3880639908 0.4549301169" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_elbow_joint" type="revolute">
+    <parent link="ecm_shoulder" />
+    <child link="ecm_elbow" />
+    <origin xyz="-0.1498459878 0.1394907841 0.2313921372" rpy="0 0 0" />
+    <axis xyz="1 -1.842668601e-16 -2.469697765e-16" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_carrier">
+    <visual>
+      <origin xyz="0.0725 -2.220446049e-16 -9.992007222e-16" rpy="-1.570796327 1.372757569 1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/28.stl" />
+      </geometry>
+      <material name="cad_28">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.0825 -2.220446049e-16 -9.992007222e-16" rpy="1.570796327 1.065316559 -1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/24.stl" />
+      </geometry>
+      <material name="cad_24">
+        <color rgba="0.25 0.37 0.47 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.03999999955 -0.06357678065 0.1551271849" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.035330921671381244" iyy="0.03276375505971325" izz="0.0037713333036666365" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.03999999955 -0.06357678065 0.1551271849" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08500000089 0.1950153827 0.6212407428" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_carrier_joint" type="revolute">
+    <parent link="ecm_elbow" />
+    <child link="ecm_carrier" />
+    <origin xyz="0.02 -0.314131606 -0.3543100622" rpy="0 0 0" />
+    <axis xyz="1 -1.942305699e-16 -2.168484507e-16" />
+    <limit lower="-0.5" upper="0.5" effort="100" velocity=".25" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+  <link name="ecm_scope_mount">
+    <visual>
+      <origin xyz="0.0725 -0.06320794897 0.05655941392" rpy="-3.141592654 1.372757569 1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/29.stl" />
+      </geometry>
+      <material name="cad_29">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="0.04082775647 -0.1870171336 0.3499852303" rpy="1.372757569 -4.440892099e-16 3.141592654" />
+      <geometry>
+        <mesh filename="meshes/cad/30.stl" />
+      </geometry>
+      <material name="cad_30">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0.04000000119 -0.1975984503 0.4911942147" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.011304957624735532" iyy="0.00984929730735549" izz="0.002513308426518301" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="0.04000000119 -0.1975984503 0.4911942147" rpy="0 0 0" />
+      <geometry>
+        <box size="0.0796610862 0.1543172462 0.3344333701" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_scope_mount_joint" type="fixed">
+    <parent link="ecm_carrier" />
+    <child link="ecm_scope_mount" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="ecm_insertion">
+    <visual>
+      <origin xyz="0 0 0" rpy="-2.397197652 1.372757569 1.570796327" />
+      <geometry>
+        <mesh filename="meshes/cad/31.stl" />
+      </geometry>
+      <material name="cad_31">
+        <color rgba="0.72 0.76 0.81 1" />
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="-1.301042607e-16 0.05460339281 -0.2791346088" rpy="0 0 0" />
+      <mass value="1" />
+      <inertia ixx="0.027721589525143923" iyy="0.026372426608488528" izz="0.0014157175577879672" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+    <collision>
+      <origin xyz="-1.301042607e-16 0.05460339281 -0.2791346088" rpy="0 0 0" />
+      <geometry>
+        <box size="0.0199831891 0.1287993899 0.5622008462" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="ecm_insertion_joint" type="prismatic">
+    <parent link="ecm_scope_mount" />
+    <child link="ecm_insertion" />
+    <origin xyz="0.04082775647 -0.1870171336 0.3499852303" rpy="0 0 0" />
+    <axis xyz="-5.202993637e-16 0.1967468023 -0.9804543313" />
+    <limit lower="-0.03" upper="0.06" effort="100" velocity=".04" />
+    <dynamics damping="0.1" friction="0" />
+  </joint>
+</robot>
