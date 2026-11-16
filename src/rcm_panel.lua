@@ -5,19 +5,19 @@ function sysCall_init()
     controller=sim.getObject('/RCMController');selected=1;yaw=0;pitch=0;insert=40
     camera=sim.getObjectsInTree(sim.handle_scene,sim.sceneobject_camera,0)[1]
     overview=sim.getObjectMatrix(camera,sim.handle_world)
-    ui=simUI.create([[<ui title="Three-arm RCM | software constraint" closeable="false" placement="relative" position="20,20" layout="vbox">
-    <label text="Fixed world pivots / original joint-chain control"/>
+    ui=simUI.create([[<ui title="Abdominal RCM | foot-end docking" closeable="false" placement="relative" position="20,20" layout="vbox">
+    <label text="Registered skin ports / guarded kinematic control"/>
     <group layout="hbox"><button text="Overview" on-click="viewOverview"/><button text="RCM 1" on-click="view1"/><button text="RCM 2" on-click="view2"/><button text="RCM 3" on-click="view3"/></group>
     <button text="Run RCM demo: swing / insert / combined" on-click="run"/>
     <button text="Hold all arms" on-click="hold"/>
     <button text="RCM home" on-click="home"/>
     <combobox id="1" on-change="armChanged"><item>PSM 1</item><item>PSM 2</item><item>PSM 3</item></combobox>
-    <label text="Yaw (-5 to +5 deg)"/><hslider id="2" minimum="-50" maximum="50" on-change="yawChanged"/>
-    <label text="Pitch (-4 to +4 deg)"/><hslider id="3" minimum="-40" maximum="40" on-change="pitchChanged"/>
-    <label text="Insertion (20 to 60 mm)"/><hslider id="4" minimum="20" maximum="60" value="40" on-change="insertChanged"/>
+    <label text="Yaw (-1 to +1 deg)"/><hslider id="2" minimum="-10" maximum="10" on-change="yawChanged"/>
+    <label text="Pitch (-0.75 to +0.75 deg)"/><hslider id="3" minimum="-75" maximum="75" on-change="pitchChanged"/>
+    <label text="Insertion (38 to 42 mm)"/><hslider id="4" minimum="38" maximum="42" value="40" on-change="insertChanged"/>
     <label id="5" text="Start simulation to enable constrained controls."/>
     <label id="6" text="RCM residuals will appear here."/>
-    <label text="Setup rotations coordinated; base and lifts fixed."/>
+    <label text="Exploratory CAD joint ranges; no clinical validation."/>
     </ui>]])
 end
 function active() return sim.getSimulationState()~=sim.simulation_stopped end
@@ -33,11 +33,11 @@ function apply()
     simUI.setLabelText(ui,5,ok and string.format('PSM %d: yaw %.1f / pitch %.1f / %.0f mm',selected,yaw,pitch,insert) or 'Target rejected; previous configuration retained.',true)
 end
 function yawChanged(_,_,v) yaw=v/10;apply() end
-function pitchChanged(_,_,v) pitch=v/10;apply() end
+function pitchChanged(_,_,v) pitch=v/100;apply() end
 function insertChanged(_,_,v) insert=v;apply() end
 function sysCall_sensing()
     local stats=sim.callScriptFunction('getRCMStats',controller);local text=''
-    for i,a in ipairs(stats) do text=text..string.format('PSM %d: %.6f mm (max %.6f), rejected %d\n',i,a.drift_m*1000,a.max_drift_m*1000,a.failures) end
+    for i,a in ipairs(stats) do text=text..string.format('PSM %d: %.6f mm (max %.6f), rejected %d\n',i,a.drift_m*1000,a.max_drift_m*1000,a.failures+a.collision_blocks) end
     simUI.setLabelText(ui,6,text,true)
 end
 function sysCall_cleanup() if ui then simUI.destroy(ui) end end

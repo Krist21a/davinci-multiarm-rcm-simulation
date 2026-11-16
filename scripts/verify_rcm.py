@@ -23,12 +23,13 @@ def main():
     p.add_argument('--tolerance',type=float,default=1e-6,help='Maximum residual in metres')
     p.add_argument('--start',action='store_true')
     p.add_argument('--out',type=Path)
+    p.add_argument('--config',type=Path,default=Path(__file__).resolve().parents[1]/'config/rcm_config.json',help='RCM configuration matching the open scene')
     args=p.parse_args()
     if args.samples<1 or args.interval<0 or args.tolerance<=0:p.error('Invalid sampling or tolerance value')
     from coppeliasim_zmqremoteapi_client import RemoteAPIClient
     client=RemoteAPIClient(host=args.host,port=args.port)
     sim=client.require('sim')
-    config=json.loads((Path(__file__).resolve().parents[1]/'config/rcm_config.json').read_text(encoding='utf-8'))
+    config=json.loads(args.config.read_text(encoding='utf-8'))
     handles=[sim.getObject('/'+a['arm']+'_joint8') for a in config]
     refs=[sim.getObject('/'+a['arm']+'_RCM_reference') for a in config]
     sim.getObject('/RCMController')  # Fail before starting if this is another scene.

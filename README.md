@@ -1,89 +1,70 @@
-# 达芬奇式多臂机器人 RCM 仿真
+# 达芬奇式多臂机器人：脚端对接与腹壁 RCM 仿真
 
-基于 CAD 装配体构建的 **3 条持针钳器械臂 + 1 条镜臂** CoppeliaSim 仿真。保留原 CAD 导轨、滑台和驱动结构，接入已有持针钳的杆、腕部与钳口，并通过旋转关节协调实现三条器械臂的软件 RCM。
+最新场景包含三条持针钳器械臂、CAD 镜臂、BodyParts3D 成年男性及分段手术台。患者采用头低脚高 20°、每侧分腿 20° 的静态示意姿态，机器人从脚端中央对接。
 
-![固定穿刺点演示](docs/rcm_preview.png)
+**已修复腿部拉伸：**移除内体表壳造成的重叠，按网格连通关系处理下肢，固定骨盆与手部，近端大腿采用局部形状保持，小腿与脚掌整体刚性旋转。原始解剖网格仍保留。
 
-[观看 24 秒四视角演示](docs/three_arm_rcm_demo.mp4)
+![最新场景](docs/gui_whole_body_verified.png)
 
-## 直接运行
+[24 秒双视图演示](docs/foot_docking_rcm_demo.mp4) · [无遮挡腿部检查](docs/leg_fix_top.png) · [详细验证报告](docs/foot_docking_validation_zh.txt)
 
-1. 安装 **CoppeliaSim 4.10**（本项目已在 Windows / CoppeliaSim Edu 4.10 中验证）。
-2. 打开 [`scenes/davinci_three_arm_rcm.ttt`](scenes/davinci_three_arm_rcm.ttt)。场景已嵌入网格和 Lua 脚本。
-3. 点击播放，运行 24 秒循环：**摆动 → 插入 → 摆动与插入组合**。
-4. 面板中的 **RCM 1 / 2 / 3** 切换固定穿刺点近景；**Overview** 返回整机。
+## 直接打开
 
-运行场景不需要 MATLAB、ROS 或 Python。Python 仅用于可选的独立验证。
+1. 使用 CoppeliaSim Edu 4.10 打开 [scenes/davinci_foot_docking_rcm.ttt](scenes/davinci_foot_docking_rcm.ttt)。场景自包含网格与 Lua 控制器，不需要 Python、ROS 或 MATLAB。
+2. 点击播放：循环演示摆动、插入、组合运动。橙色圆环为固定腹壁 RCM 点。
+3. 使用 RCM 面板选择器械臂并调整 yaw、pitch、insertion；越界或碰撞请求会被拒绝并回退。
+4. 人体面板可切换 Whole body、透明体表、盆腔和隐藏骨盆视图。Whole body 已修复为可见且完全不透明。
 
-橙色圆环标记固定于世界坐标的穿刺点。机械臂通过真实关节链运动，不通过移动底座、零件或参考点来维持表面上的对齐。
-
-## 控制范围
-
-| 控制量 | 当前演示及验证范围 |
-|---|---|
-| 横向摆角 yaw | −5° 至 +5° |
-| 纵向摆角 pitch | −4° 至 +4° |
-| 原 CAD 滑台插入量 | 20–60 mm；中立位置 40 mm |
-| 底座、升降、镜臂 | 保持固定 |
-
-在面板中选择器械臂后，可单独调整摆角和插入量。**Hold all arms** 保持当前姿态，**RCM home** 受约束归位，**Run RCM demo** 恢复自动演示。越界或不收敛的命令会被拒绝，并保留先前可接受姿态。
-
-## RCM 实现
-
-设固定穿刺点为 `r`、器械杆根为 `p`、单位杆轴为 `a`，控制器约束：
-
-```text
-RCM residual = ||(I - a aᵀ)(r - p)||
-```
-
-由固定穿刺点、目标杆轴方向和插入量计算目标杆根位姿，再利用实际关节轴构造雅可比，进行带限位和回退机制的阻尼最小二乘求解。
-
-仅使用末端四个转轴时，当前等效关节链的任务雅可比秩为 4；支撑臂旋转关节参与后达到 5，可满足位置与杆轴方向要求。PSM1 协调 8 个上游旋转关节，PSM2/PSM3 各协调 7 个，再配合原 CAD 插入滑台。升降关节和底座不参与。
-
-这是**等效 CAD 关节链上的软件 RCM**。真实达芬奇的闭链传动、主动/被动轴分工与机械 RCM 耦合尚未标定。当前三个穿刺点为仿真中选定的虚拟点，未映射到患者解剖结构。
-
-## 验证结果
+## 本次验证范围
 
 | 项目 | 结果 |
 |---|---|
-| 完整周期采样 | 每臂 481 个姿态，共 1443 次测量 |
-| 最大 RCM 数值残差 | 约 0.000016 mm |
-| 固定参考点与非控制关节漂移 | 0 |
-| 自动周期求解失败 | 0 |
-| 手动边界目标 | 24/24 成功 |
-| 越界命令 | 拒绝且不产生运动 |
-| 抽样器械干涉检查 | 120 个姿态 × 657 对几何对象，无新增相交 |
+| 摆动范围 | yaw ±1°、pitch ±0.75° |
+| 插入关节范围 | 38–42 mm，中位 40 mm |
+| 连续周期 | 24 秒，481 个控制步 |
+| 求解失败 / 演示碰撞回退 | 0 / 0 |
+| 最大 RCM 数值残差 | 约 0.000019 mm，不代表实机精度 |
+| 独立网格相交抽检 | 49 次 × 2046 对网格，无意外相交 |
+| 手动边界目标 | 24/24 通过 |
+| 障碍注入测试 | 拒绝运动、精确回退，测试障碍已恢复 |
+| 器械尖端距前列腺表面 | 约 20–29 mm，为周围接近区域，尚未接触组织 |
 
-这些是理想刚性运动学仿真的数值结果，**不代表实机精度**。干涉检查涵盖器械与 CAD 臂结构/台面及跨臂器械，排除已知杆根安装端面接触；不构成全工作空间或全部机械臂自碰撞保证。
+控制器在候选姿态提交前检查相关碰撞对。只允许器械长杆在各自腹壁 RCM 点 16 mm 半径内的预期体表穿越，不忽略整个人体碰撞对。相邻装配面、闭合夹爪及内部腕部配合面不属于意外碰撞。检查基于三角网格表面相交，不等同于连续扫掠、实体包含检测或接触力求解。
 
-原始报告位于 [`validation/`](validation/)，包含固定点残差、关节限位、手动边界目标和实际控制面板验证。
+## 模型边界
 
-## 可选：独立检查当前运行场景
+- 这是 CAD 等效串联关节链的软件 RCM；真实闭链传动、机械 RCM 耦合与厂商限位尚未标定。
+- 为脚端对接调整了探索性仿真关节范围：setup/mount 为 ±π，shoulder/elbow/carrier 为 ±1.2 rad；PSM1 升降 −0.06..0.35 m，PSM2/3 为 −0.06..0.25 m。**这些范围不是已验证的实机行程。**
+- 腿部姿态是静态体表处理，不是肌骨关节或软组织仿真。腹壁与盆腔器官位置未单独调整。
+- 摄像孔是规划标记；ECM 尚未加入此次腹壁 RCM 控制。
+- 尚无组织变形、气腹、牵拉、缝线、切割或临床入路验证。扩大摆动范围曾出现髋骨相交，不能把本次局部通过结果推广到整个工作空间。
+
+## 文件与复现
+
+- `scenes/davinci_foot_docking_rcm.ttt`：当前推荐场景。
+- `models/davinci_foot_docking.urdf` + `models/meshes/`：同步后的机器人模型；URDF 保留 CAD 零位，须应用 `config/home_joint_positions.json` 才是本次对接姿态。
+- `models/anatomy/`：原始选定器官 OBJ、修复后的体表 NPZ、来源与许可副本。
+- `config/`：最新穿刺点、初始关节位置、姿态及碰撞对。
+- `src/rcm_guarded_embedded.lua`：场景使用的完整受限位与碰撞保护控制器；其余 Lua 为基础求解器和面板。
+- `validation/foot_docking/`：最新运动、腿形、控制、视频及可见窗口验证记录。
+- `validation/latest_asset_checksums.json`：本次资产 SHA-256 与大小。
+- `scripts/authoring/`：本机作者脚本，包含原工作区路径和开发端口；不是开箱即用的跨平台构建命令。使用场景无需运行它们。
+
+独立读取运行中的 RCM 残差：
 
 ```bash
 python -m pip install -r requirements.txt
-python scripts/verify_rcm.py --port 23000 --start --samples 500 --out runtime_validation.json
+python scripts/verify_rcm.py --port 23000 --samples 100 --out runtime_validation.json
 ```
 
-端口应与本机 CoppeliaSim ZeroMQ Remote API 端口一致；多个实例通常使用不同端口。脚本读取三条器械轴线与配置中的固定世界点，独立计算残差；默认不修改关节或参考点。`--start` 仅在目标场景已打开且仿真停止时启动它。
+端口需与 CoppeliaSim ZeroMQ Remote API 一致。默认使用新版 `config/rcm_config.json`。
 
-## 文件结构
+旧版无人体的 [davinci_three_arm_rcm.ttt](scenes/davinci_three_arm_rcm.ttt) 仍保留，验证时传 `--config config/legacy_rcm_config.json`。旧版源码在 `src/legacy/`，早期验证在 `validation/` 根目录；它们不代表当前解剖注册版本。
 
-```text
-scenes/       可直接运行的 CoppeliaSim 场景
-models/       URDF 与相对路径网格资源
-src/          RCM 求解器、带配置的内嵌脚本和控制面板
-config/       三个固定穿刺点、初始方向与控制关节
-validation/   可行性、残差、干涉、界面验证和资源校验和
-scripts/      独立运行状态验证工具
-docs/         预览、演示视频和技术说明
-```
+## 数据来源与署名
 
-[`models/davinci_multiarm.urdf`](models/davinci_multiarm.urdf) 和 `models/meshes/` 必须一起复制。普通 URDF 不表达这里的非线性 RCM 约束；后续迁移 MuJoCo 时，需要一并移植控制器、固定点配置和残差验证。
+BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.
 
-## 当前边界
+[官方许可页](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html) · [官方数据下载](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html)
 
-- 动力学与接触力未启用；CAD 质量惯量和部分碰撞几何仍为占位参数。
-- 尚未实现组织、穿刺力、缝线和切割。
-- 本仓库提供仿真开发资源，尚未完成实机运动学与动力学标定。
-- CAD 几何来自项目提供的装配体；持针钳网格来自已有仿真工程。
+使用官方 `isa_BP3D_4.0_obj_99.zip` 中选定的模型。原始 OBJ 头部含历史许可文字；当前官方许可页副本保存在 `models/anatomy/source_LICENSE_source.html`。修改包括毫米转米、刚体体位、外体表筛选、分腿姿态、着色与仿真层级。CAD 和持针钳来自用户提供的项目资产，其许可与 BodyParts3D 分开处理。

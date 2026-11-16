@@ -43,7 +43,7 @@ local function control(arm,yaw,pitch,insertion)
         end
         local A,b={},{}
         for i=1,#cols do
-            A[i]={};b[i]=-1e-9*q[i]
+            A[i]={};b[i]=-1e-9*(q[i]-arm.home[i])
             for k=1,6 do b[i]=b[i]+cols[i][k]*e[k] end
             for j=1,#cols do
                 local v=i==j and 1e-9 or 0
@@ -82,7 +82,7 @@ function sysCall_init()
     end
 end
 function setRCMTarget(index,yaw,pitch,insertion)
-    if index<1 or index>3 or math.abs(yaw)>5 or math.abs(pitch)>4 or insertion<.02 or insertion>.06 then return false end
+    if index<1 or index>3 or math.abs(yaw)>1 or math.abs(pitch)>.75 or insertion<.038 or insertion>.042 then return false end
     auto=false;frozen=false
     local arm=arms[index];local start=arm.lastTarget
     local saved={};for i,h in ipairs(arm.handles) do saved[i]=sim.getJointPosition(h) end
@@ -112,9 +112,9 @@ end
 function sysCall_actuation()
     if not auto or frozen then return end
     local t=sim.getSimulationTime()%24;local phase=math.floor(t/8);local u=(t%8)/8;local wave=math.sin(2*math.pi*u)
-    local yaw=phase~=1 and 5*wave or 0
-    local pitch=phase~=1 and 4*math.sin(4*math.pi*u) or 0
-    local insertion=.04+(phase~=0 and .02*wave or 0)
+    local yaw=phase~=1 and 1*wave or 0
+    local pitch=phase~=1 and .75*math.sin(4*math.pi*u) or 0
+    local insertion=.04+(phase~=0 and .002*wave or 0)
     for _,arm in ipairs(arms) do control(arm,yaw,pitch,insertion) end
 end
 function sysCall_cleanup()
