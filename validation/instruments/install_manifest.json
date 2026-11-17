@@ -1,5 +1,5 @@
 {
-  "built_at_unix": 1794893598,
+  "built_at_unix": 1794898077,
   "coppeliasim_version": 4100000,
   "inputs": {
     "scenes/davinci_endoscope_task.ttt": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
@@ -15,12 +15,15 @@
     "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
     "config/instruments/420093.json": "d82b4dfc26d55b5ae692357ff3cb5f9295eec491624f7d7de24611d1be9a49eb",
     "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38",
-    "config/instruments/port_plan.json": "cdbd844e6177f3845bdc9791d3c87cc993762ad2a86754bffca1284a7b440c15"
+    "config/instruments/port_plan.json": "cdbd844e6177f3845bdc9791d3c87cc993762ad2a86754bffca1284a7b440c15",
+    "config/instruments/access.json": "5dced155c7d8d2b52c45ab1e5210617b414f7fb8b68071674231e8d03ce081f6"
   },
   "outputs": {
-    "scenes/davinci_si_instruments.ttt": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
+    "scenes/davinci_si_instruments.ttt": "601a88e1ff2cb9574b6ff75457681cbb02e1869d8671aedd0db160500e07352f",
     "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47",
-    "config/instruments/rcm_config.json": "afcc96f7617c66d0b72acf49119694026d96aa0f95c063e39105190d19e5b8b2"
+    "config/instruments/rcm_config.json": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+    "config/instruments/collision_pairs.json": "57904cddf964a0025959451a5e6a8a5c2740781a0af4fa7c5b5697e6ce1b2d3c",
+    "models/anatomy/insufflated_wall.npz": "45e489c29c572eef1b23cf7096f9938079f118ec36dc5bbbb569e0ba0aa11a37"
   },
   "ports": {
     "psm1": {
@@ -372,26 +375,131 @@
       "psm3": 0.4695058097455061
     }
   },
+  "access": {
+    "pneumoperitoneum": {
+      "params": {
+        "wall_thickness_m": 0.03,
+        "rcm_depth_below_skin_m": 0.015,
+        "rcm_depth_basis": "The RCM (remote centre) sits 15 mm under the lifted skin, at the inner side of the wall.",
+        "dome_height_m": 0.035,
+        "peritoneum_floor_below_original_skin_m": 0.0,
+        "peritoneum_floor_basis": "With the full 30 mm wall the inner surface reached 15 mm below the RCM and the PSM3 jaws touched it at the grasp point: the working cavity of this model lies just under the original skin. A 3 mm floor still let the PSM3 jaws touch it on the way to the grasp point. The inner surface is therefore kept no lower than the original skin, which every arm already clears: over the ports the wall is the 15 mm lift, the RCM lies 0-1.5 mm above the peritoneum, and the wall reaches 30 mm only where the dome lifts it further.",
+        "region_margin_m": 0.07,
+        "region_flat_fraction": 0.55,
+        "rbf_sigma_m": 0.05,
+        "port_radius_m": 0.045,
+        "port_radius_basis": "The shafts cross the lifted skin obliquely (about 55-60 deg off its normal for the PSMs). With the wall over the ports at 13.5-15 mm, the contact patch of each shaft with the skin compound reaches 26-32 mm from its RCM at home; 45 mm leaves room for the motion range and still flags contact with the body wall farther away. (A first trial with a full 30 mm wall needed 65 mm and blocked the retraction.)",
+        "inner_wall_rgb": [
+          0.8,
+          0.45,
+          0.42
+        ]
+      },
+      "port_lift_m": {
+        "psm1": 0.013781999999999836,
+        "psm2": 0.01346035478823869,
+        "psm3": 0.015,
+        "ecm": 0.015107471977124573
+      },
+      "rcm_below_original_skin_m": {
+        "psm1": 0.0012180000000001634,
+        "psm2": 0.001539645211761309,
+        "psm3": 0.0,
+        "ecm": -0.00010747197712457357
+      },
+      "port_rho": {
+        "psm1": 0.6391957411598567,
+        "psm2": 0.23575870317330952,
+        "psm3": 0.5868581928532058,
+        "ecm": 0.511959218590808
+      },
+      "max_lift_m": 0.02252039292908018,
+      "lifted_vertices": 2083,
+      "inner_wall_faces": 4400,
+      "crossing": {
+        "psm1": {
+          "rcm_to_skin_along_shaft_m": 0.020723441430413502,
+          "rcm_to_peritoneum_along_shaft_m": 0.0
+        },
+        "psm2": {
+          "rcm_to_skin_along_shaft_m": 0.0241820446852721,
+          "rcm_to_peritoneum_along_shaft_m": 0.0
+        },
+        "psm3": {
+          "rcm_to_skin_along_shaft_m": 0.021210364055261798,
+          "rcm_to_peritoneum_along_shaft_m": 0.0
+        },
+        "ecm": {
+          "rcm_to_skin_along_shaft_m": 0.015242901723881165,
+          "rcm_to_peritoneum_along_shaft_m": 2.5776846797341143e-16
+        }
+      },
+      "region_semi_axes_m": [
+        0.18252513884924254,
+        0.14306351781722282
+      ],
+      "inner_wall_organ_contacts": []
+    },
+    "cannulas": {
+      "psm1": {
+        "shape": "psm1_cannula",
+        "parent": "psm1_carrier_respondable",
+        "mesh": "models/meshes/cannula/dvrk/Si/Si-cannula-8mm.stl",
+        "faces": 4000,
+        "tube_outer_radius_m": 0.006387598339100377,
+        "length_below_rcm_m": 0.02995825322948567,
+        "length_above_rcm_m": 0.13809184224058896
+      },
+      "psm2": {
+        "shape": "psm2_cannula",
+        "parent": "psm2_carrier_respondable",
+        "mesh": "models/meshes/cannula/dvrk/Si/Si-cannula-8mm.stl",
+        "faces": 4000,
+        "tube_outer_radius_m": 0.006387598339100377,
+        "length_below_rcm_m": 0.02995825322948567,
+        "length_above_rcm_m": 0.13809184224058896
+      },
+      "psm3": {
+        "shape": "psm3_cannula",
+        "parent": "psm3_carrier_respondable",
+        "mesh": "models/meshes/cannula/dvrk/Si/Si-cannula-8mm.stl",
+        "faces": 4000,
+        "tube_outer_radius_m": 0.006387598339100377,
+        "length_below_rcm_m": 0.02995825322948567,
+        "length_above_rcm_m": 0.13809184224058896
+      },
+      "ecm": {
+        "shape": "ecm_cannula",
+        "parent": "ecm_scope_mount_respondable",
+        "mesh": "revolved Si profile, bore 20.8 mm",
+        "faces": 1024,
+        "tube_outer_radius_m": 0.01240000053120761,
+        "length_below_rcm_m": 0.03,
+        "length_above_rcm_m": 0.138
+      }
+    },
+    "cannula_pairs": 226
+  },
   "instrument_roll": {
     "psm1": {
       "roll_rad": 0.0,
       "roll_change_deg": 0.0,
       "candidates_tried": 1,
-      "pairs_checked": 267,
+      "pairs_checked": 282,
       "first_blocked": null
     },
     "psm2": {
       "roll_rad": -0.13606776444037622,
       "roll_change_deg": 0.0,
       "candidates_tried": 1,
-      "pairs_checked": 263,
+      "pairs_checked": 278,
       "first_blocked": null
     },
     "psm3": {
       "roll_rad": 0.0,
       "roll_change_deg": 0.0,
       "candidates_tried": 1,
-      "pairs_checked": 267,
+      "pairs_checked": 282,
       "first_blocked": null
     }
   },
@@ -415,12 +523,12 @@
     "open": []
   },
   "home_port_crossing_radius_m": {
-    "psm2_tool_main_respondable_visual": 0.007594026160871639,
-    "psm3_tool_main_respondable_visual": 0.009678156453700995,
-    "psm1_tool_main_respondable_visual": 0.011012749641900186,
-    "ecm_insertion_visual": 0.014888825085991004
+    "psm2_tool_main_respondable_visual": 0.03174393751994396,
+    "psm3_tool_main_respondable_visual": 0.026003682359975768,
+    "psm1_tool_main_respondable_visual": 0.026676308433908683,
+    "ecm_insertion_visual": 0.02715346628634908
   },
-  "collision_pairs": 2177,
+  "collision_pairs": 2403,
   "runtime_check": {
     "steps": 481,
     "time_step_s": 0.05,
