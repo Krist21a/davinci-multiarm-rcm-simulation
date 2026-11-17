@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="dvrk_instrument_wrist_yaw_0091" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find dvrk_model)/urdf/common.urdf.xacro"/>
+
+  <xacro:macro name="wrist_yaw_0091" params="prefix add_colors:=false">
+    <joint name="wrist_yaw" type="revolute">
+      <parent link="${prefix}wrist_pitch_link"/>
+      <child link="${prefix}wrist_yaw_link"/>
+      <axis xyz="0.0 0.0 1"/>
+      <origin rpy="-${PI_2} -${PI_2} 0.0" xyz="0.0091 0.0 0.0"/>
+      <limit lower="-1.39626" upper="1.39626" velocity=".4" effort="1000"/>
+    </joint>
+
+    <link name="${prefix}wrist_yaw_link">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.000236"/>
+        <geometry>
+          <mesh filename="package://dvrk_model/meshes/instruments/wrist_yaw/0091/wrist_yaw_0091.obj"/>
+        </geometry>
+      <xacro:instrument_link_color add_colors="${add_colors}" kind="yaw"/>
+      </visual>
+      <collision>
+        <!-- Mesh-aligned bounding box; refine against CAD later. -->
+        <origin rpy="0.0 0.0 0.0" xyz="0.0000005 0.0 -0.0001145"/>
+        <geometry><box size="0.001229 0.001230 0.005461"/></geometry>
+      </collision>
+
+    </link>
+  </xacro:macro>
+
+</robot>

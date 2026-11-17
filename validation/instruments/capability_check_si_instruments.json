@@ -1,0 +1,186 @@
+{
+  "scene": "scenes/davinci_si_instruments.ttt",
+  "roles": "config/instruments/roles.json",
+  "ok": true,
+  "tolerance_m": 0.0005,
+  "arms": {
+    "psm1": {
+      "role": "primary_retraction",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "identified": "420172",
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue",
+        "bipolar_energy",
+        "blunt_dissection"
+      ],
+      "identification": {
+        "model": "420172",
+        "closest": "420172",
+        "closest_worst_part_m": 1.1372166597440126e-10,
+        "margin_to_second_m": 0.0011095658645470753,
+        "scores_m": {
+          "420006": {
+            "wrist": 0.0008101101377256529,
+            "jaw_plus": 0.0020676790963075993,
+            "jaw_minus": 0.002173231525043319
+          },
+          "420179": {
+            "wrist": 0.0008101101377256529,
+            "jaw_plus": 0.0012213251326648673,
+            "jaw_minus": 0.0012972626320838015
+          },
+          "420172": {
+            "wrist": 8.618240152838806e-11,
+            "jaw_plus": 1.0892902804631405e-10,
+            "jaw_minus": 1.1372166597440126e-10
+          },
+          "420093": {
+            "wrist": 8.618240152838806e-11,
+            "jaw_plus": 0.001989389517168789,
+            "jaw_minus": 0.0022267612274588337
+          },
+          "legacy_lnd": {
+            "wrist": 0.0011533682971090855,
+            "jaw_plus": 0.0022105064762973714,
+            "jaw_minus": 0.0023135831493106694
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 7.563394355258879e-14,
+          "jaw_axis_error": 3.264680851887494e-07,
+          "jaw_axes_antiparallel_error": 8.02606239350653e-07,
+          "jaw_joint_offset_m": 0.010700000000000284,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "missing": [],
+      "ok": true
+    },
+    "psm2": {
+      "role": "cutting",
+      "requires": [
+        "cut"
+      ],
+      "identified": "420179",
+      "capabilities": [
+        "cut",
+        "monopolar_energy",
+        "blunt_dissection"
+      ],
+      "identification": {
+        "model": "420179",
+        "closest": "420179",
+        "closest_worst_part_m": 3.9806106001795e-09,
+        "margin_to_second_m": 0.0006786109531194484,
+        "scores_m": {
+          "420006": {
+            "wrist": 3.9806106001795e-09,
+            "jaw_plus": 0.0009523051036651033,
+            "jaw_minus": 0.0010835278932326757
+          },
+          "420179": {
+            "wrist": 3.9806106001795e-09,
+            "jaw_plus": 7.06747458271764e-11,
+            "jaw_minus": 6.686468759177611e-11
+          },
+          "420172": {
+            "wrist": 0.0008094952606401529,
+            "jaw_plus": 0.001221325138333069,
+            "jaw_minus": 0.0012970515149525689
+          },
+          "420093": {
+            "wrist": 0.0008094952606401529,
+            "jaw_plus": 0.004068167394874523,
+            "jaw_minus": 0.004664010003670663
+          },
+          "legacy_lnd": {
+            "wrist": 0.0006568154524103443,
+            "jaw_plus": 0.0010623179752595586,
+            "jaw_minus": 0.0013190952635970662
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 8.326672684688674e-16,
+          "jaw_axis_error": 3.264680846654559e-07,
+          "jaw_axes_antiparallel_error": 8.026062386104256e-07,
+          "jaw_joint_offset_m": 0.009099999999999933,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "missing": [],
+      "ok": true
+    },
+    "psm3": {
+      "role": "assist_retraction_handover",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "identified": "420093",
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "identification": {
+        "model": "420093",
+        "closest": "420093",
+        "closest_worst_part_m": 1.290508187953392e-10,
+        "margin_to_second_m": 0.0014044497915261297,
+        "scores_m": {
+          "420006": {
+            "wrist": 0.0008101101359535245,
+            "jaw_plus": 0.004087266651934136,
+            "jaw_minus": 0.0045975810201328605
+          },
+          "420179": {
+            "wrist": 0.0008101101359535245,
+            "jaw_plus": 0.004058610033585575,
+            "jaw_minus": 0.004662500825234605
+          },
+          "420172": {
+            "wrist": 8.371428334699959e-11,
+            "jaw_plus": 0.001986725985349452,
+            "jaw_minus": 0.002226623646303922
+          },
+          "420093": {
+            "wrist": 8.371428334699959e-11,
+            "jaw_plus": 1.290508187953392e-10,
+            "jaw_minus": 1.2802416635862023e-10
+          },
+          "legacy_lnd": {
+            "wrist": 0.0011533682966636148,
+            "jaw_plus": 0.004431993254079063,
+            "jaw_minus": 0.004882837679427744
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 1.489780521168882e-14,
+          "jaw_axis_error": 3.2646808371967796e-07,
+          "jaw_axes_antiparallel_error": 8.026062376329431e-07,
+          "jaw_joint_offset_m": 0.0184000000000001,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "missing": [],
+      "ok": true
+    },
+    "ecm": {
+      "role": "view_hold",
+      "requires": [
+        "view"
+      ],
+      "identified": "endoscope_camera",
+      "capabilities": [
+        "view"
+      ],
+      "missing": [],
+      "ok": true
+    }
+  }
+}

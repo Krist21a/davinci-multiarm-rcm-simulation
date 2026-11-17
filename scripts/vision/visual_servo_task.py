@@ -23,6 +23,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 import ecm_pairs  # noqa: E402
+import instrument_guard  # noqa: E402
 from simtools import (ENDO_CONFIG, ENDO_VALIDATION, ENDOSCOPE_SCENE, add_arguments, aliases, connect,  # noqa: E402
                       load_scene, matrix_to_np, read_json, relative, sha256, stop_simulation, write_json)
 
@@ -138,6 +139,8 @@ def main():
     p.add_argument('--max-iter', type=int, default=80, help='max servo cycles per phase')
     p.add_argument('--success-tol', type=float, default=0.002, help='final block-to-target ground-truth tolerance [m]')
     p.add_argument('--name', default='nominal', help='result name: validation/endoscope/visual_task_<name>.json')
+    p.add_argument('--scene', type=Path, default=ENDOSCOPE_SCENE,
+                   help='scene to run; the task arm must carry an instrument with the grasp capability')
     p.add_argument('--frames', action='store_true', help='save annotated key frames (PNG) and an MP4 if imageio-ffmpeg is installed')
     args = p.parse_args()
     rng = np.random.default_rng(args.seed)
@@ -153,9 +156,7 @@ def main():
     a0, tx, ty = (np.array(cfg[k]) for k in ('axis_home', 'transverse_x', 'transverse_y'))
     go, app = task['grasp_offset_m'], task['approach_offset_m']
     marker_to_grasp = task['tip_marker']['offset_from_tcp_m'] - go
-    # Axial distance from the RCM point to the grasp point at the home insertion.
-    tcp_len = 0.4498
-    base = tcp_len - go - cfg['rcm_distance_home']
+    base = None      # axial distance from the RCM point to the grasp point at the home insertion, set from the scene
 
     def command_for(Pw):
         d = unit(Pw - r_w)
@@ -169,9 +170,17 @@ def main():
         return r_w + d * (base + ins - cfg['insertion_home'])
 
     client, sim = connect(args)
-    load_scene(client, sim, args, ENDOSCOPE_SCENE, f'visual_task_{args.name}.ttt')
+    scene = args.scene.resolve()
+    load_scene(client, sim, args, scene, f'visual_task_{args.name}.ttt')
     by = aliases(sim)
     ctrl = by['RCMController']
+    # The task holds the bead with the jaws: the instrument identified from the scene geometry must be able to grasp.
+    ident = instrument_guard.require(sim, by, rcm, arm, ['grasp'])
+    print(arm, 'instrument', ident['model'], flush=True)
+    # Instrument length from the scene (roll frame joint8 -> tool tip), not a constant: it depends on the tip.
+    j8 = matrix_to_np(sim.getObjectMatrix(by[arm + '_joint8'], -1))
+    tcp_len = float(np.dot(np.array(sim.getObjectPosition(by[arm + '_tcp'], -1)) - j8[:, 3], j8[:, 2]))
+    base = tcp_len - go - cfg['rcm_distance_home']
     cam = Endoscope(sim, by[endo['camera']['alias']], endo['camera'], rng, args.depth_noise_m)
     block_h = by[task['block']['alias']]
     target_true = np.array(task['target']['center_world'])
@@ -375,7 +384,8 @@ def main():
     tgt = [e['target_estimation_error_m'] for e in log if 'target_estimation_error_m' in e]
     success = bool(ok and released and final_error <= args.success_tol and not state['contacts'])
     result = {
-        'scene': relative(ENDOSCOPE_SCENE), 'scene_sha256': sha256(ENDOSCOPE_SCENE),
+        'scene': relative(scene), 'scene_sha256': sha256(scene),
+        'instrument': dict(arm=arm, model=ident['model'], tcp_length_m=tcp_len),
         'settings': {k: getattr(args, k) for k in ['depth_noise_m', 'calib_rot_deg', 'calib_trans_m', 'seed', 'gain',
                                                     'max_step', 'tol', 'max_iter', 'success_tol']},
         'success': success,

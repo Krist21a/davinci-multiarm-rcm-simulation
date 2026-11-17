@@ -112,6 +112,55 @@ python verify_rcm.py --port 23170 --start --config ../config/endoscope/rcm_confi
 
 基础场景中发现的问题：PSM2 的 mount/shoulder 在 ECM 停放位已与 ECM 网格相交，原碰撞对没有覆盖这类组合；`config/collision_pairs.json` 中有 280 对重复。新场景的碰撞对已去重，并补齐了全部 ECM 与任务物体相关组合。
 
+## da Vinci Si 器械场景（开发中）
+
+[scenes/davinci_si_instruments.ttt](scenes/davinci_si_instruments.ttt) 在内窥镜场景上按 `config/instruments/roles.json` 换装 Si 器械。内窥镜场景文件未被修改。
+
+![器械尖端](docs/si_instrument_tips.png)
+
+| 臂 | 角色 | 器械 | 能力 |
+|---|---|---|---|
+| PSM1 | 主牵拉 | 420172 Maryland Bipolar Forceps | grasp, grasp_tissue, retract_tissue, bipolar_energy, blunt_dissection |
+| PSM2 | 切割 | 420179 Monopolar Curved Scissors | cut, monopolar_energy, blunt_dissection |
+| PSM3 | 辅助牵拉、交接 | 420093 ProGrasp Forceps | grasp, grasp_tissue, retract_tissue |
+| ECM | 视野保持 | 30° 内窥镜相机 | view |
+
+- **来源**：网格和腕部/钳口几何来自 [jhu-dvrk/dvrk_model](https://github.com/jhu-dvrk/dvrk_model)（MIT，固定提交，副本与 `SOURCE.json` 在 `models/meshes/instrument/dvrk/`）。限位数值来自 [sawIntuitiveResearchKit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit) 的器械文件（cisst 许可，只引用数值，未复制文件）。描述文件在 `config/instruments/<型号>.json`。
+- **能力不靠标签**：`scripts/build/instrument_guard.py` 从场景的关节轴和钳口、腕部网格识别每条臂上的器械（与各候选器械的表面平均距离，阈值 0.5 mm），再查该器械的能力。角色只“要求”能力。`roles.json` 里写的型号与几何不符时，这条臂被拒绝。场景控制器追加 `src/instruments/capability_guard.lua`：没有 `grasp` 能力的器械调用 `grasp` 会被拒绝。
+- **器械长度**：原脚本写死的 `tcp_len = 0.4498` 改为从场景读取（joint8 到 tcp 的轴向距离）。换装后为 PSM1 0.4618、PSM2 0.4547、PSM3 0.4694 m。dVRK 的 `D = 0.4670` 是从 dVRK 自己的滚转坐标原点量起，与本场景的 joint8 原点不是同一个参考点，所以不能直接替换。杆长保持原 CAD 值。
+
+验证（`validation/instruments/`）：
+
+| 项目 | 结果 |
+|---|---|
+| 坐标对齐（dVRK 腕部系与场景关节轴） | 轴向误差 3e-7 |
+| 原持针钳与 dVRK Si 420006 的表面距离 | 钳口约 0.44–0.50 mm，腕部 0.66 mm（原网格是 Classic 风格，另存为 `legacy_lnd` 参考） |
+| 换装后识别 | 三臂全部正确，与第二候选相差 0.68–1.40 mm |
+| 回家位碰撞（钳口闭合） | 0 |
+| 回家位张开 0.5 rad | PSM1 钳口碰左髋骨；运行时 setGrip 会拒绝并回退 |
+| 24 秒演示周期 | 求解失败 0，碰撞回退 0，RCM 漂移 < 2e-9 m |
+| 运行时抓取 | PSM1、PSM3 接受；PSM2 剪刀拒绝 |
+| 角色检查 | 新场景通过；内窥镜场景三条 PSM 全部拒绝（原持针钳没有 cut / retract_tissue，且与声明型号不符） |
+| 视觉拾取放置回归（内窥镜场景） | 结果不变，0.378 mm；在新场景上 PSM2 因没有 grasp 能力被拒绝运行 |
+
+重建：
+
+```powershell
+cd scripts/build
+python fetch_dvrk_instruments.py                     # 下载固定提交的 dVRK 网格（已提交，可跳过）
+python install_instruments.py --port 23170           # 生成 scenes/davinci_si_instruments.ttt 与 install_manifest.json
+python instrument_guard.py --port 23170 --scene ../../scenes/davinci_si_instruments.ttt --out ../../validation/instruments/capability_check_si_instruments.json
+python render_instrument_tips.py --port 23170        # docs/si_instrument_tips.png
+```
+
+已知限制：
+
+- 钳口只有两个关节（joint10/11），腕部偏航不单独驱动。0107 腕部的偏航夹头固定在腕部上。
+- ProGrasp 的钳口铰点固定在偏航轴前 7.7 mm；真实器械张开到 60° 时移到 5.5 mm。
+- dVRK 给剪刀的 tool tip 在刀片网格尖端前约 2.4 mm，此处照用 dVRK 的值。
+- 剪刀能剪的只是能力声明，组织切割还没有建模。能量器械不仿真。
+- 不可见的碰撞外壳改为新网格的凸包；碰撞检查仍用可见网格。
+
 ## 数据来源与署名
 
 BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.

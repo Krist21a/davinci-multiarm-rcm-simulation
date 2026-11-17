@@ -1,0 +1,359 @@
+{
+  "built_at_unix": 1794884987,
+  "coppeliasim_version": 4100000,
+  "inputs": {
+    "scenes/davinci_endoscope_task.ttt": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
+    "config/endoscope/rcm_config.json": "de80d3909440db70407e080552d5a1950de300f7ceca0f9edbd32bce1242a71f",
+    "config/endoscope/collision_pairs.json": "215e8745b0a99641b3b501c42bd8d15552e902a54a844704b4e7babfc9ef31be",
+    "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
+    "src/endoscope/rcm_controller.lua": "72e5e26177fea3bbe772b108ed7dbe55e7d1c2f5e2a97c35b26ef52885376bb6",
+    "src/instruments/capability_guard.lua": "0d9f1ff4f3b16d2ec8ff72f4a0692a51d3f7fb6c81976728280307e6fb997d12",
+    "models/meshes/instrument/dvrk/SOURCE.json": "3fcde00ff530227ae7d68e2c1de22903814676d54d0d6c171ac90277a2972546",
+    "config/instruments/420006.json": "c99ad48df6248bb12cfbe2043cd9b25343c0ca1246545737cc4aed3de0db89c3",
+    "config/instruments/420179.json": "c68ddb08bbcb954764b6c9890ebf1406251cf84171a344d241f14621615334f0",
+    "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
+    "config/instruments/420093.json": "10017a4413ebc2b32a84862f775ed682b0f78f9f1314cb0c5e59b98909196658",
+    "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38"
+  },
+  "outputs": {
+    "scenes/davinci_si_instruments.ttt": "7f30b7dc414d657b2480f60904effcbf605ea5d29c5e3c02637962abe3ac1661",
+    "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47"
+  },
+  "registration_before_install": {
+    "psm1": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913459,
+          "jaw_plus": 0.0004362790777441114,
+          "jaw_minus": 0.0004955389976615738
+        },
+        "420179": {
+          "wrist": 0.0006571086096913459,
+          "jaw_plus": 0.0010623179768493138,
+          "jaw_minus": 0.0013190952623015454
+        },
+        "420172": {
+          "wrist": 0.001152944997126244,
+          "jaw_plus": 0.0022105064751639742,
+          "jaw_minus": 0.0023133801347473837
+        },
+        "420093": {
+          "wrist": 0.001152944997126244,
+          "jaw_plus": 0.0044437317499184765,
+          "jaw_minus": 0.004884665047837873
+        },
+        "legacy_lnd": {
+          "wrist": 5.783843259099024e-16,
+          "jaw_plus": 1.0703520357770794e-15,
+          "jaw_minus": 5.030647871467068e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 7.310818617156656e-14,
+        "jaw_axis_error": 3.264680849900769e-07,
+        "jaw_axes_antiparallel_error": 8.026062388087905e-07,
+        "jaw_joint_offset_m": 0.009099999999999723,
+        "jaw_joints_coincident_m": 0.0
+      }
+    },
+    "psm2": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913449,
+          "jaw_plus": 0.0004362790777440265,
+          "jaw_minus": 0.0004955389976615767
+        },
+        "420179": {
+          "wrist": 0.0006571086096913449,
+          "jaw_plus": 0.001062317976849492,
+          "jaw_minus": 0.001319095262301241
+        },
+        "420172": {
+          "wrist": 0.0011529449971262435,
+          "jaw_plus": 0.0022105064751640193,
+          "jaw_minus": 0.002313380134747172
+        },
+        "420093": {
+          "wrist": 0.0011529449971262435,
+          "jaw_plus": 0.004443731749918177,
+          "jaw_minus": 0.004884665047837852
+        },
+        "legacy_lnd": {
+          "wrist": 1.1085667005747675e-16,
+          "jaw_plus": 1.1085635609639482e-16,
+          "jaw_minus": 1.0736345135237363e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 1.8762769116165146e-14,
+        "jaw_axis_error": 3.264680847638504e-07,
+        "jaw_axes_antiparallel_error": 8.026062385264036e-07,
+        "jaw_joint_offset_m": 0.009099999999999898,
+        "jaw_joints_coincident_m": 0.0
+      }
+    },
+    "psm3": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913488,
+          "jaw_plus": 0.0004362790777440727,
+          "jaw_minus": 0.0004955389976615912
+        },
+        "420179": {
+          "wrist": 0.0006571086096913488,
+          "jaw_plus": 0.0010623179768496404,
+          "jaw_minus": 0.0013190952623013332
+        },
+        "420172": {
+          "wrist": 0.0011529449971262372,
+          "jaw_plus": 0.0022105064751641755,
+          "jaw_minus": 0.0023133801347472722
+        },
+        "420093": {
+          "wrist": 0.0011529449971262372,
+          "jaw_plus": 0.004443731749918289,
+          "jaw_minus": 0.004884665047837994
+        },
+        "legacy_lnd": {
+          "wrist": 6.2122653809206355e-16,
+          "jaw_plus": 7.815077186553492e-16,
+          "jaw_minus": 3.2578849038443927e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 7.376044219853384e-15,
+        "jaw_axis_error": 3.264680839941169e-07,
+        "jaw_axes_antiparallel_error": 8.026062380630703e-07,
+        "jaw_joint_offset_m": 0.009099999999999784,
+        "jaw_joints_coincident_m": 0.0
+      }
+    }
+  },
+  "installed": {
+    "psm1": {
+      "model": "420172",
+      "yaw_axis_world": [
+        -0.10331685330082649,
+        -1.0124722523749894,
+        0.6864950600885932
+      ],
+      "hinge_world": [
+        -0.10331685330082649,
+        -1.0124722523749894,
+        0.6864950600885932
+      ],
+      "tool_tip_world": [
+        -0.08903291400123776,
+        -0.9981397421268996,
+        0.6808782791533897
+      ],
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ]
+    },
+    "psm2": {
+      "model": "420179",
+      "yaw_axis_world": [
+        -0.07405302531222137,
+        -0.9938186135525641,
+        0.6891942489064018
+      ],
+      "hinge_world": [
+        -0.07405302531222137,
+        -0.9938186135525641,
+        0.6891942489064018
+      ],
+      "tool_tip_world": [
+        -0.0793641145790534,
+        -0.9803388646820842,
+        0.6834585099663403
+      ],
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ]
+    },
+    "psm3": {
+      "model": "420093",
+      "yaw_axis_world": [
+        -0.04801033739976572,
+        -0.9943295144456051,
+        0.6812390670832629
+      ],
+      "hinge_world": [
+        -0.0521859859002633,
+        -0.9880220019036219,
+        0.6798005799846012
+      ],
+      "tool_tip_world": [
+        -0.06351988897304243,
+        -0.9709016107182387,
+        0.6758961150025196
+      ],
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ]
+    }
+  },
+  "identification_after_install": {
+    "psm1": {
+      "identified": "420172",
+      "closest_worst_part_m": 2.4486956148221413e-16,
+      "margin_to_second_m": 0.0011095659662619098
+    },
+    "psm2": {
+      "identified": "420179",
+      "closest_worst_part_m": 3.920811384805412e-09,
+      "margin_to_second_m": 0.0006786109987657595
+    },
+    "psm3": {
+      "identified": "420093",
+      "closest_worst_part_m": 6.6964206435091755e-16,
+      "margin_to_second_m": 0.0014044498713254698
+    }
+  },
+  "roles": {
+    "psm1": {
+      "role": "primary_retraction",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue",
+        "bipolar_energy",
+        "blunt_dissection"
+      ],
+      "ok": true
+    },
+    "psm2": {
+      "role": "cutting",
+      "requires": [
+        "cut"
+      ],
+      "capabilities": [
+        "cut",
+        "monopolar_energy",
+        "blunt_dissection"
+      ],
+      "ok": true
+    },
+    "psm3": {
+      "role": "assist_retraction_handover",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "ok": true
+    },
+    "ecm": {
+      "role": "view_hold",
+      "requires": [
+        "view"
+      ],
+      "capabilities": [
+        "view"
+      ],
+      "ok": true
+    }
+  },
+  "tcp_length_m": {
+    "before": {
+      "psm1": 0.4497999999998663,
+      "psm2": 0.4497999999998659,
+      "psm3": 0.4497999999998658
+    },
+    "after": {
+      "psm1": 0.46179999999978494,
+      "psm2": 0.45470000055408955,
+      "psm3": 0.4693999999997333
+    }
+  },
+  "jaw_opening": {
+    "psm1": {
+      "closed_tip_gap_m": 0.00039940957365960645,
+      "open_tip_gap_m": 0.010703479252503246
+    },
+    "psm2": {
+      "closed_tip_gap_m": 0.0004336523553815497,
+      "open_tip_gap_m": 0.006124412527860603
+    },
+    "psm3": {
+      "closed_tip_gap_m": 0.0009373422468304202,
+      "open_tip_gap_m": 0.010566593451502234
+    }
+  },
+  "jaw_open_per_joint_rad": 0.25,
+  "home_unexpected_contacts": {
+    "closed": [],
+    "open": [
+      [
+        "psm1_yaw_ref2_respondable_visual",
+        "Patient_LeftHipBone"
+      ]
+    ]
+  },
+  "home_port_crossing_radius_m": {
+    "psm2_tool_main_respondable_visual": 0.007594026160871639,
+    "psm3_tool_main_respondable_visual": 0.010027107857466983,
+    "psm1_tool_main_respondable_visual": 0.0075229077986558816,
+    "ecm_insertion_visual": 0.014888825085991004
+  },
+  "collision_pairs": 2177,
+  "runtime_check": {
+    "steps": 481,
+    "time_step_s": 0.05,
+    "arms": {
+      "psm1": {
+        "max_drift_m": 1.8418523544024148e-09,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "psm2": {
+        "max_drift_m": 5.445429274559834e-11,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "psm3": {
+        "max_drift_m": 1.528103361285864e-10,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "ecm": {
+        "max_drift_m": 4.1910000110727263e-16,
+        "failures": 0,
+        "collision_blocks": 0
+      }
+    },
+    "grasp": {
+      "psm1": {
+        "model": "420172",
+        "grasp_accepted": true,
+        "capability_refusals": 0
+      },
+      "psm2": {
+        "model": "420179",
+        "grasp_accepted": false,
+        "capability_refusals": 1
+      },
+      "psm3": {
+        "model": "420093",
+        "grasp_accepted": true,
+        "capability_refusals": 0
+      }
+    }
+  },
+  "runtime_ok": true
+}

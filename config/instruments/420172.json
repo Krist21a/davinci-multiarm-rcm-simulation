@@ -1,0 +1,22 @@
+{
+  "model": "420172",
+  "name": "Maryland Bipolar Forceps",
+  "system": "da Vinci S/Si, 8 mm EndoWrist",
+  "family": "grasper",
+  "capabilities": ["grasp", "grasp_tissue", "retract_tissue", "bipolar_energy", "blunt_dissection"],
+  "capabilities_basis": "Curved, tapered fenestrated jaws used for grasping, retraction and blunt dissection. Bipolar energy is not simulated.",
+  "stages": {"wrist_pitch": "0107", "wrist_yaw": "0107", "tip": "172"},
+  "kinematics": {
+    "roll_D_m": 0.4670,
+    "roll_limits_rad": [-4.4506, 4.4506],
+    "wrist_pitch_limits_rad": [-1.2217, 1.2217],
+    "wrist_yaw_limits_rad": [-1.5708, 1.5708],
+    "pitch_to_yaw_m": 0.0107,
+    "jaw_limits_rad": [-0.349066, 1.39626],
+    "jaw_hinge_offset_m": 0.0
+  },
+  "sources": {
+    "kinematics": "jhu-dvrk/sawIntuitiveResearchKit@7435458dc847b95b9ff77723b33e4a177cfa4f43 share/tool/MARYLAND_BIPOLAR_FORCEPS_420172.json (cisst licence; numbers only, file not copied)",
+    "geometry": "jhu-dvrk/dvrk_model@90472a933995acaa88d84eb5c58aeee4cd17e9f3 urdf/common/instruments (MIT), copied to models/meshes/instrument/dvrk/"
+  }
+}
