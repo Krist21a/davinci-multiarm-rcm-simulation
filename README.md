@@ -125,6 +125,31 @@ stateDiagram-v2
 
 ---
 
+## 套管与气腹
+
+![四个套管（trocar），腹壁已抬高](docs/ports_si_instruments.png)
+
+`scripts/build/access.py` 在建场景时做两件事，参数在 `config/instruments/access.json`。
+
+**套管**：PSM 用 [jhu-dvrk/dvrk-cannulas](https://github.com/jhu-dvrk/dvrk-cannulas) 的 Si 8 mm 套管（MIT）。它的内径 8.7 mm，外径 12.7 mm，管长 125 mm，RCM 标记在管顶下 95 mm。ECM 用同一 OpenSCAD 轮廓旋转生成，内径按场景里的镜子来定。套管装在带插入关节的那一节手臂上。软件 RCM 下，RCM 点在这一节的坐标系里不动，所以套管上的 RCM 标记带始终落在 RCM 点上。套管参与碰撞检查，对象是器官、骨头、手术台、别的臂和别的套管，共 226 对。它穿过的腹壁不算碰撞。
+
+**气腹**：穿刺点上方的腹部皮肤抬成一个穹顶，最高抬 22.5 mm。抬升量用径向基函数解出，保证每个 RCM 点都在新皮肤下 15 mm（13.5–15 mm）。手臂和 RCM 点都不动。皮肤下面加了一层腹壁内表面（腹膜）。它和皮肤合成一个形状 `Patient_Skin`，所以原有的碰撞检查和穿刺点豁免对两层都有效。
+
+| 检查 | 结果 |
+|---|---|
+| 腹膜与器官、骨头相交 | 0 |
+| 家位碰撞（钳口闭合 / 张开） | 0 / 0 |
+| 器械杆与腹壁接触区离 RCM 点 | 26–32 mm（豁免半径 45 mm） |
+| 24 秒演示 | 求解失败 0，碰撞回退 0 |
+| 三臂切割（正常、短暂遮挡、持续遮挡） | 都完成，切口 10 mm |
+
+试验中调整过两处：
+
+1. 第一次把腹壁做成满 30 mm 厚。内表面伸到 RCM 下 15 mm，PSM3 钳口去抓的时候碰到了它。这个模型的工作空间就在原皮肤下面不远，所以腹膜改为不低于原皮肤。现在穿刺点上方的腹壁约 15 mm 厚，RCM 在腹壁内侧。
+2. 器械杆是斜着穿过腹壁的，接触区比杆粗得多。原来 16 mm 的穿刺点豁免半径不够，改为 45 mm。
+
+---
+
 ## 更早的阶段
 
 | 场景 | 内容 |
@@ -167,6 +192,7 @@ CoppeliaSim 4.10 的 Remote API 处理不了中文路径。场景文件会先复
 ```powershell
 cd scripts/build
 python fetch_dvrk_instruments.py               # dVRK 器械网格（已提交，可跳过）
+python fetch_dvrk_cannulas.py                  # dVRK Si 套管（已提交，可跳过）
 python install_instruments.py --port 23170     # 内窥镜场景 → Si 器械场景；应用 config/instruments/port_plan.json
 python plan_psm_ports.py --port 23170          # 重新规划 PSM1/PSM3 穿刺点（读取当前器械场景）
 python install_instruments.py --port 23170     # 应用新计划后再装一次
@@ -196,7 +222,8 @@ python install_instruments.py --port 23170     # 应用新计划后再装一次
 
 - 关节限位、穿刺点规则和任务阈值都是仿真设定，没有和真机标定过。软件 RCM 用的是 CAD 等效的串联链，不是真实的闭链机构。
 - 组织是运动学片：没有质量、重力、接触力、出血。器械不和组织碰撞。组织片是放在剪刀前面的测试片，不是解剖结构。
-- 解剖模型是静态的：没有气腹、器官形变和呼吸。
+- 解剖模型是静态的：没有器官形变和呼吸。气腹只是把腹壁的形状抬起来，没有压力，也没有让器官下沉，腹腔内部空间没有变大。
+- ECM 镜子的 CAD 是 14–20 mm 粗的圆柱，所以 ECM 套管内径 20.8 mm，比真实的 Si 12 mm 镜子粗。
 - 切割长度来自组织约束，不是视觉测量。能量器械（单极、双极）不仿真。
 - 穿刺点只按一个工作区规划，不是整个前列腺周围的工作空间。
 
@@ -206,5 +233,6 @@ python install_instruments.py --port 23170     # 应用新计划后再装一次
 
 - 解剖模型：BodyParts3D, © The Database Center for Life Science, licensed under CC Attribution 4.0 International（[许可](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html) · [下载](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html)）。使用了官方 `isa_BP3D_4.0_obj_99.zip` 中选出的模型，做了单位换算、体位调整、体表筛选和分腿姿态处理。
 - 器械网格：[jhu-dvrk/dvrk_model](https://github.com/jhu-dvrk/dvrk_model)，MIT，许可副本在 `models/meshes/instrument/dvrk/LICENSE`。
+- 套管：[jhu-dvrk/dvrk-cannulas](https://github.com/jhu-dvrk/dvrk-cannulas)，MIT，许可副本在 `models/meshes/cannula/dvrk/LICENSE`。
 - 器械限位数值：[jhu-dvrk/sawIntuitiveResearchKit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit)，cisst 许可。只引用了数值，未复制文件。
 - 机器人 CAD 和原持针钳：用户提供的项目资产，许可与上面几项分开处理。

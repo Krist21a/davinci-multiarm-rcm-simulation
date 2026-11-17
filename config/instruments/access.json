@@ -1,0 +1,41 @@
+{
+  "_note": "Trocars (cannulas) and pneumoperitoneum for scenes/davinci_si_instruments.ttt, applied by scripts/build/install_instruments.py through scripts/build/access.py. Exploratory simulation values, not clinical measurements.",
+  "cannula": {
+    "psm_mesh": "models/meshes/cannula/dvrk/Si/Si-cannula-8mm.stl",
+    "psm_mesh_basis": "jhu-dvrk/dvrk-cannulas Si-cannula.scad defaults: 8.7 mm bore, 12.7 mm tube, 125 mm tube below the 29 mm mount; the RCM is the cross hole 95 mm below the tube top.",
+    "rcm_below_tube_top_m": 0.095,
+    "ecm_from_scad": {
+      "bore_clearance_m": 0.0004,
+      "wall_m": 0.002,
+      "tube_length_m": 0.125,
+      "mount_d_m": 0.029,
+      "mount_h_m": 0.025,
+      "top_d_m": 0.023,
+      "top_h_m": 0.018
+    },
+    "ecm_basis": "No Si endoscope cannula file in that repository has a tube below the RCM (the 12 mm STL ends at the RCM hole), so the ECM cannula is revolved from the same OpenSCAD profile with the bore sized to the scene's scope.",
+    "faces": 4000,
+    "rcm_band": {
+      "width_m": 0.004,
+      "basis": "dark band at the RCM, like the thick black remote-centre mark on the real cannula"
+    }
+  },
+  "pneumoperitoneum": {
+    "wall_thickness_m": 0.03,
+    "rcm_depth_below_skin_m": 0.015,
+    "rcm_depth_basis": "The RCM (remote centre) sits 15 mm under the lifted skin, at the inner side of the wall.",
+    "dome_height_m": 0.035,
+    "peritoneum_floor_below_original_skin_m": 0.0,
+    "peritoneum_floor_basis": "With the full 30 mm wall the inner surface reached 15 mm below the RCM and the PSM3 jaws touched it at the grasp point: the working cavity of this model lies just under the original skin. A 3 mm floor still let the PSM3 jaws touch it on the way to the grasp point. The inner surface is therefore kept no lower than the original skin, which every arm already clears: over the ports the wall is the 15 mm lift, the RCM lies 0-1.5 mm above the peritoneum, and the wall reaches 30 mm only where the dome lifts it further.",
+    "region_margin_m": 0.07,
+    "region_flat_fraction": 0.55,
+    "rbf_sigma_m": 0.05,
+    "port_radius_m": 0.045,
+    "port_radius_basis": "The shafts cross the lifted skin obliquely (about 55-60 deg off its normal for the PSMs). With the wall over the ports at 13.5-15 mm, the contact patch of each shaft with the skin compound reaches 26-32 mm from its RCM at home; 45 mm leaves room for the motion range and still flags contact with the body wall farther away. (A first trial with a full 30 mm wall needed 65 mm and blocked the retraction.)",
+    "inner_wall_rgb": [
+      0.8,
+      0.45,
+      0.42
+    ]
+  }
+}
