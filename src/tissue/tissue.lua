@@ -188,11 +188,17 @@ end
 
 function tissueStats()
     if not T then return {exists=false} end
-    local alive,grasped=0,{}
-    for _,s in ipairs(T.springs) do if s.alive then alive=alive+1 end end
+    local alive,grasped,strains=0,{},{}
+    for _,s in ipairs(T.springs) do
+        if s.alive then alive=alive+1;strains[#strains+1]=vlen(vsub(T.x[s.b],T.x[s.a]))/s.rest-1 end
+    end
+    table.sort(strains)
+    -- Tension of the sheet = median constraint strain; the maximum sits at corners and cut ends.
+    local median=#strains>0 and strains[math.floor((#strains+1)/2)] or 0
+    local p90=#strains>0 and strains[math.max(1,math.floor(0.9*#strains))] or 0
     for _,p in pairs(T.pinned) do if p.arm then local a=arms[p.arm].arm;grasped[a]=(grasped[a] or 0)+1 end end
     return {exists=true,nodes=#T.x,constraints=#T.springs,alive=alive,cut=T.cut,torn=T.torn,
-            max_strain=T.maxStrain,grasped=grasped,cut_events=T.cutLog,torn_events=T.tornLog}
+            max_strain=T.maxStrain,median_strain=median,p90_strain=p90,grasped=grasped,cut_events=T.cutLog,torn_events=T.tornLog}
 end
 
 function tissueNodes()

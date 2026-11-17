@@ -1,0 +1,705 @@
+{
+  "states": {
+    "INIT": "初始化",
+    "LOCALIZE": "视觉定位",
+    "GRASP": "建立抓持",
+    "EXPOSE": "组织暴露",
+    "ALIGN": "切割对准",
+    "CUT": "切割执行",
+    "OCCLUDED": "遮挡暂停",
+    "RETRACT_ADJUST": "牵拉调整",
+    "CAMERA_ADJUST": "相机调整",
+    "RELOCALIZE": "重新定位",
+    "RESUME": "恢复执行",
+    "DONE": "完成",
+    "FAILED": "失败停止"
+  },
+  "states_reached": [
+    "ALIGN",
+    "CAMERA_ADJUST",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE",
+    "OCCLUDED",
+    "RELOCALIZE",
+    "RESUME",
+    "RETRACT_ADJUST"
+  ],
+  "states_missing": [],
+  "transitions": [
+    "ALIGN->CUT",
+    "CAMERA_ADJUST->FAILED",
+    "CAMERA_ADJUST->RESUME",
+    "CUT->CAMERA_ADJUST",
+    "CUT->DONE",
+    "CUT->FAILED",
+    "CUT->OCCLUDED",
+    "CUT->RELOCALIZE",
+    "CUT->RETRACT_ADJUST",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "GRASP->FAILED",
+    "INIT->FAILED",
+    "INIT->LOCALIZE",
+    "LOCALIZE->EXPOSE",
+    "LOCALIZE->GRASP",
+    "OCCLUDED->CAMERA_ADJUST",
+    "OCCLUDED->RESUME",
+    "RELOCALIZE->RESUME",
+    "RESUME->ALIGN",
+    "RESUME->EXPOSE",
+    "RETRACT_ADJUST->FAILED",
+    "RETRACT_ADJUST->RESUME"
+  ],
+  "scenarios": {
+    "assist_unreachable": {
+      "events": {
+        "unreachable": [
+          "psm3"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 11,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "camera_useless": {
+      "events": {
+        "occlude_until_camera": 12,
+        "camera_useless": true
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "camera adjustment exhausted",
+      "ticks": 20,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->FAILED",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CAMERA_ADJUST"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CAMERA_ADJUST",
+        "FAILED"
+      ]
+    },
+    "collision_fault": {
+      "events": {
+        "fault": 10
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "fault: psm2 shaft / Patient_HipBone",
+      "ticks": 9,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->FAILED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "FAILED"
+      ]
+    },
+    "cut_only": {
+      "events": {},
+      "cut_only": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 8,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "INIT->LOCALIZE",
+        "LOCALIZE->EXPOSE"
+      ],
+      "retractors": [],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "cut_only_relax": {
+      "events": {
+        "relax": 8
+      },
+      "cut_only": true,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "strain 0.010 outside band and no retraction arm",
+      "ticks": 8,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "INIT",
+        "LOCALIZE",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "INIT->LOCALIZE",
+        "LOCALIZE->EXPOSE",
+        "RETRACT_ADJUST->FAILED"
+      ],
+      "retractors": [],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "FAILED"
+      ]
+    },
+    "nominal": {
+      "events": {},
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 11,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "persistent_occlusion": {
+      "events": {
+        "occlude_until_camera": 12
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 22,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->RESUME",
+        "CUT->DONE",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CAMERA_ADJUST",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CAMERA_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "primary_unreachable": {
+      "events": {
+        "unreachable": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 cannot grasp: out of reach",
+      "ticks": 3,
+      "visited": [
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "GRASP->FAILED",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "FAILED"
+      ]
+    },
+    "role_mismatch": {
+      "events": {
+        "roles_ok": false
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "role check: psm2: identified 420006 lacks [cut]",
+      "ticks": 1,
+      "visited": [
+        "FAILED",
+        "INIT"
+      ],
+      "transitions": [
+        "INIT->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "FAILED"
+      ]
+    },
+    "slip_handover": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 16,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "point": "left flap",
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "slip_regrasp": {
+      "events": {
+        "slip": {
+          "psm1": 12
+        }
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 16,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "tear": {
+      "events": {
+        "tear": 13
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "tissue torn (1 constraints)",
+      "ticks": 11,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->FAILED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "FAILED"
+      ]
+    },
+    "tension_drop": {
+      "events": {
+        "relax": 12
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 18,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "transient_occlusion": {
+      "events": {
+        "occlude": [
+          12,
+          14
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->RESUME",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "view_drift": {
+      "events": {
+        "drift": 11
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached",
+      "ticks": 16,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->RESUME",
+        "CUT->CAMERA_ADJUST",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CAMERA_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    }
+  }
+}

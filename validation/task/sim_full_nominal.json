@@ -1,0 +1,150 @@
+{
+  "scene": "scenes/davinci_si_instruments.ttt",
+  "scene_sha256": "243a208de9af0af192a63793bab3b2e7e9c3254c9b69be05549159f8a684c247",
+  "mode": "full",
+  "scenario": "nominal",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "cut": {
+      "length_m": 0.009,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0005
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 20,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "total_ticks": 400
+    }
+  },
+  "roles": {
+    "psm1": {
+      "identified": "420172",
+      "ok": true
+    },
+    "psm2": {
+      "identified": "420179",
+      "ok": true
+    },
+    "psm3": {
+      "identified": "420093",
+      "ok": true
+    },
+    "ecm": {
+      "identified": "endoscope_camera",
+      "ok": true
+    }
+  },
+  "final_state": "FAILED",
+  "final_label": "失败停止",
+  "reason": "psm1 cannot grasp: needs yaw 7.3 deg, pitch -6.2 deg, insertion 41.8 mm; limits +-1.0 / +-0.75 deg, 38-42 mm",
+  "ticks": 3,
+  "visited": [
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE"
+  ],
+  "transitions": [
+    "GRASP->FAILED",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP"
+  ],
+  "retractors": [
+    "psm1"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "建立抓持",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.24759384961911396,
+        "grasped": {},
+        "tension": 0.0003,
+        "max_strain": 0.1086,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "GRASP",
+      "to": "FAILED",
+      "label": "失败停止",
+      "reason": "psm1 cannot grasp: needs yaw 7.3 deg, pitch -6.2 deg, insertion 41.8 mm; limits +-1.0 / +-0.75 deg, 38-42 mm",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.24759384961911396,
+        "grasped": {},
+        "tension": 0.0003,
+        "max_strain": 0.1086,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    }
+  ],
+  "final_observation": {
+    "cut_length_m": 0.0,
+    "tension": 0.0003374524898940301,
+    "max_strain": 0.1085888263813819,
+    "torn": 0
+  },
+  "tissue": {
+    "cut": 0,
+    "torn": 0,
+    "cut_events": {}
+  },
+  "camera_moves": 0,
+  "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer."
+}
