@@ -9,6 +9,26 @@ local function hasCapability(arm,capability)
     for _,c in ipairs(entry.capabilities) do if c==capability then return true end end
     return false
 end
+-- Jaw kinematics with a moving hinge (ProGrasp): the hinge slide follows the jaw opening (both jaw joints =
+-- angle, jaw = 2*angle) with the dvrk_model law, clamped to the range in which that law was measured.
+local baseSetGrip=setGrip
+function setGrip(index,angle)
+    local arm=arms[index]
+    local entry=arm and INSTRUMENTS and INSTRUMENTS[arm.arm]
+    if not entry or not entry.hinge_slide then return baseSetGrip(index,angle) end
+    if not entry.slideHandle then
+        for _,h in ipairs(sim.getObjectsInTree(sim.handle_scene,sim.handle_all,0)) do
+            if sim.getObjectAlias(h)==entry.hinge_slide then entry.slideHandle=h end
+        end
+    end
+    local slide=entry.slideHandle
+    local old=sim.getJointPosition(slide)
+    local jaw=math.min(math.max(2*angle,entry.hinge_jaw_range_rad[1]),entry.hinge_jaw_range_rad[2])
+    sim.setJointPosition(slide,entry.hinge_slope_m_per_rad*jaw)
+    local ok=baseSetGrip(index,angle)
+    if not ok then sim.setJointPosition(slide,old) end
+    return ok
+end
 local baseGrasp=grasp
 function grasp(index,alias)
     local arm=arms[index]

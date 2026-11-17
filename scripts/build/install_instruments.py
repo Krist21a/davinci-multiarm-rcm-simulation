@@ -22,12 +22,15 @@ import build_endoscope_scene as bes
 import ecm_pairs
 import instrument_guard as guard
 import instruments as inst
-from simtools import (ENDO_CONFIG, ENDO_SRC, ENDOSCOPE_SCENE, INSTRUMENT_SCENE, INSTRUMENT_SRC, INSTRUMENT_VALIDATION,
-                      REPO, add_arguments, aliases, connect, load_scene, lua, matrix_to_np, read_json, read_text,
+from simtools import (ENDO_CONFIG, ENDO_SRC, ENDOSCOPE_SCENE, INSTRUMENT_SCENE, INSTRUMENT_SRC, INSTRUMENT_VALIDATION, TISSUE_SRC,
+                      REPO, add_arguments, aliases, connect, load_scene, lua, np_to_matrix, read_json, read_text,
                       relative, save_scene, sha256, stop_simulation)
 
 LEGACY_NPZ = REPO / 'models' / 'meshes' / 'instrument' / 'legacy_lnd_reference.npz'
-JAW_OPEN_PER_JOINT = 0.25          # rad on each jaw joint = 0.5 rad jaw opening (the panel's "Open jaws")
+JAW_OPEN_PER_JOINT = 0.5           # rad on each jaw joint = 1.0 rad jaw opening (the panel's "Open jaws", setGrip(0.5))
+ROLL_STEP_RAD = np.radians(5.0)
+INSTRUMENT_PARTS = ('rot_ref_respondable_visual', 'wrist_ref_respondable_visual', 'yaw_ref1_respondable_visual',
+                    'yaw_ref2_respondable_visual', 'tool_tip_visual')
 
 
 def inv(T):
@@ -117,8 +120,70 @@ def install(sim, by, arm, model):
         by.update(aliases(sim))
         replace_shape(sim, by[f'{arm}_{base}_respondable_visual'], Vw, F)
         by.update(aliases(sim))
+
+    slide = None
+    if g['hinge_slope_m_per_rad']:
+        # Moving jaw hinge (ProGrasp): a prismatic slide along the distal axis carries both jaw joints.
+        # setGrip drives it with the dvrk_model law (capability_guard.lua); 0 = closed jaws.
+        h = sim.createJoint(sim.joint_prismatic, sim.jointmode_kinematic, 0, [0.002, 0.0006])
+        slide = f'{arm}_jaw_hinge_slide'
+        sim.setObjectAlias(h, slide)
+        z, x = T_WY[:3, 1], T_WY[:3, 2]          # slide along the distal axis; x along the jaw axis
+        sim.setObjectMatrix(h, -1, np_to_matrix(np.column_stack([x, np.cross(z, x), z]), T_WH[:3, 3]))
+        sim.setObjectParent(h, by[f'{arm}_wrist_ref_respondable_respondable'], True)
+        travel = g['hinge_slope_m_per_rad'] * g['hinge_jaw_range_rad'][1]
+        sim.setJointInterval(h, False, [min(travel, 0.0) - 1e-4, abs(travel) + 2e-4])
+        sim.setJointPosition(h, 0.0)
+        for j in ('joint10', 'joint11'):
+            sim.setObjectParent(by[f'{arm}_{j}'], h, True)
+        by.update(aliases(sim))
     return dict(model=model, yaw_axis_world=T_WY[:3, 3], hinge_world=T_WH[:3, 3], tool_tip_world=tip,
-                jaw_joint_limits_rad=jaw)
+                tool_tip_dvrk_world=inst.apply(T_WY, g['tip_dvrk_Y'][None])[0],
+                tool_tip_minus_dvrk_m=float(np.linalg.norm(g['tip_Y'] - g['tip_dvrk_Y'])),
+                jaw_joint_limits_rad=jaw, hinge_slide=slide, hinge_slope_m_per_rad=g['hinge_slope_m_per_rad'],
+                hinge_jaw_range_rad=g['hinge_jaw_range_rad'])
+
+
+def set_grip(sim, by, arm, q, info):
+    """Same jaw kinematics as setGrip in capability_guard.lua (both jaw joints = q, hinge slide from the law)."""
+    for n in (10, 11):
+        sim.setJointPosition(by[f'{arm}_joint{n}'], q)
+    if info.get('hinge_slide'):
+        lo, hi = info['hinge_jaw_range_rad']
+        sim.setJointPosition(by[info['hinge_slide']], info['hinge_slope_m_per_rad'] * min(max(2 * q, lo), hi))
+
+
+def choose_roll(sim, by, arm, info, labels, allowed, open_q):
+    """Instrument roll (joint8) closest to the current one at which the jaws open without contact at home.
+
+    Roll turns the instrument about its own shaft: the shaft, the RCM point and the tool tip stay where they are,
+    only the plane in which the jaws open changes."""
+    j8 = by[f'{arm}_joint8']
+    q0 = sim.getJointPosition(j8)
+    lo, hi = inst.descriptor(info['model'])['kinematics']['roll_limits_rad']
+    mine = [l for l in labels if any(n.startswith(arm + '_') and n[len(arm) + 1:] in INSTRUMENT_PARTS for n in l)]
+    probe = ecm_pairs.create_probe(sim)
+    tried = []
+    try:
+        for k in range(0, 73):
+            q = q0 + (k + 1) // 2 * ROLL_STEP_RAD * (1 if k % 2 else -1)
+            if not lo <= q <= hi:
+                continue
+            sim.setJointPosition(j8, q)
+            results = []
+            for grip in (0.0, open_q):
+                set_grip(sim, by, arm, grip, info)
+                bad, _ = bes.classify(sim, probe, mine, [[by[a], by[b]] for a, b in mine], allowed)
+                results.append(bad)
+            set_grip(sim, by, arm, 0.0, info)
+            tried.append(dict(roll_rad=q, closed=results[0], open=results[1]))
+            if not results[0] and not results[1]:
+                return dict(roll_rad=q, roll_change_deg=float(np.degrees(q - q0)), candidates_tried=len(tried),
+                            pairs_checked=len(mine), first_blocked=tried[0] if len(tried) > 1 else None)
+        sim.setJointPosition(j8, q0)
+        raise SystemExit(f'{arm}: no instrument roll opens the jaws without contact at home: {tried[:3]}')
+    finally:
+        sim.removeObjects([probe])
 
 
 def tcp_length(sim, by, arm):
@@ -166,7 +231,9 @@ def runtime_check(client, sim, args):
     for _ in range(int(round(24.0 / dt)) + 1):
         sim.step()
     stats = sim.callScriptFunction('getRCMStats', ctrl)
-    sim.callScriptFunction('hold', ctrl)
+    sim.callScriptFunction('homeRCM', ctrl)
+    for _ in range(10):
+        sim.step()
     grasps = {}
     for i, s in enumerate(stats, 1):
         if s['arm'] == 'ecm':
@@ -175,7 +242,13 @@ def runtime_check(client, sim, args):
         ok = bool(sim.callScriptFunction('grasp', ctrl, i, 'TaskBead'))
         if ok:
             sim.callScriptFunction('release', ctrl, i)
-        grasps[s['arm']] = dict(model=info['model'], grasp_accepted=ok,
+        opened = bool(sim.callScriptFunction('setGrip', ctrl, i, JAW_OPEN_PER_JOINT))
+        slide = by.get(f"{s['arm']}_jaw_hinge_slide")
+        slide_open = sim.getJointPosition(slide) if slide is not None else None
+        closed = bool(sim.callScriptFunction('setGrip', ctrl, i, 0.0))
+        grasps[s['arm']] = dict(model=info['model'], grasp_accepted=ok, open_accepted=opened, close_accepted=closed,
+                                hinge_slide_open_m=slide_open,
+                                hinge_slide_closed_m=sim.getJointPosition(slide) if slide is not None else None,
                                 capability_refusals=sim.callScriptFunction('getInstrument', ctrl, i)['capability_refusals'])
     stop_simulation(client, sim)
     return dict(steps=int(round(24.0 / dt)) + 1, time_step_s=dt,
@@ -208,6 +281,8 @@ def main():
     # 3. Install.
     installed = {a: install(sim, by, a, role_cfg['arms'][a]['instrument']) for a in psms}
     by = aliases(sim)
+    # 3b. Instrument roll at which each PSM can open its jaws at home.
+    rolls = {a: choose_roll(sim, by, a, installed[a], labels, allowed, JAW_OPEN_PER_JOINT) for a in psms}
 
     # 4. Identification and role check from geometry only.
     ok, roles_report = guard.check(sim, by, rcm, role_cfg)
@@ -219,25 +294,32 @@ def main():
     # 5. Collision gate, jaws closed and open; jaw-opening geometry.
     closed_tips = {a: jaw_tips(sim, by, a, installed[a]['model']) for a in psms}
     bad_closed, crossings = gate(sim, by, labels, allowed)
-    set_jaws(sim, by, psms, JAW_OPEN_PER_JOINT)
+    for a in psms:
+        set_grip(sim, by, a, JAW_OPEN_PER_JOINT, installed[a])
     open_tips = {a: jaw_tips(sim, by, a, installed[a]['model']) for a in psms}
     bad_open, _ = gate(sim, by, labels, allowed)
-    set_jaws(sim, by, psms, 0.0)
-    # Closed jaws must be contact-free at home. Open jaws are only reported: at runtime setGrip already refuses
-    # (and rolls back) an opening that would collide, so an arm that cannot open at home must move first.
-    if bad_closed:
-        raise SystemExit(f'Unexpected contacts at the home pose (jaws closed), scene not saved: {bad_closed}')
+    for a in psms:
+        set_grip(sim, by, a, 0.0, installed[a])
+    if bad_closed or bad_open:
+        raise SystemExit(f'Unexpected contacts at the home pose, scene not saved: closed={bad_closed} open={bad_open}')
     opening = {a: dict(closed_tip_gap_m=float(np.linalg.norm(closed_tips[a][0] - closed_tips[a][1])),
                        open_tip_gap_m=float(np.linalg.norm(open_tips[a][0] - open_tips[a][1]))) for a in psms}
     if any(o['open_tip_gap_m'] <= o['closed_tip_gap_m'] + 1e-3 for o in opening.values()):
         raise SystemExit(f'jaws do not open with positive joint angles: {opening}')
 
     # 6. Controller with the capability guard; INSTRUMENTS comes from the geometry identification.
-    table = {a: dict(model=roles_report[a]['identified'], name=inst.descriptor(roles_report[a]['identified'])['name'],
-                     capabilities=roles_report[a]['capabilities']) for a in psms}
+    table = {}
+    for a in psms:
+        e = dict(model=roles_report[a]['identified'], name=inst.descriptor(roles_report[a]['identified'])['name'],
+                 capabilities=roles_report[a]['capabilities'])
+        if installed[a]['hinge_slide']:
+            e.update(hinge_slide=installed[a]['hinge_slide'], hinge_slope_m_per_rad=installed[a]['hinge_slope_m_per_rad'],
+                     hinge_jaw_range_rad=installed[a]['hinge_jaw_range_rad'])
+        table[a] = e
     table['ecm'] = dict(model='endoscope_camera', name='30 deg endoscope camera', capabilities=roles_report['ecm']['capabilities'])
     controller = ('CONFIG=' + lua(rcm) + '\nCOLLISION_PAIRS=' + lua(labels) + '\nINSTRUMENTS=' + lua(table) + '\n'
-                  + read_text(ENDO_SRC / 'rcm_controller.lua') + '\n' + read_text(INSTRUMENT_SRC / 'capability_guard.lua'))
+                  + read_text(ENDO_SRC / 'rcm_controller.lua') + '\n' + read_text(INSTRUMENT_SRC / 'capability_guard.lua')
+                  + '\n' + read_text(TISSUE_SRC / 'tissue.lua'))
     sim.removeObjects([by['RCMController']])
     h = sim.createScript(sim.scripttype_simulation, controller, 0, 'lua')
     sim.setObjectAlias(h, 'RCMController')
@@ -248,12 +330,13 @@ def main():
     # 7. Runtime check on the saved file.
     runtime = runtime_check(client, sim, args)
     ok_runtime = all(s['failures'] == 0 and s['collision_blocks'] == 0 for s in runtime['arms'].values()) and \
-        all(g['grasp_accepted'] == ('grasp' in table[a]['capabilities']) for a, g in runtime['grasp'].items())
+        all(g['grasp_accepted'] == ('grasp' in table[a]['capabilities']) and g['open_accepted'] and g['close_accepted']
+            for a, g in runtime['grasp'].items())
 
     def clean(d):
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in d.items()}
     inputs = [ENDOSCOPE_SCENE, ENDO_CONFIG / 'rcm_config.json', ENDO_CONFIG / 'collision_pairs.json',
-              inst.INSTRUMENT_CONFIG / 'roles.json', ENDO_SRC / 'rcm_controller.lua', INSTRUMENT_SRC / 'capability_guard.lua',
+              inst.INSTRUMENT_CONFIG / 'roles.json', ENDO_SRC / 'rcm_controller.lua', INSTRUMENT_SRC / 'capability_guard.lua', TISSUE_SRC / 'tissue.lua',
               inst.DVRK / 'SOURCE.json'] + [inst.INSTRUMENT_CONFIG / f'{m}.json' for m in guard.MODELS]
     from simtools import write_json
     write_json(INSTRUMENT_VALIDATION / 'install_manifest.json', {
@@ -271,6 +354,7 @@ def main():
         'roles': {a: dict(role=e['role'], requires=e['requires'], capabilities=e['capabilities'], ok=e['ok'])
                   for a, e in roles_report.items()},
         'tcp_length_m': {'before': tcp_before, 'after': tcp_after},
+        'instrument_roll': rolls,
         'jaw_opening': opening, 'jaw_open_per_joint_rad': JAW_OPEN_PER_JOINT,
         'home_unexpected_contacts': {'closed': bad_closed, 'open': bad_open},
         'home_port_crossing_radius_m': crossings,

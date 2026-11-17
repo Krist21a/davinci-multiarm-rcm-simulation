@@ -24,6 +24,8 @@ ENDO_VALIDATION = REPO / 'validation' / 'endoscope'
 INSTRUMENT_SCENE = REPO / 'scenes' / 'davinci_si_instruments.ttt'
 INSTRUMENT_SRC = REPO / 'src' / 'instruments'
 INSTRUMENT_VALIDATION = REPO / 'validation' / 'instruments'
+TISSUE_SRC = REPO / 'src' / 'tissue'
+TISSUE_VALIDATION = REPO / 'validation' / 'tissue'
 URDF = REPO / 'models' / 'davinci_foot_docking.urdf'
 MESHES = REPO / 'models' / 'meshes'
 

@@ -1,5 +1,5 @@
 {
-  "built_at_unix": 1794884987,
+  "built_at_unix": 1794886619,
   "coppeliasim_version": 4100000,
   "inputs": {
     "scenes/davinci_endoscope_task.ttt": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
@@ -7,16 +7,17 @@
     "config/endoscope/collision_pairs.json": "215e8745b0a99641b3b501c42bd8d15552e902a54a844704b4e7babfc9ef31be",
     "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
     "src/endoscope/rcm_controller.lua": "72e5e26177fea3bbe772b108ed7dbe55e7d1c2f5e2a97c35b26ef52885376bb6",
-    "src/instruments/capability_guard.lua": "0d9f1ff4f3b16d2ec8ff72f4a0692a51d3f7fb6c81976728280307e6fb997d12",
+    "src/instruments/capability_guard.lua": "a34a244b9459b738703ae8e772f25bb0dddbc79241922b6f07c7925aa3f28362",
+    "src/tissue/tissue.lua": "5e9f23eb693eb148408019cab960104292005d62a4407351b5c0bb04c9f36562",
     "models/meshes/instrument/dvrk/SOURCE.json": "3fcde00ff530227ae7d68e2c1de22903814676d54d0d6c171ac90277a2972546",
     "config/instruments/420006.json": "c99ad48df6248bb12cfbe2043cd9b25343c0ca1246545737cc4aed3de0db89c3",
-    "config/instruments/420179.json": "c68ddb08bbcb954764b6c9890ebf1406251cf84171a344d241f14621615334f0",
+    "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
     "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
-    "config/instruments/420093.json": "10017a4413ebc2b32a84862f775ed682b0f78f9f1314cb0c5e59b98909196658",
+    "config/instruments/420093.json": "d82b4dfc26d55b5ae692357ff3cb5f9295eec491624f7d7de24611d1be9a49eb",
     "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38"
   },
   "outputs": {
-    "scenes/davinci_si_instruments.ttt": "7f30b7dc414d657b2480f60904effcbf605ea5d29c5e3c02637962abe3ac1661",
+    "scenes/davinci_si_instruments.ttt": "0a6fca9aa81bb36882c3d164bfdb8aaf813d80ee1b8145f9460f0fae9ecfcb3b",
     "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47"
   },
   "registration_before_install": {
@@ -30,8 +31,8 @@
         },
         "420179": {
           "wrist": 0.0006571086096913459,
-          "jaw_plus": 0.0010623179768493138,
-          "jaw_minus": 0.0013190952623015454
+          "jaw_plus": 0.0010623179768493528,
+          "jaw_minus": 0.0013190952623015053
         },
         "420172": {
           "wrist": 0.001152944997126244,
@@ -67,8 +68,8 @@
         },
         "420179": {
           "wrist": 0.0006571086096913449,
-          "jaw_plus": 0.001062317976849492,
-          "jaw_minus": 0.001319095262301241
+          "jaw_plus": 0.0010623179768494903,
+          "jaw_minus": 0.0013190952623012386
         },
         "420172": {
           "wrist": 0.0011529449971262435,
@@ -104,8 +105,8 @@
         },
         "420179": {
           "wrist": 0.0006571086096913488,
-          "jaw_plus": 0.0010623179768496404,
-          "jaw_minus": 0.0013190952623013332
+          "jaw_plus": 0.0010623179768496686,
+          "jaw_minus": 0.0013190952623012924
         },
         "420172": {
           "wrist": 0.0011529449971262372,
@@ -146,14 +147,23 @@
         0.6864950600885932
       ],
       "tool_tip_world": [
+        -0.08994749654092295,
+        -0.9975193494193889,
+        0.6799362170177763
+      ],
+      "tool_tip_dvrk_world": [
         -0.08903291400123776,
         -0.9981397421268996,
         0.6808782791533897
       ],
+      "tool_tip_minus_dvrk_m": 0.0014521809118653213,
       "jaw_joint_limits_rad": [
         -0.174533,
         0.69813
-      ]
+      ],
+      "hinge_slide": null,
+      "hinge_slope_m_per_rad": 0.0,
+      "hinge_jaw_range_rad": null
     },
     "psm2": {
       "model": "420179",
@@ -163,19 +173,28 @@
         0.6891942489064018
       ],
       "hinge_world": [
-        -0.07405302531222137,
-        -0.9938186135525641,
-        0.6891942489064018
+        -0.07465718847735618,
+        -0.9916632227863076,
+        0.6881983686351691
       ],
       "tool_tip_world": [
+        -0.07580766147384382,
+        -0.9822002302321798,
+        0.6832941943868
+      ],
+      "tool_tip_dvrk_world": [
         -0.0793641145790534,
         -0.9803388646820842,
         0.6834585099663403
       ],
+      "tool_tip_minus_dvrk_m": 0.004017466864868636,
       "jaw_joint_limits_rad": [
         -0.174533,
         0.69813
-      ]
+      ],
+      "hinge_slide": null,
+      "hinge_slope_m_per_rad": 0.0,
+      "hinge_jaw_range_rad": null
     },
     "psm3": {
       "model": "420093",
@@ -190,31 +209,43 @@
         0.6798005799846012
       ],
       "tool_tip_world": [
+        -0.06359065427462593,
+        -0.9708491369809389,
+        0.6757652386425401
+      ],
+      "tool_tip_dvrk_world": [
         -0.06351988897304243,
         -0.9709016107182387,
         0.6758961150025196
       ],
+      "tool_tip_minus_dvrk_m": 0.0001577651501944086,
       "jaw_joint_limits_rad": [
         -0.174533,
         0.69813
+      ],
+      "hinge_slide": "psm3_jaw_hinge_slide",
+      "hinge_slope_m_per_rad": -0.002100845,
+      "hinge_jaw_range_rad": [
+        0.0,
+        1.0472
       ]
     }
   },
   "identification_after_install": {
     "psm1": {
       "identified": "420172",
-      "closest_worst_part_m": 2.4486956148221413e-16,
-      "margin_to_second_m": 0.0011095659662619098
+      "closest_worst_part_m": 1.8354818414883898e-16,
+      "margin_to_second_m": 0.0011095659662619935
     },
     "psm2": {
       "identified": "420179",
-      "closest_worst_part_m": 3.920811384805412e-09,
-      "margin_to_second_m": 0.0006786109987657595
+      "closest_worst_part_m": 3.92081142046986e-09,
+      "margin_to_second_m": 0.0006786109987657841
     },
     "psm3": {
       "identified": "420093",
-      "closest_worst_part_m": 6.6964206435091755e-16,
-      "margin_to_second_m": 0.0014044498713254698
+      "closest_worst_part_m": 8.685057908113002e-16,
+      "margin_to_second_m": 0.0014044498713253627
     }
   },
   "roles": {
@@ -276,34 +307,61 @@
       "psm3": 0.4497999999998658
     },
     "after": {
-      "psm1": 0.46179999999978494,
-      "psm2": 0.45470000055408955,
-      "psm3": 0.4693999999997333
+      "psm1": 0.46185330062998947,
+      "psm2": 0.4522522406479854,
+      "psm3": 0.46950580974550654
+    }
+  },
+  "instrument_roll": {
+    "psm1": {
+      "roll_rad": 0.7853981633974483,
+      "roll_change_deg": 45.0,
+      "candidates_tried": 18,
+      "pairs_checked": 267,
+      "first_blocked": {
+        "roll_rad": 0.0,
+        "closed": [],
+        "open": [
+          [
+            "psm1_yaw_ref2_respondable_visual",
+            "Patient_LeftHipBone"
+          ]
+        ]
+      }
+    },
+    "psm2": {
+      "roll_rad": -0.13606776444037622,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
+      "pairs_checked": 263,
+      "first_blocked": null
+    },
+    "psm3": {
+      "roll_rad": 0.0,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
+      "pairs_checked": 267,
+      "first_blocked": null
     }
   },
   "jaw_opening": {
     "psm1": {
-      "closed_tip_gap_m": 0.00039940957365960645,
-      "open_tip_gap_m": 0.010703479252503246
+      "closed_tip_gap_m": 0.00039940957365953414,
+      "open_tip_gap_m": 0.02044391133373838
     },
     "psm2": {
-      "closed_tip_gap_m": 0.0004336523553815497,
-      "open_tip_gap_m": 0.006124412527860603
+      "closed_tip_gap_m": 0.0004336523553814831,
+      "open_tip_gap_m": 0.009478161626129177
     },
     "psm3": {
-      "closed_tip_gap_m": 0.0009373422468304202,
-      "open_tip_gap_m": 0.010566593451502234
+      "closed_tip_gap_m": 0.0009373422468304295,
+      "open_tip_gap_m": 0.020268456682903682
     }
   },
-  "jaw_open_per_joint_rad": 0.25,
+  "jaw_open_per_joint_rad": 0.5,
   "home_unexpected_contacts": {
     "closed": [],
-    "open": [
-      [
-        "psm1_yaw_ref2_respondable_visual",
-        "Patient_LeftHipBone"
-      ]
-    ]
+    "open": []
   },
   "home_port_crossing_radius_m": {
     "psm2_tool_main_respondable_visual": 0.007594026160871639,
@@ -341,16 +399,28 @@
       "psm1": {
         "model": "420172",
         "grasp_accepted": true,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": null,
+        "hinge_slide_closed_m": null,
         "capability_refusals": 0
       },
       "psm2": {
         "model": "420179",
         "grasp_accepted": false,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": null,
+        "hinge_slide_closed_m": null,
         "capability_refusals": 1
       },
       "psm3": {
         "model": "420093",
         "grasp_accepted": true,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": -0.002100845,
+        "hinge_slide_closed_m": -0.0,
         "capability_refusals": 0
       }
     }

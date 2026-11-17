@@ -127,7 +127,10 @@ python verify_rcm.py --port 23170 --start --config ../config/endoscope/rcm_confi
 
 - **来源**：网格和腕部/钳口几何来自 [jhu-dvrk/dvrk_model](https://github.com/jhu-dvrk/dvrk_model)（MIT，固定提交，副本与 `SOURCE.json` 在 `models/meshes/instrument/dvrk/`）。限位数值来自 [sawIntuitiveResearchKit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit) 的器械文件（cisst 许可，只引用数值，未复制文件）。描述文件在 `config/instruments/<型号>.json`。
 - **能力不靠标签**：`scripts/build/instrument_guard.py` 从场景的关节轴和钳口、腕部网格识别每条臂上的器械（与各候选器械的表面平均距离，阈值 0.5 mm），再查该器械的能力。角色只“要求”能力。`roles.json` 里写的型号与几何不符时，这条臂被拒绝。场景控制器追加 `src/instruments/capability_guard.lua`：没有 `grasp` 能力的器械调用 `grasp` 会被拒绝。
-- **器械长度**：原脚本写死的 `tcp_len = 0.4498` 改为从场景读取（joint8 到 tcp 的轴向距离）。换装后为 PSM1 0.4618、PSM2 0.4547、PSM3 0.4694 m。dVRK 的 `D = 0.4670` 是从 dVRK 自己的滚转坐标原点量起，与本场景的 joint8 原点不是同一个参考点，所以不能直接替换。杆长保持原 CAD 值。
+- **器械长度**：原脚本写死的 `tcp_len = 0.4498` 改为从场景读取（joint8 到 tcp 的轴向距离）。换装后为 PSM1 0.4619、PSM2 0.4523、PSM3 0.4695 m。tcp 取钳口网格的几何尖端；dVRK 的 tool tip 只记录在 `install_manifest.json`（差 0.16–4.0 mm）。
+- **剪刀转轴**：`scripts/build/measure_jaw_pivot.py` 在两片刀片网格里找到共用的销孔，位于 dVRK 钳口坐标 y = 2.45 mm。dVRK xacro 绕 y = 0 旋转，张开 1 rad 时两个销孔会分开 2.4 mm。场景改为绕销孔旋转，刀片位置不变。同样方法在持针钳 006 上找到的销孔在 y = 0。
+- **ProGrasp 铰点**：加了棱柱关节 `psm3_jaw_hinge_slide`。`setGrip` 按 dVRK 的线性规律移动铰点（每 rad 钳口 −2.1 mm，限 0–60°）。
+- **PSM1 张口**：PSM1 器械绕自身杆转 45°（joint8），钳口张开 1.0 rad 不再碰左髋骨。杆、RCM 点和尖端位置不变。安装脚本以 5° 步长搜索最近的可行转角。dVRK 的 `D = 0.4670` 是从 dVRK 自己的滚转坐标原点量起，与本场景的 joint8 原点不是同一个参考点，所以不能直接替换。杆长保持原 CAD 值。
 
 验证（`validation/instruments/`）：
 
@@ -136,8 +139,8 @@ python verify_rcm.py --port 23170 --start --config ../config/endoscope/rcm_confi
 | 坐标对齐（dVRK 腕部系与场景关节轴） | 轴向误差 3e-7 |
 | 原持针钳与 dVRK Si 420006 的表面距离 | 钳口约 0.44–0.50 mm，腕部 0.66 mm（原网格是 Classic 风格，另存为 `legacy_lnd` 参考） |
 | 换装后识别 | 三臂全部正确，与第二候选相差 0.68–1.40 mm |
-| 回家位碰撞（钳口闭合） | 0 |
-| 回家位张开 0.5 rad | PSM1 钳口碰左髋骨；运行时 setGrip 会拒绝并回退 |
+| 回家位碰撞（钳口闭合 / 张开 1.0 rad） | 0 / 0（PSM1 转 45° 后） |
+| ProGrasp 铰点 | 张开 1.0 rad 时后移 2.1 mm，闭合回 0 |
 | 24 秒演示周期 | 求解失败 0，碰撞回退 0，RCM 漂移 < 2e-9 m |
 | 运行时抓取 | PSM1、PSM3 接受；PSM2 剪刀拒绝 |
 | 角色检查 | 新场景通过；内窥镜场景三条 PSM 全部拒绝（原持针钳没有 cut / retract_tissue，且与声明型号不符） |
@@ -151,15 +154,37 @@ python fetch_dvrk_instruments.py                     # 下载固定提交的 dVR
 python install_instruments.py --port 23170           # 生成 scenes/davinci_si_instruments.ttt 与 install_manifest.json
 python instrument_guard.py --port 23170 --scene ../../scenes/davinci_si_instruments.ttt --out ../../validation/instruments/capability_check_si_instruments.json
 python render_instrument_tips.py --port 23170        # docs/si_instrument_tips.png
+python measure_jaw_pivot.py 420179                   # 剪刀销孔位置（不需要 CoppeliaSim，需要 shapely）
+python ../tissue/tissue_cut_demo.py --port 23170     # 组织抓取与剪切检查
 ```
 
 已知限制：
 
 - 钳口只有两个关节（joint10/11），腕部偏航不单独驱动。0107 腕部的偏航夹头固定在腕部上。
-- ProGrasp 的钳口铰点固定在偏航轴前 7.7 mm；真实器械张开到 60° 时移到 5.5 mm。
-- dVRK 给剪刀的 tool tip 在刀片网格尖端前约 2.4 mm，此处照用 dVRK 的值。
-- 剪刀能剪的只是能力声明，组织切割还没有建模。能量器械不仿真。
+- 剪刀转轴来自网格测量，不是厂商图纸。tcp 用几何尖端，与 dVRK 的运动学 tool tip 不同。
+- 能量器械（单极、双极）不仿真。
 - 不可见的碰撞外壳改为新网格的凸包；碰撞检查仍用可见网格。
+
+### 组织模型（开始阶段）
+
+`src/tissue/tissue.lua` 追加在场景控制器里：节点网格加距离约束（位置动力学），两边和远端固定、预张 8%，每步重建成网格形状，内窥镜可见。
+
+- `tissueGrasp(臂)` 需要 `grasp_tissue`：钳口附近 1.5 mm 内的节点跟随尖端。
+- 剪刀（`cut`）从张开（≥ 0.15 rad）合上时，剪断离刀线（销孔到尖端）0.3 mm 内的约束。抓钳合上不剪。
+- 约束拉长到 1.5 倍静长时断裂，记为撕裂。
+
+![组织剪切](docs/tissue_cut_demo.png)
+
+`scripts/tissue/tissue_cut_demo.py`（结果 `validation/tissue/cut_demo.json`）：
+
+| 检查 | 结果 |
+|---|---|
+| PSM1 抓钳开合 | 剪断 0 |
+| PSM1 抓取并后拉 1.5 mm | 抓住 84 个节点，最大应变 0.09 → 0.27，撕裂 0 |
+| PSM2 剪刀抓取 | 拒绝 |
+| PSM2 张开-前进 3 mm-合上 ×4 | 剪断 66 个约束，切口深 10 mm，切口宽 1.4–2.5 mm，撕裂 0 |
+
+限制：组织是运动学片，器械不和它碰撞；没有质量、重力、接触力、出血。组织片是放在 PSM2 前面的测试片，不是解剖结构。第一次试验中，近端角上固定的节点在剪切前就撕裂了，所以侧边固定从第 1 行开始。
 
 ## 数据来源与署名
 

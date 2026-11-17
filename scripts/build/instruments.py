@@ -139,7 +139,7 @@ def geometry(model, faces_per_part=2500):
         z = np.load(CONFIG.parent / d['reference_npz'])
         return dict(model=model, wrist=(z['wrist_V'], z['wrist_F']), jaw_plus=(z['jaw_plus_V'], z['jaw_plus_F']),
                     jaw_minus=(z['jaw_minus_V'], z['jaw_minus_F']), T_PY=z['T_PY'], hinge_Y=z['hinge_Y'],
-                    tip_Y=z['tip_Y'])
+                    tip_Y=z['tip_Y'], tip_dvrk_Y=z['tip_Y'], hinge_slope_m_per_rad=0.0, hinge_jaw_range_rad=None)
     st = d['stages']
     pj, pv = parse_stage(XACRO / 'wrist_pitch' / f"wrist_pitch_{st['wrist_pitch']}.urdf.xacro")
     yj, yv = parse_stage(XACRO / 'wrist_yaw' / f"wrist_yaw_{st['wrist_yaw']}.urdf.xacro")
@@ -154,12 +154,15 @@ def geometry(model, faces_per_part=2500):
 
     # Jaw hinge: jaw links hang from wrist_yaw_link directly or from a prismatic jaw_axis_link (ProGrasp).
     hinge = np.zeros(3)
+    hinge_slope, hinge_range = 0.0, None
     jaws = {}
     for name, j in tj.items():
         if j['mimic'] is None or j['mimic']['joint'] != 'jaw':
             continue
         if j['type'] == 'prismatic':
             hinge = j['origin'][:3, 3] + j['axis'] * j['mimic']['offset']      # closed jaw (jaw = 0)
+            hinge_slope = j['mimic']['multiplier']                              # m of hinge travel per rad of jaw
+            hinge_range = list(tj['jaw']['limit'])
             continue
         if j['child'] not in tv:
             continue
@@ -170,10 +173,25 @@ def geometry(model, faces_per_part=2500):
         jaws['jaw_plus' if sign > 0 else 'jaw_minus'] = mesh
     if set(jaws) != {'jaw_plus', 'jaw_minus'}:
         raise ValueError(f'{model}: expected one opening and one closing jaw, got {sorted(jaws)}')
-    if abs(float(np.linalg.norm(hinge)) - d['kinematics']['jaw_hinge_offset_m']) > 1e-6:
-        raise ValueError(f'{model}: dvrk_model hinge offset {hinge} differs from the descriptor')
-    tip = tj['tool_tip']['origin'][:3, 3]
-    return dict(model=model, wrist=wrist, T_PY=T_PY, hinge_Y=hinge, tip_Y=tip, **jaws)
+    k = d['kinematics']
+    if 'jaw_pivot_Y_m' in k:
+        # Measured pivot (the pin hole shared by both jaws) replaces the dvrk_model hinge; the jaw meshes keep
+        # their place in the wrist and are re-expressed about the new pivot.
+        pivot = np.array(k['jaw_pivot_Y_m'], dtype=float)
+        jaws = {n: (V + hinge - pivot, F) for n, (V, F) in jaws.items()}
+        hinge = pivot
+    if abs(float(np.linalg.norm(hinge)) - k['jaw_hinge_offset_m']) > 1e-6:
+        raise ValueError(f'{model}: hinge offset {hinge} differs from the descriptor')
+    tip_dvrk = tj['tool_tip']['origin'][:3, 3]
+    return dict(model=model, wrist=wrist, T_PY=T_PY, hinge_Y=hinge, tip_Y=jaw_tip(jaws, hinge), tip_dvrk_Y=tip_dvrk,
+                hinge_slope_m_per_rad=hinge_slope, hinge_jaw_range_rad=hinge_range, **jaws)
+
+
+def jaw_tip(jaws, hinge, band=3e-4):
+    """Geometric tool tip (in Y): centre of the distal-most 0.3 mm of the closed jaws, on the jaw centre plane."""
+    P = np.vstack([V for V, _ in jaws.values()]) + hinge
+    sel = P[P[:, 1] >= P[:, 1].max() - band]
+    return np.array([sel[:, 0].mean(), P[:, 1].max(), sel[:, 2].mean()])
 
 
 def fingerprint(V, F, quantum=1e-5):
