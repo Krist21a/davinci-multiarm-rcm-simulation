@@ -1,0 +1,22 @@
+{
+  "model": "420006",
+  "name": "Large Needle Driver",
+  "system": "da Vinci S/Si, 8 mm EndoWrist",
+  "family": "needle_driver",
+  "capabilities": ["grasp", "needle_drive"],
+  "capabilities_basis": "Flat, strong jaws for needles and suture. Used here only as the reference for the instrument frame registration and for the legacy pick-and-place task; not assigned to tissue retraction.",
+  "stages": {"wrist_pitch": "0091", "wrist_yaw": "0091", "tip": "006"},
+  "kinematics": {
+    "roll_D_m": 0.4670,
+    "roll_limits_rad": [-4.53786, 4.53786],
+    "wrist_pitch_limits_rad": [-1.39626, 1.39626],
+    "wrist_yaw_limits_rad": [-1.39626, 1.39626],
+    "pitch_to_yaw_m": 0.0091,
+    "jaw_limits_rad": [-0.349066, 1.39626],
+    "jaw_hinge_offset_m": 0.0
+  },
+  "sources": {
+    "kinematics": "jhu-dvrk/sawIntuitiveResearchKit@7435458dc847b95b9ff77723b33e4a177cfa4f43 share/tool/LARGE_NEEDLE_DRIVER_420006.json (cisst licence; numbers only, file not copied)",
+    "geometry": "jhu-dvrk/dvrk_model@90472a933995acaa88d84eb5c58aeee4cd17e9f3 urdf/common/instruments (MIT), copied to models/meshes/instrument/dvrk/"
+  }
+}

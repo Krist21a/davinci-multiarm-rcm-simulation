@@ -1,0 +1,480 @@
+{
+  "built_at_unix": 1794893598,
+  "coppeliasim_version": 4100000,
+  "inputs": {
+    "scenes/davinci_endoscope_task.ttt": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
+    "config/endoscope/rcm_config.json": "de80d3909440db70407e080552d5a1950de300f7ceca0f9edbd32bce1242a71f",
+    "config/endoscope/collision_pairs.json": "215e8745b0a99641b3b501c42bd8d15552e902a54a844704b4e7babfc9ef31be",
+    "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
+    "src/endoscope/rcm_controller.lua": "72e5e26177fea3bbe772b108ed7dbe55e7d1c2f5e2a97c35b26ef52885376bb6",
+    "src/instruments/capability_guard.lua": "a34a244b9459b738703ae8e772f25bb0dddbc79241922b6f07c7925aa3f28362",
+    "src/tissue/tissue.lua": "75f4255932df0cdbdaacef5ed0d0914009b1aa2a353930ffe1221f78eeb53248",
+    "models/meshes/instrument/dvrk/SOURCE.json": "3fcde00ff530227ae7d68e2c1de22903814676d54d0d6c171ac90277a2972546",
+    "config/instruments/420006.json": "c99ad48df6248bb12cfbe2043cd9b25343c0ca1246545737cc4aed3de0db89c3",
+    "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
+    "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
+    "config/instruments/420093.json": "d82b4dfc26d55b5ae692357ff3cb5f9295eec491624f7d7de24611d1be9a49eb",
+    "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38",
+    "config/instruments/port_plan.json": "cdbd844e6177f3845bdc9791d3c87cc993762ad2a86754bffca1284a7b440c15"
+  },
+  "outputs": {
+    "scenes/davinci_si_instruments.ttt": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
+    "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47",
+    "config/instruments/rcm_config.json": "afcc96f7617c66d0b72acf49119694026d96aa0f95c063e39105190d19e5b8b2"
+  },
+  "ports": {
+    "psm1": {
+      "rcm_world": [
+        -0.17515218205829597,
+        -1.0871188502031828,
+        0.7144115259054065
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.025,
+        "insertion_max": 0.055
+      },
+      "source": "config/instruments/port_plan.json"
+    },
+    "psm2": {
+      "rcm_world": [
+        -0.048448429529702866,
+        -1.0851640378533396,
+        0.7313999960021021
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.0,
+        "insertion_max": 0.045
+      },
+      "source": "config/endoscope/rcm_config.json"
+    },
+    "psm3": {
+      "rcm_world": [
+        0.042251817941704045,
+        -1.09363405028434,
+        0.7113569848756469
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.025,
+        "insertion_max": 0.055
+      },
+      "source": "config/instruments/port_plan.json"
+    },
+    "ecm": {
+      "rcm_world": [
+        -0.0691917,
+        -1.1896155795977577,
+        0.7116643785470914
+      ],
+      "limits": {
+        "yaw_deg": 6.0,
+        "pitch_deg": 6.0,
+        "insertion_min": 0.07,
+        "insertion_max": 0.09
+      },
+      "source": "config/endoscope/rcm_config.json"
+    }
+  },
+  "registration_before_install": {
+    "psm1": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913459,
+          "jaw_plus": 0.0004362790777441114,
+          "jaw_minus": 0.0004955389976615738
+        },
+        "420179": {
+          "wrist": 0.0006571086096913459,
+          "jaw_plus": 0.0010623179768493528,
+          "jaw_minus": 0.0013190952623015053
+        },
+        "420172": {
+          "wrist": 0.001152944997126244,
+          "jaw_plus": 0.0022105064751639742,
+          "jaw_minus": 0.0023133801347473837
+        },
+        "420093": {
+          "wrist": 0.001152944997126244,
+          "jaw_plus": 0.0044437317499184765,
+          "jaw_minus": 0.004884665047837873
+        },
+        "legacy_lnd": {
+          "wrist": 5.783843259099024e-16,
+          "jaw_plus": 1.0703520357770794e-15,
+          "jaw_minus": 5.030647871467068e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 7.310818617156656e-14,
+        "jaw_axis_error": 3.264680849900769e-07,
+        "jaw_axes_antiparallel_error": 8.026062388087905e-07,
+        "jaw_joint_offset_m": 0.009099999999999723,
+        "jaw_joints_coincident_m": 0.0
+      }
+    },
+    "psm2": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913449,
+          "jaw_plus": 0.0004362790777440265,
+          "jaw_minus": 0.0004955389976615767
+        },
+        "420179": {
+          "wrist": 0.0006571086096913449,
+          "jaw_plus": 0.0010623179768494903,
+          "jaw_minus": 0.0013190952623012386
+        },
+        "420172": {
+          "wrist": 0.0011529449971262435,
+          "jaw_plus": 0.0022105064751640193,
+          "jaw_minus": 0.002313380134747172
+        },
+        "420093": {
+          "wrist": 0.0011529449971262435,
+          "jaw_plus": 0.004443731749918177,
+          "jaw_minus": 0.004884665047837852
+        },
+        "legacy_lnd": {
+          "wrist": 1.1085667005747675e-16,
+          "jaw_plus": 1.1085635609639482e-16,
+          "jaw_minus": 1.0736345135237363e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 1.8762769116165146e-14,
+        "jaw_axis_error": 3.264680847638504e-07,
+        "jaw_axes_antiparallel_error": 8.026062385264036e-07,
+        "jaw_joint_offset_m": 0.009099999999999898,
+        "jaw_joints_coincident_m": 0.0
+      }
+    },
+    "psm3": {
+      "closest": "legacy_lnd",
+      "scores_m": {
+        "420006": {
+          "wrist": 0.0006571086096913488,
+          "jaw_plus": 0.0004362790777440727,
+          "jaw_minus": 0.0004955389976615912
+        },
+        "420179": {
+          "wrist": 0.0006571086096913488,
+          "jaw_plus": 0.0010623179768496686,
+          "jaw_minus": 0.0013190952623012924
+        },
+        "420172": {
+          "wrist": 0.0011529449971262372,
+          "jaw_plus": 0.0022105064751641755,
+          "jaw_minus": 0.0023133801347472722
+        },
+        "420093": {
+          "wrist": 0.0011529449971262372,
+          "jaw_plus": 0.004443731749918289,
+          "jaw_minus": 0.004884665047837994
+        },
+        "legacy_lnd": {
+          "wrist": 6.2122653809206355e-16,
+          "jaw_plus": 7.815077186553492e-16,
+          "jaw_minus": 3.2578849038443927e-16
+        }
+      },
+      "frame": {
+        "pitch_axis_dot_distal": 7.376044219853384e-15,
+        "jaw_axis_error": 3.264680839941169e-07,
+        "jaw_axes_antiparallel_error": 8.026062380630703e-07,
+        "jaw_joint_offset_m": 0.009099999999999784,
+        "jaw_joints_coincident_m": 0.0
+      }
+    }
+  },
+  "installed": {
+    "psm1": {
+      "model": "420172",
+      "yaw_axis_world": [
+        -0.10369128568669747,
+        -1.0149357428928822,
+        0.7050865005711805
+      ],
+      "hinge_world": [
+        -0.10369128568669747,
+        -1.0149357428928822,
+        0.7050865005711805
+      ],
+      "tool_tip_world": [
+        -0.08979807243482793,
+        -0.9993070986061289,
+        0.7022454562742727
+      ],
+      "tool_tip_dvrk_world": [
+        -0.08897878286000671,
+        -1.0000744968282496,
+        0.7031667021491949
+      ],
+      "tool_tip_minus_dvrk_m": 0.0014521809118653213,
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ],
+      "hinge_slide": null,
+      "hinge_slope_m_per_rad": 0.0,
+      "hinge_jaw_range_rad": null
+    },
+    "psm2": {
+      "model": "420179",
+      "yaw_axis_world": [
+        -0.07405302531222137,
+        -0.9938186135525641,
+        0.6891942489064018
+      ],
+      "hinge_world": [
+        -0.07465718847735618,
+        -0.9916632227863076,
+        0.6881983686351691
+      ],
+      "tool_tip_world": [
+        -0.07580766147384382,
+        -0.9822002302321798,
+        0.6832941943868
+      ],
+      "tool_tip_dvrk_world": [
+        -0.0793641145790534,
+        -0.9803388646820842,
+        0.6834585099663403
+      ],
+      "tool_tip_minus_dvrk_m": 0.004017466864868636,
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ],
+      "hinge_slide": null,
+      "hinge_slope_m_per_rad": 0.0,
+      "hinge_jaw_range_rad": null
+    },
+    "psm3": {
+      "model": "420093",
+      "yaw_axis_world": [
+        -0.04147419872360915,
+        -1.0158950362576096,
+        0.6976428189745505
+      ],
+      "hinge_world": [
+        -0.04707669504039701,
+        -1.0106931230810998,
+        0.6967251402048098
+      ],
+      "tool_tip_world": [
+        -0.0623745651464414,
+        -0.9965369115866297,
+        0.6941108379133226
+      ],
+      "tool_tip_dvrk_world": [
+        -0.062283470757392614,
+        -0.9965736444591448,
+        0.6942342978297995
+      ],
+      "tool_tip_minus_dvrk_m": 0.0001577651501944086,
+      "jaw_joint_limits_rad": [
+        -0.174533,
+        0.69813
+      ],
+      "hinge_slide": "psm3_jaw_hinge_slide",
+      "hinge_slope_m_per_rad": -0.002100845,
+      "hinge_jaw_range_rad": [
+        0.0,
+        1.0472
+      ]
+    }
+  },
+  "identification_after_install": {
+    "psm1": {
+      "identified": "420172",
+      "closest_worst_part_m": 5.014418277170854e-16,
+      "margin_to_second_m": 0.001109565966261767
+    },
+    "psm2": {
+      "identified": "420179",
+      "closest_worst_part_m": 3.92081142046986e-09,
+      "margin_to_second_m": 0.0006786109987657841
+    },
+    "psm3": {
+      "identified": "420093",
+      "closest_worst_part_m": 8.157409039390743e-16,
+      "margin_to_second_m": 0.0014044498713254759
+    }
+  },
+  "roles": {
+    "psm1": {
+      "role": "primary_retraction",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue",
+        "bipolar_energy",
+        "blunt_dissection"
+      ],
+      "ok": true
+    },
+    "psm2": {
+      "role": "cutting",
+      "requires": [
+        "cut"
+      ],
+      "capabilities": [
+        "cut",
+        "monopolar_energy",
+        "blunt_dissection"
+      ],
+      "ok": true
+    },
+    "psm3": {
+      "role": "assist_retraction_handover",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "capabilities": [
+        "grasp",
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "ok": true
+    },
+    "ecm": {
+      "role": "view_hold",
+      "requires": [
+        "view"
+      ],
+      "capabilities": [
+        "view"
+      ],
+      "ok": true
+    }
+  },
+  "tcp_length_m": {
+    "before": {
+      "psm1": 0.4497999999998663,
+      "psm2": 0.4497999999998659,
+      "psm3": 0.4497999999998658
+    },
+    "after": {
+      "psm1": 0.46185330062998936,
+      "psm2": 0.4522522406479854,
+      "psm3": 0.4695058097455061
+    }
+  },
+  "instrument_roll": {
+    "psm1": {
+      "roll_rad": 0.0,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
+      "pairs_checked": 267,
+      "first_blocked": null
+    },
+    "psm2": {
+      "roll_rad": -0.13606776444037622,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
+      "pairs_checked": 263,
+      "first_blocked": null
+    },
+    "psm3": {
+      "roll_rad": 0.0,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
+      "pairs_checked": 267,
+      "first_blocked": null
+    }
+  },
+  "jaw_opening": {
+    "psm1": {
+      "closed_tip_gap_m": 0.0003994095736597072,
+      "open_tip_gap_m": 0.020443911333738494
+    },
+    "psm2": {
+      "closed_tip_gap_m": 0.0004336523553814831,
+      "open_tip_gap_m": 0.009478161626129177
+    },
+    "psm3": {
+      "closed_tip_gap_m": 0.0009373422468305955,
+      "open_tip_gap_m": 0.020268456682903915
+    }
+  },
+  "jaw_open_per_joint_rad": 0.5,
+  "home_unexpected_contacts": {
+    "closed": [],
+    "open": []
+  },
+  "home_port_crossing_radius_m": {
+    "psm2_tool_main_respondable_visual": 0.007594026160871639,
+    "psm3_tool_main_respondable_visual": 0.009678156453700995,
+    "psm1_tool_main_respondable_visual": 0.011012749641900186,
+    "ecm_insertion_visual": 0.014888825085991004
+  },
+  "collision_pairs": 2177,
+  "runtime_check": {
+    "steps": 481,
+    "time_step_s": 0.05,
+    "arms": {
+      "psm1": {
+        "max_drift_m": 8.733848377553774e-12,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "psm2": {
+        "max_drift_m": 5.445429274559834e-11,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "psm3": {
+        "max_drift_m": 3.5329637488056976e-11,
+        "failures": 0,
+        "collision_blocks": 0
+      },
+      "ecm": {
+        "max_drift_m": 4.1910000110727263e-16,
+        "failures": 0,
+        "collision_blocks": 0
+      }
+    },
+    "grasp": {
+      "psm1": {
+        "model": "420172",
+        "grasp_accepted": true,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": null,
+        "hinge_slide_closed_m": null,
+        "capability_refusals": 0
+      },
+      "psm2": {
+        "model": "420179",
+        "grasp_accepted": false,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": null,
+        "hinge_slide_closed_m": null,
+        "capability_refusals": 1
+      },
+      "psm3": {
+        "model": "420093",
+        "grasp_accepted": true,
+        "open_accepted": true,
+        "close_accepted": true,
+        "hinge_slide_open_m": -0.002100845,
+        "hinge_slide_closed_m": -0.0,
+        "capability_refusals": 0
+      }
+    }
+  },
+  "runtime_ok": true
+}

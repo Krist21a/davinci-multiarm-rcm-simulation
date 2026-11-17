@@ -1,0 +1,243 @@
+{
+  "scene": "scenes/davinci_si_instruments.ttt",
+  "scene_sha256": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
+  "mode": "full",
+  "scenario": "nominal",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "cut": {
+      "length_m": 0.009,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "total_ticks": 400
+    }
+  },
+  "roles": {
+    "psm1": {
+      "identified": "420172",
+      "ok": true
+    },
+    "psm2": {
+      "identified": "420179",
+      "ok": true
+    },
+    "psm3": {
+      "identified": "420093",
+      "ok": true
+    },
+    "ecm": {
+      "identified": "endoscope_camera",
+      "ok": true
+    }
+  },
+  "final_state": "DONE",
+  "final_label": "完成",
+  "reason": "cut length 10.0 mm reached",
+  "ticks": 13,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "GRASP",
+    "INIT",
+    "LOCALIZE"
+  ],
+  "transitions": [
+    "ALIGN->CUT",
+    "CUT->DONE",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "建立抓持",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2351175962813418,
+        "grasped": {},
+        "tension": 0.0066,
+        "max_strain": 0.1176,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2351175962813418,
+        "grasped": {},
+        "tension": 0.0066,
+        "max_strain": 0.1176,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 7,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.052",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23149143642843056,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0516,
+        "max_strain": 0.1201,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.67 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23149143642843056,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0516,
+        "max_strain": 0.1201,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 13,
+      "frm": "CUT",
+      "to": "DONE",
+      "label": "完成",
+      "reason": "cut length 10.0 mm reached",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.18451062446482094,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0838,
+        "max_strain": 0.1304,
+        "torn": 0,
+        "cut_length_m": 0.01,
+        "faults": []
+      }
+    }
+  ],
+  "final_observation": {
+    "cut_length_m": 0.01,
+    "tension": 0.08384552094205988,
+    "max_strain": 0.1274110220456568,
+    "torn": 0
+  },
+  "tissue": {
+    "cut": 82,
+    "torn": 0,
+    "cut_events": [
+      {
+        "arm": "psm2",
+        "constraints": 16,
+        "t": 13.100000000000051
+      },
+      {
+        "arm": "psm2",
+        "constraints": 21,
+        "t": 14.40000000000007
+      },
+      {
+        "arm": "psm2",
+        "constraints": 23,
+        "t": 15.700000000000088
+      },
+      {
+        "arm": "psm2",
+        "constraints": 22,
+        "t": 17.000000000000107
+      }
+    ],
+    "torn_events": {}
+  },
+  "camera_moves": 0,
+  "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer."
+}

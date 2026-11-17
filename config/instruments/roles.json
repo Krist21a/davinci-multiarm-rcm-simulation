@@ -1,0 +1,15 @@
+{
+  "_note": "Role requirements for the prostate-adjacent cutting task. A role only REQUIRES capabilities; it never grants them. scripts/build/instrument_guard.py identifies the instrument on each arm from the jaw and wrist geometry in the scene and refuses the role when that instrument lacks a required capability. The 'instrument' entries are the build request for scripts/build/install_instruments.py, not a claim the guard trusts.",
+  "roles": {
+    "primary_retraction": {"requires": ["grasp_tissue", "retract_tissue"]},
+    "cutting": {"requires": ["cut"]},
+    "assist_retraction_handover": {"requires": ["grasp_tissue", "retract_tissue"]},
+    "view_hold": {"requires": ["view"]}
+  },
+  "arms": {
+    "psm1": {"role": "primary_retraction", "instrument": "420172"},
+    "psm2": {"role": "cutting", "instrument": "420179"},
+    "psm3": {"role": "assist_retraction_handover", "instrument": "420093"},
+    "ecm": {"role": "view_hold"}
+  }
+}

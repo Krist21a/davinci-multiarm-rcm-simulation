@@ -1,0 +1,16 @@
+{
+  "model": "legacy_lnd",
+  "name": "Needle driver of the original scene (dVRK Classic-style meshes)",
+  "system": "repository meshes models/meshes/instrument/ur5e_new_dvrk_*",
+  "family": "needle_driver",
+  "capabilities": ["grasp", "needle_drive"],
+  "capabilities_basis": "The instrument all three PSMs carried before config/instruments existed; it is the instrument of scenes/davinci_endoscope_task.ttt and scenes/davinci_foot_docking_rcm.ttt. Treated like the Large Needle Driver: grasp yes, tissue retraction and cutting no.",
+  "reference_npz": "models/meshes/instrument/legacy_lnd_reference.npz",
+  "reference_basis": "Captured from scenes/davinci_endoscope_task.ttt (PSM2) by scripts/build/install_instruments.py, in the dVRK wrist frames. Its jaws differ from the dVRK Si 420006 meshes by about 0.45 mm mean surface distance.",
+  "kinematics": {
+    "pitch_to_yaw_m": 0.0091,
+    "jaw_limits_rad": [-2.0943951023934, 2.0943951023934],
+    "jaw_limits_basis": "Original scene: each of the two jaw joints spans +-60 deg.",
+    "jaw_hinge_offset_m": 0.0
+  }
+}

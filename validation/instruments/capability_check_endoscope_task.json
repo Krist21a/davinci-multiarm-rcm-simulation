@@ -1,0 +1,201 @@
+{
+  "scene": "scenes/davinci_endoscope_task.ttt",
+  "roles": "config/instruments/roles.json",
+  "ok": false,
+  "tolerance_m": 0.0005,
+  "arms": {
+    "psm1": {
+      "role": "primary_retraction",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "identified": "legacy_lnd",
+      "capabilities": [
+        "grasp",
+        "needle_drive"
+      ],
+      "identification": {
+        "model": "legacy_lnd",
+        "closest": "legacy_lnd",
+        "closest_worst_part_m": 1.0703520357770794e-15,
+        "margin_to_second_m": 0.0005296422283649597,
+        "scores_m": {
+          "420006": {
+            "wrist": 0.0006571086096913459,
+            "jaw_plus": 0.0004362790777441114,
+            "jaw_minus": 0.0004955389976615738
+          },
+          "420179": {
+            "wrist": 0.0006571086096913459,
+            "jaw_plus": 0.0010623179768493528,
+            "jaw_minus": 0.0013190952623015053
+          },
+          "420172": {
+            "wrist": 0.001152944997126244,
+            "jaw_plus": 0.0022105064751639742,
+            "jaw_minus": 0.0023133801347473837
+          },
+          "420093": {
+            "wrist": 0.001152944997126244,
+            "jaw_plus": 0.0044437317499184765,
+            "jaw_minus": 0.004884665047837873
+          },
+          "legacy_lnd": {
+            "wrist": 5.783843259099024e-16,
+            "jaw_plus": 1.0703520357770794e-15,
+            "jaw_minus": 5.030647871467068e-16
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 7.310818617156656e-14,
+          "jaw_axis_error": 3.264680849900769e-07,
+          "jaw_axes_antiparallel_error": 8.026062388087905e-07,
+          "jaw_joint_offset_m": 0.009099999999999723,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "declared_instrument_mismatch": {
+        "declared": "420172",
+        "geometry": "legacy_lnd"
+      },
+      "missing": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "ok": false
+    },
+    "psm2": {
+      "role": "cutting",
+      "requires": [
+        "cut"
+      ],
+      "identified": "legacy_lnd",
+      "capabilities": [
+        "grasp",
+        "needle_drive"
+      ],
+      "identification": {
+        "model": "legacy_lnd",
+        "closest": "legacy_lnd",
+        "closest_worst_part_m": 1.1085667005747675e-16,
+        "margin_to_second_m": 0.0005296422283655398,
+        "scores_m": {
+          "420006": {
+            "wrist": 0.0006571086096913449,
+            "jaw_plus": 0.0004362790777440265,
+            "jaw_minus": 0.0004955389976615767
+          },
+          "420179": {
+            "wrist": 0.0006571086096913449,
+            "jaw_plus": 0.0010623179768494903,
+            "jaw_minus": 0.0013190952623012386
+          },
+          "420172": {
+            "wrist": 0.0011529449971262435,
+            "jaw_plus": 0.0022105064751640193,
+            "jaw_minus": 0.002313380134747172
+          },
+          "420093": {
+            "wrist": 0.0011529449971262435,
+            "jaw_plus": 0.004443731749918177,
+            "jaw_minus": 0.004884665047837852
+          },
+          "legacy_lnd": {
+            "wrist": 1.1085667005747675e-16,
+            "jaw_plus": 1.1085635609639482e-16,
+            "jaw_minus": 1.0736345135237363e-16
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 1.8762769116165146e-14,
+          "jaw_axis_error": 3.264680847638504e-07,
+          "jaw_axes_antiparallel_error": 8.026062385264036e-07,
+          "jaw_joint_offset_m": 0.009099999999999898,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "declared_instrument_mismatch": {
+        "declared": "420179",
+        "geometry": "legacy_lnd"
+      },
+      "missing": [
+        "cut"
+      ],
+      "ok": false
+    },
+    "psm3": {
+      "role": "assist_retraction_handover",
+      "requires": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "identified": "legacy_lnd",
+      "capabilities": [
+        "grasp",
+        "needle_drive"
+      ],
+      "identification": {
+        "model": "legacy_lnd",
+        "closest": "legacy_lnd",
+        "closest_worst_part_m": 7.815077186553492e-16,
+        "margin_to_second_m": 0.0005296422283650947,
+        "scores_m": {
+          "420006": {
+            "wrist": 0.0006571086096913488,
+            "jaw_plus": 0.0004362790777440727,
+            "jaw_minus": 0.0004955389976615912
+          },
+          "420179": {
+            "wrist": 0.0006571086096913488,
+            "jaw_plus": 0.0010623179768496686,
+            "jaw_minus": 0.0013190952623012924
+          },
+          "420172": {
+            "wrist": 0.0011529449971262372,
+            "jaw_plus": 0.0022105064751641755,
+            "jaw_minus": 0.0023133801347472722
+          },
+          "420093": {
+            "wrist": 0.0011529449971262372,
+            "jaw_plus": 0.004443731749918289,
+            "jaw_minus": 0.004884665047837994
+          },
+          "legacy_lnd": {
+            "wrist": 6.2122653809206355e-16,
+            "jaw_plus": 7.815077186553492e-16,
+            "jaw_minus": 3.2578849038443927e-16
+          }
+        },
+        "frame": {
+          "pitch_axis_dot_distal": 7.376044219853384e-15,
+          "jaw_axis_error": 3.264680839941169e-07,
+          "jaw_axes_antiparallel_error": 8.026062380630703e-07,
+          "jaw_joint_offset_m": 0.009099999999999784,
+          "jaw_joints_coincident_m": 0.0
+        }
+      },
+      "declared_instrument_mismatch": {
+        "declared": "420093",
+        "geometry": "legacy_lnd"
+      },
+      "missing": [
+        "grasp_tissue",
+        "retract_tissue"
+      ],
+      "ok": false
+    },
+    "ecm": {
+      "role": "view_hold",
+      "requires": [
+        "view"
+      ],
+      "identified": "endoscope_camera",
+      "capabilities": [
+        "view"
+      ],
+      "missing": [],
+      "ok": true
+    }
+  }
+}

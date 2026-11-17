@@ -1,0 +1,188 @@
+{
+  "scene": "scenes/davinci_si_instruments.ttt",
+  "scene_sha256": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
+  "spacing_m": 0.001,
+  "pretension": 0.08,
+  "grasper": {
+    "arm": "psm1",
+    "jaws_opened": true,
+    "jaws_closed": true,
+    "constraints_cut_by_closing": 0,
+    "nodes_grasped": 84,
+    "retract_1p5mm_accepted": true,
+    "max_strain_before_pull": 0.08897862057016526,
+    "max_strain_after_pull": 0.2652903057092051,
+    "torn": 0,
+    "nodes_released": 84,
+    "max_strain_after_release": 0.10312145993607724
+  },
+  "scissors": {
+    "arm": "psm2",
+    "grasp_result": -1,
+    "cycles": [
+      {
+        "opened": true,
+        "advanced": true,
+        "closed": true,
+        "constraints_cut": 1,
+        "blade_line_uv_m": [
+          [
+            -0.001585404186734531,
+            -0.009602241044885992
+          ],
+          [
+            -1.0394947016329446e-09,
+            0.000999999999979745
+          ]
+        ]
+      },
+      {
+        "opened": true,
+        "advanced": true,
+        "closed": true,
+        "constraints_cut": 22,
+        "blade_line_uv_m": [
+          [
+            -0.0015854052262294757,
+            -0.006602241044906659
+          ],
+          [
+            -2.0789896463440163e-09,
+            0.003999999999959076
+          ]
+        ]
+      },
+      {
+        "opened": true,
+        "advanced": true,
+        "closed": true,
+        "constraints_cut": 21,
+        "blade_line_uv_m": [
+          [
+            -0.0015854062657239777,
+            -0.003602241044926948
+          ],
+          [
+            -3.118484148429551e-09,
+            0.006999999999938788
+          ]
+        ]
+      },
+      {
+        "opened": true,
+        "advanced": true,
+        "closed": true,
+        "constraints_cut": 22,
+        "blade_line_uv_m": [
+          [
+            -0.0015854073052187973,
+            -0.0006022410449475559
+          ],
+          [
+            -4.157978968077902e-09,
+            0.00999999999991818
+          ]
+        ]
+      }
+    ],
+    "constraints_cut": 66,
+    "torn": 0,
+    "constraints": 808,
+    "max_strain_end": 0.1835400797528628,
+    "gap_along_cut_m": {
+      "before": [
+        0.0009415580709316595,
+        0.0009578607716810777,
+        0.0009723438334527685,
+        0.0009849518971365215,
+        0.0009953926879405163,
+        0.0010035000833839198,
+        0.0010088501948079297,
+        0.0010113822524493536,
+        0.0010112828686280712,
+        0.0010096111123936366,
+        0.001007184860072254,
+        0.0010039592825790882,
+        0.000999713986465027,
+        0.0010000000000000102
+      ],
+      "after": [
+        0.0024709311994495216,
+        0.0020430284474836674,
+        0.001984822993172548,
+        0.0017098147532607852,
+        0.0017124460769009748,
+        0.0016012560249992274,
+        0.0017256877908107097,
+        0.0014495052311910557,
+        0.0013618643116733715,
+        0.0015724113561057511,
+        0.001209399622786263,
+        0.0010625135159940842,
+        0.0010201347975793184,
+        0.0010000000000000267
+      ]
+    },
+    "separated_rows": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "cut_depth_m": 0.01,
+    "widest_gap_column_per_row": [
+      7,
+      6,
+      6,
+      7,
+      6,
+      6,
+      7,
+      7,
+      7,
+      7,
+      7,
+      6,
+      0,
+      0
+    ],
+    "cut_events": [
+      {
+        "arm": "psm2",
+        "t": 8.79999999999999,
+        "constraints": 1
+      },
+      {
+        "arm": "psm2",
+        "t": 10.300000000000011,
+        "constraints": 22
+      },
+      {
+        "arm": "psm2",
+        "t": 11.800000000000033,
+        "constraints": 21
+      },
+      {
+        "arm": "psm2",
+        "t": 13.300000000000054,
+        "constraints": 22
+      }
+    ],
+    "torn_events": []
+  },
+  "checks": {
+    "grasper_does_not_cut": true,
+    "grasper_grasps_tissue": true,
+    "scissors_cannot_grasp": true,
+    "scissors_cut_separates_sheet": true,
+    "no_tearing": true
+  },
+  "ok": true,
+  "notes": "Kinematic position-based sheet; the instruments do not collide with it. Cutting removes the constraints within 0.3 mm of the closed blade line. No mass, gravity, contact force, bleeding or energy effect."
+}

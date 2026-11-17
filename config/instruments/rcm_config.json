@@ -1,0 +1,451 @@
+[
+  {
+    "arm": "psm1",
+    "joints": [
+      {
+        "name": "psm1_setup1_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm1_setup2_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm1_setup3_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm1_setup4_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm1_mount_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm1_shoulder_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm1_elbow_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm1_carrier_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      }
+    ],
+    "rcm_world": [
+      -0.17515218205829597,
+      -1.0871188502031828,
+      0.7144115259054065
+    ],
+    "axis_home": [
+      0.7005965852033135,
+      0.7076767837843191,
+      -0.0914220678727986
+    ],
+    "transverse_x": [
+      0.5997211153502461,
+      -0.5145505946041317,
+      0.6128395135723476
+    ],
+    "transverse_y": [
+      0.3866510165569377,
+      -0.4841810149987471,
+      -0.7849010995725959
+    ],
+    "shaft_home": [
+      -0.4125142474705284,
+      -1.3268796863076404,
+      0.7453853149687595
+    ],
+    "insertion_home": 0.04,
+    "rcm_distance_home": 0.338799917702485,
+    "insertion_joint": "psm1_joint7",
+    "shaft_frame": "psm1_joint8",
+    "projection": "psm1_RCM_projection",
+    "tool_shape": "psm1_tool_main_respondable_visual",
+    "port_radius_m": 0.016,
+    "constrain_roll": false,
+    "auto_demo": true,
+    "limits": {
+      "yaw_deg": 5.0,
+      "pitch_deg": 5.0,
+      "insertion_min": 0.025,
+      "insertion_max": 0.055
+    },
+    "demo": {
+      "yaw_deg": 1.0,
+      "pitch_deg": 0.75,
+      "insertion_amp_m": 0.002
+    },
+    "grip_joints": [
+      "psm1_joint10",
+      "psm1_joint11"
+    ],
+    "tcp_frame": "psm1_tcp",
+    "port_source": "config/instruments/port_plan.json"
+  },
+  {
+    "arm": "psm2",
+    "joints": [
+      {
+        "name": "psm2_setup1_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm2_setup2_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm2_setup3_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm2_mount_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm2_shoulder_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm2_elbow_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm2_carrier_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      }
+    ],
+    "rcm_world": [
+      -0.048448429529702866,
+      -1.0851640378533396,
+      0.7313999960021021
+    ],
+    "axis_home": [
+      -0.24659852723078676,
+      0.8797495902408088,
+      -0.4064847166115064
+    ],
+    "transverse_x": [
+      0.930520231961339,
+      0.0977483007530264,
+      -0.35295519207189996
+    ],
+    "transverse_y": [
+      -0.2707789952677697,
+      -0.4652804833334683,
+      -0.8427293797837787
+    ],
+    "shaft_home": [
+      0.03425303586627687,
+      -1.380204649445036,
+      0.8677223093848494
+    ],
+    "insertion_home": 0.04,
+    "rcm_distance_home": 0.33536885364187996,
+    "insertion_joint": "psm2_joint7",
+    "shaft_frame": "psm2_joint8",
+    "projection": "psm2_RCM_projection",
+    "tool_shape": "psm2_tool_main_respondable_visual",
+    "port_radius_m": 0.016,
+    "constrain_roll": false,
+    "auto_demo": true,
+    "limits": {
+      "yaw_deg": 5.0,
+      "pitch_deg": 5.0,
+      "insertion_min": 0.0,
+      "insertion_max": 0.045
+    },
+    "demo": {
+      "yaw_deg": 1.0,
+      "pitch_deg": 0.75,
+      "insertion_amp_m": 0.002
+    },
+    "grip_joints": [
+      "psm2_joint10",
+      "psm2_joint11"
+    ],
+    "tcp_frame": "psm2_tcp"
+  },
+  {
+    "arm": "psm3",
+    "joints": [
+      {
+        "name": "psm3_setup1_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm3_setup2_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm3_setup3_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm3_mount_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "psm3_shoulder_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm3_elbow_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      },
+      {
+        "name": "psm3_carrier_joint",
+        "type": "revolute",
+        "limits": [
+          -1.2,
+          1.2
+        ]
+      }
+    ],
+    "rcm_world": [
+      0.042251817941704045,
+      -1.09363405028434,
+      0.7113569848756469
+    ],
+    "axis_home": [
+      -0.7275993903915848,
+      0.6755704197202208,
+      -0.11917942398266401
+    ],
+    "transverse_x": [
+      0.2164048439497298,
+      0.06117700945045751,
+      -0.9743850968840772
+    ],
+    "transverse_y": [
+      -0.6509747081238162,
+      -0.7347530071484869,
+      -0.19070906603874116
+    ],
+    "shaft_home": [
+      0.27925158617337364,
+      -1.313686506375206,
+      0.7501771051822509
+    ],
+    "insertion_home": 0.04,
+    "rcm_distance_home": 0.32572837658716025,
+    "insertion_joint": "psm3_joint7",
+    "shaft_frame": "psm3_joint8",
+    "projection": "psm3_RCM_projection",
+    "tool_shape": "psm3_tool_main_respondable_visual",
+    "port_radius_m": 0.016,
+    "constrain_roll": false,
+    "auto_demo": true,
+    "limits": {
+      "yaw_deg": 5.0,
+      "pitch_deg": 5.0,
+      "insertion_min": 0.025,
+      "insertion_max": 0.055
+    },
+    "demo": {
+      "yaw_deg": 1.0,
+      "pitch_deg": 0.75,
+      "insertion_amp_m": 0.002
+    },
+    "grip_joints": [
+      "psm3_joint10",
+      "psm3_joint11"
+    ],
+    "tcp_frame": "psm3_tcp",
+    "port_source": "config/instruments/port_plan.json"
+  },
+  {
+    "arm": "ecm",
+    "joints": [
+      {
+        "name": "ecm_setup1_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "ecm_setup2_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "ecm_setup3_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "ecm_mount_joint",
+        "type": "revolute",
+        "limits": [
+          -3.141592653589793,
+          3.141592653589793
+        ]
+      },
+      {
+        "name": "ecm_shoulder_joint",
+        "type": "revolute",
+        "limits": [
+          -1.6,
+          1.6
+        ]
+      },
+      {
+        "name": "ecm_elbow_joint",
+        "type": "revolute",
+        "limits": [
+          -1.6,
+          1.6
+        ]
+      },
+      {
+        "name": "ecm_carrier_joint",
+        "type": "revolute",
+        "limits": [
+          -1.6,
+          1.6
+        ]
+      }
+    ],
+    "rcm_world": [
+      -0.0691917,
+      -1.1896155795977577,
+      0.7116643785470914
+    ],
+    "axis_home": [
+      0.2770850122052383,
+      0.9109946927444713,
+      -0.3054710555889526
+    ],
+    "transverse_x": [
+      -0.9608433726637733,
+      0.26336288935991514,
+      -0.08613943183061931
+    ],
+    "transverse_y": [
+      0.0019771745820114095,
+      0.31737778482339174,
+      0.9482971224680948
+    ],
+    "shaft_home": [
+      -0.051104926971870246,
+      -1.1301502403996375,
+      0.6917247015319803
+    ],
+    "insertion_home": 0.08,
+    "rcm_distance_home": -0.0652751763228987,
+    "insertion_joint": "ecm_insertion_joint",
+    "shaft_frame": "ecm_scope_tip",
+    "projection": "ecm_RCM_projection",
+    "tool_shape": "ecm_insertion_visual",
+    "port_radius_m": 0.03,
+    "constrain_roll": true,
+    "auto_demo": false,
+    "demo": {
+      "yaw_deg": 0.0,
+      "pitch_deg": 0.0,
+      "insertion_amp_m": 0.0
+    },
+    "limits": {
+      "yaw_deg": 6.0,
+      "pitch_deg": 6.0,
+      "insertion_min": 0.07,
+      "insertion_max": 0.09
+    }
+  }
+]
