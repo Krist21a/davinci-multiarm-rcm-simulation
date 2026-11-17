@@ -8,7 +8,8 @@
 --   tissueGrasp(index)   needs 'grasp_tissue': pins nodes within grasp_radius of the closed jaws to the tool tip.
 --   tissueRelease(index)
 --   closing scissors     setGrip with a smaller angle than before (from >= 0.15 rad) on an arm with 'cut' cuts
---                        every constraint that passes within cut_radius of the blade line (pivot -> tool tip).
+--                        every constraint crossing the wedge between the open blades, or within cut_radius of
+--                        the closed blade line (pivot -> tool tip).
 --   tissueStats(), tissueNodes(), tissueRemove()
 -- A constraint stretched beyond tear_ratio * rest length breaks and counts as torn (tissue damage).
 local T=nil
@@ -79,9 +80,10 @@ function tissueCreate(spec)
         local k=id(i,j)
         local p=vadd(spec.origin,vadd(vmul(spec.u,(i-(nu-1)/2)*h),vmul(spec.v,j*h)))
         T.x[k]=p;T.prev[k]=v3(p)
-        -- Side anchors start at row 1: a pinned corner on the free near edge concentrates the pre-tension in
-        -- one constraint (it tore at 53 % strain before any cut in the first trial).
-        if j==nv-1 or (spec.anchor_sides and j>=1 and (i==0 or i==nu-1)) then T.pinned[k]={fixed=v3(p)} end
+        -- Side anchors start at row spec.anchor_from_row (default 1): a pinned corner on the free near edge
+        -- concentrates the pre-tension in one constraint (it tore at 53 % strain before any cut in the first
+        -- trial; the 24-node-wide task sheet still tore at row 1 and uses row 3).
+        if j==nv-1 or (spec.anchor_sides and j>=(spec.anchor_from_row or 1) and (i==0 or i==nu-1)) then T.pinned[k]={fixed=v3(p)} end
     end end
     local key={}
     local function spring(a,b)
@@ -109,13 +111,48 @@ local function jawSegment(arm)
     return sim.getObjectPosition(arm.grip[1],sim.handle_world),sim.getObjectPosition(arm.tcp,sim.handle_world)
 end
 
-function tissueCut(index)
+local function rotate(v,k,a)      -- Rodrigues: v rotated by a about unit axis k
+    local c,s=math.cos(a),math.sin(a)
+    local kxv={k[2]*v[3]-k[3]*v[2],k[3]*v[1]-k[1]*v[3],k[1]*v[2]-k[2]*v[1]}
+    return vadd(vadd(vmul(v,c),vmul(kxv,s)),vmul(k,vdot(k,v)*(1-c)))
+end
+-- Möller-Trumbore: does segment p-q cross triangle a,b,c?
+local function segTri(p,q,a,b,c)
+    local d=vsub(q,p);local e1,e2=vsub(b,a),vsub(c,a)
+    local h={d[2]*e2[3]-d[3]*e2[2],d[3]*e2[1]-d[1]*e2[3],d[1]*e2[2]-d[2]*e2[1]}
+    local det=vdot(e1,h)
+    if math.abs(det)<1e-18 then return false end
+    local f=1/det;local s=vsub(p,a);local u=f*vdot(s,h)
+    if u<0 or u>1 then return false end
+    local qv={s[2]*e1[3]-s[3]*e1[2],s[3]*e1[1]-s[1]*e1[3],s[1]*e1[2]-s[2]*e1[1]}
+    local v=f*vdot(d,qv)
+    if v<0 or u+v>1 then return false end
+    local t=f*vdot(e2,qv)
+    return t>=0 and t<=1
+end
+
+-- Closing blades cut what lies between them: every constraint that crosses the wedge swept by the two blade
+-- lines (pivot -> blade tip, each blade turned by its opening angle about its jaw joint axis), plus every
+-- constraint within cut_radius of the closed blade line.
+function tissueCut(index,openAngle)
     local arm=arms[index]
     if not T or not arm or not hasInstrumentCapability(index,'cut') then return 0 end
     local P,Q=jawSegment(arm)
+    local wedge=nil
+    if openAngle and openAngle>0 and #arm.grip>=2 then
+        local tips={}
+        for i=1,2 do
+            local m=sim.getObjectMatrix(arm.grip[i],sim.handle_world)
+            tips[i]=vadd(P,rotate(vsub(Q,P),{m[3],m[7],m[11]},openAngle))
+        end
+        wedge={P,tips[1],tips[2]}
+    end
     local r2,n=T.p.cut_radius^2,0
     for _,s in ipairs(T.springs) do
-        if s.alive and segDist2(T.x[s.a],T.x[s.b],P,Q)<r2 then s.alive=false;n=n+1 end
+        if s.alive then
+            local a,b=T.x[s.a],T.x[s.b]
+            if segDist2(a,b,P,Q)<r2 or (wedge and segTri(a,b,wedge[1],wedge[2],wedge[3])) then s.alive=false;n=n+1 end
+        end
     end
     T.cut=T.cut+n
     T.cutLog[#T.cutLog+1]={arm=arm.arm,t=sim.getSimulationTime(),constraints=n}
@@ -201,6 +238,14 @@ function tissueStats()
             max_strain=T.maxStrain,median_strain=median,p90_strain=p90,grasped=grasped,cut_events=T.cutLog,torn_events=T.tornLog}
 end
 
+-- Constraint list as flat {a, b, alive} triples (node indices from 0, alive 1/0).
+function tissueConstraints()
+    if not T then return {} end
+    local out={}
+    for _,s in ipairs(T.springs) do out[#out+1]=s.a-1;out[#out+1]=s.b-1;out[#out+1]=s.alive and 1 or 0 end
+    return out
+end
+
 function tissueNodes()
     if not T then return {} end
     local out={}
@@ -213,7 +258,7 @@ function setGrip(index,angle)
     local arm=arms[index]
     local before=arm and arm.gripAngle or 0
     local ok=cutSetGrip(index,angle)
-    if ok and T and angle<before-1e-3 and before>=0.15 and hasInstrumentCapability(index,'cut') then tissueCut(index) end
+    if ok and T and angle<before-1e-3 and before>=0.15 and hasInstrumentCapability(index,'cut') then tissueCut(index,before-angle) end
     return ok
 end
 

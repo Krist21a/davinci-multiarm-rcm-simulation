@@ -45,7 +45,7 @@ class FakeWorld:
             if self.tick == t:
                 self.grasped[arm] = 0
         if self.e.get('relax') == self.tick:
-            self.retraction -= 0.002
+            self.retraction -= 0.0005
             self.base_strain = max(0.0, self.base_strain - 0.07)
         hidden = self.hidden()
         drift = self.e.get('drift')

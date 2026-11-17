@@ -75,7 +75,7 @@ def main():
         scene=relative(INSTRUMENT_SCENE), scene_sha256=sha256(INSTRUMENT_SCENE), mode=args.mode, scenario=args.scenario,
         config=cfg, roles=getattr(world, 'roles_report', None), **rep,
         final_observation=dict(cut_length_m=final.cut_length_m, tension=final.tension, max_strain=final.max_strain, torn=final.torn),
-        tissue=dict(cut=stats.get('cut'), torn=stats.get('torn'), cut_events=stats.get('cut_events')),
+        tissue=dict(cut=stats.get('cut'), torn=stats.get('torn'), cut_events=stats.get('cut_events'), torn_events=stats.get('torn_events')),
         camera_moves=world.camera_moves,
         notes='cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. '
               'Visibility uses the rendered endoscope depth buffer.'))

@@ -214,7 +214,9 @@ class CutTaskFSM:
             return self.go(S.DONE, f'cut length {obs.cut_length_m * 1000:.1f} mm reached', obs)
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
-        if not self.w.advance_scissors(self.cfg['cut']['advance_m']):
+        # The last bite only covers what is left, so the cut does not run past the planned length.
+        step = min(self.cfg['cut']['advance_m'], max(0.001, self.cfg['cut']['length_m'] - obs.cut_length_m))
+        if not self.w.advance_scissors(step):
             return self.go(S.FAILED, 'scissors advance refused (limits or collision)', obs)
         # Check the view again between advancing and closing: the blades close only on a visible cut site.
         if not self.visible(self.w.observe()):

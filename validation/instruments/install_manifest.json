@@ -1,5 +1,5 @@
 {
-  "built_at_unix": 1794887886,
+  "built_at_unix": 1794893598,
   "coppeliasim_version": 4100000,
   "inputs": {
     "scenes/davinci_endoscope_task.ttt": "df4b711f98816abd8e8f5c242a314a31770259b91b4d3ed45a2acaddc14ebff4",
@@ -8,17 +8,77 @@
     "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
     "src/endoscope/rcm_controller.lua": "72e5e26177fea3bbe772b108ed7dbe55e7d1c2f5e2a97c35b26ef52885376bb6",
     "src/instruments/capability_guard.lua": "a34a244b9459b738703ae8e772f25bb0dddbc79241922b6f07c7925aa3f28362",
-    "src/tissue/tissue.lua": "c61a3ff85d0351542eafa9ba761d5db49051543abcf1c30f62f136e8617d15ed",
+    "src/tissue/tissue.lua": "75f4255932df0cdbdaacef5ed0d0914009b1aa2a353930ffe1221f78eeb53248",
     "models/meshes/instrument/dvrk/SOURCE.json": "3fcde00ff530227ae7d68e2c1de22903814676d54d0d6c171ac90277a2972546",
     "config/instruments/420006.json": "c99ad48df6248bb12cfbe2043cd9b25343c0ca1246545737cc4aed3de0db89c3",
     "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
     "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
     "config/instruments/420093.json": "d82b4dfc26d55b5ae692357ff3cb5f9295eec491624f7d7de24611d1be9a49eb",
-    "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38"
+    "config/instruments/legacy_lnd.json": "22cda0ce4144958ad1e2c1e16b8cda3017b11443c47619ad307bc4977be52e38",
+    "config/instruments/port_plan.json": "cdbd844e6177f3845bdc9791d3c87cc993762ad2a86754bffca1284a7b440c15"
   },
   "outputs": {
-    "scenes/davinci_si_instruments.ttt": "243a208de9af0af192a63793bab3b2e7e9c3254c9b69be05549159f8a684c247",
-    "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47"
+    "scenes/davinci_si_instruments.ttt": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
+    "models/meshes/instrument/legacy_lnd_reference.npz": "5ae9dfb6617080b445649f89f9204f1b76577111dba8210f6a906fa50f25cb47",
+    "config/instruments/rcm_config.json": "afcc96f7617c66d0b72acf49119694026d96aa0f95c063e39105190d19e5b8b2"
+  },
+  "ports": {
+    "psm1": {
+      "rcm_world": [
+        -0.17515218205829597,
+        -1.0871188502031828,
+        0.7144115259054065
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.025,
+        "insertion_max": 0.055
+      },
+      "source": "config/instruments/port_plan.json"
+    },
+    "psm2": {
+      "rcm_world": [
+        -0.048448429529702866,
+        -1.0851640378533396,
+        0.7313999960021021
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.0,
+        "insertion_max": 0.045
+      },
+      "source": "config/endoscope/rcm_config.json"
+    },
+    "psm3": {
+      "rcm_world": [
+        0.042251817941704045,
+        -1.09363405028434,
+        0.7113569848756469
+      ],
+      "limits": {
+        "yaw_deg": 5.0,
+        "pitch_deg": 5.0,
+        "insertion_min": 0.025,
+        "insertion_max": 0.055
+      },
+      "source": "config/instruments/port_plan.json"
+    },
+    "ecm": {
+      "rcm_world": [
+        -0.0691917,
+        -1.1896155795977577,
+        0.7116643785470914
+      ],
+      "limits": {
+        "yaw_deg": 6.0,
+        "pitch_deg": 6.0,
+        "insertion_min": 0.07,
+        "insertion_max": 0.09
+      },
+      "source": "config/endoscope/rcm_config.json"
+    }
   },
   "registration_before_install": {
     "psm1": {
@@ -137,24 +197,24 @@
     "psm1": {
       "model": "420172",
       "yaw_axis_world": [
-        -0.10331685330082649,
-        -1.0124722523749894,
-        0.6864950600885932
+        -0.10369128568669747,
+        -1.0149357428928822,
+        0.7050865005711805
       ],
       "hinge_world": [
-        -0.10331685330082649,
-        -1.0124722523749894,
-        0.6864950600885932
+        -0.10369128568669747,
+        -1.0149357428928822,
+        0.7050865005711805
       ],
       "tool_tip_world": [
-        -0.08994749654092295,
-        -0.9975193494193889,
-        0.6799362170177763
+        -0.08979807243482793,
+        -0.9993070986061289,
+        0.7022454562742727
       ],
       "tool_tip_dvrk_world": [
-        -0.08903291400123776,
-        -0.9981397421268996,
-        0.6808782791533897
+        -0.08897878286000671,
+        -1.0000744968282496,
+        0.7031667021491949
       ],
       "tool_tip_minus_dvrk_m": 0.0014521809118653213,
       "jaw_joint_limits_rad": [
@@ -199,24 +259,24 @@
     "psm3": {
       "model": "420093",
       "yaw_axis_world": [
-        -0.04801033739976572,
-        -0.9943295144456051,
-        0.6812390670832629
+        -0.04147419872360915,
+        -1.0158950362576096,
+        0.6976428189745505
       ],
       "hinge_world": [
-        -0.0521859859002633,
-        -0.9880220019036219,
-        0.6798005799846012
+        -0.04707669504039701,
+        -1.0106931230810998,
+        0.6967251402048098
       ],
       "tool_tip_world": [
-        -0.06359065427462593,
-        -0.9708491369809389,
-        0.6757652386425401
+        -0.0623745651464414,
+        -0.9965369115866297,
+        0.6941108379133226
       ],
       "tool_tip_dvrk_world": [
-        -0.06351988897304243,
-        -0.9709016107182387,
-        0.6758961150025196
+        -0.062283470757392614,
+        -0.9965736444591448,
+        0.6942342978297995
       ],
       "tool_tip_minus_dvrk_m": 0.0001577651501944086,
       "jaw_joint_limits_rad": [
@@ -234,8 +294,8 @@
   "identification_after_install": {
     "psm1": {
       "identified": "420172",
-      "closest_worst_part_m": 1.8354818414883898e-16,
-      "margin_to_second_m": 0.0011095659662619935
+      "closest_worst_part_m": 5.014418277170854e-16,
+      "margin_to_second_m": 0.001109565966261767
     },
     "psm2": {
       "identified": "420179",
@@ -244,8 +304,8 @@
     },
     "psm3": {
       "identified": "420093",
-      "closest_worst_part_m": 8.685057908113002e-16,
-      "margin_to_second_m": 0.0014044498713253627
+      "closest_worst_part_m": 8.157409039390743e-16,
+      "margin_to_second_m": 0.0014044498713254759
     }
   },
   "roles": {
@@ -307,27 +367,18 @@
       "psm3": 0.4497999999998658
     },
     "after": {
-      "psm1": 0.46185330062998947,
+      "psm1": 0.46185330062998936,
       "psm2": 0.4522522406479854,
-      "psm3": 0.46950580974550654
+      "psm3": 0.4695058097455061
     }
   },
   "instrument_roll": {
     "psm1": {
-      "roll_rad": 0.7853981633974483,
-      "roll_change_deg": 45.0,
-      "candidates_tried": 18,
+      "roll_rad": 0.0,
+      "roll_change_deg": 0.0,
+      "candidates_tried": 1,
       "pairs_checked": 267,
-      "first_blocked": {
-        "roll_rad": 0.0,
-        "closed": [],
-        "open": [
-          [
-            "psm1_yaw_ref2_respondable_visual",
-            "Patient_LeftHipBone"
-          ]
-        ]
-      }
+      "first_blocked": null
     },
     "psm2": {
       "roll_rad": -0.13606776444037622,
@@ -346,16 +397,16 @@
   },
   "jaw_opening": {
     "psm1": {
-      "closed_tip_gap_m": 0.00039940957365953414,
-      "open_tip_gap_m": 0.02044391133373838
+      "closed_tip_gap_m": 0.0003994095736597072,
+      "open_tip_gap_m": 0.020443911333738494
     },
     "psm2": {
       "closed_tip_gap_m": 0.0004336523553814831,
       "open_tip_gap_m": 0.009478161626129177
     },
     "psm3": {
-      "closed_tip_gap_m": 0.0009373422468304295,
-      "open_tip_gap_m": 0.020268456682903682
+      "closed_tip_gap_m": 0.0009373422468305955,
+      "open_tip_gap_m": 0.020268456682903915
     }
   },
   "jaw_open_per_joint_rad": 0.5,
@@ -365,8 +416,8 @@
   },
   "home_port_crossing_radius_m": {
     "psm2_tool_main_respondable_visual": 0.007594026160871639,
-    "psm3_tool_main_respondable_visual": 0.010027107857466983,
-    "psm1_tool_main_respondable_visual": 0.0075229077986558816,
+    "psm3_tool_main_respondable_visual": 0.009678156453700995,
+    "psm1_tool_main_respondable_visual": 0.011012749641900186,
     "ecm_insertion_visual": 0.014888825085991004
   },
   "collision_pairs": 2177,
@@ -375,7 +426,7 @@
     "time_step_s": 0.05,
     "arms": {
       "psm1": {
-        "max_drift_m": 1.8418523544024148e-09,
+        "max_drift_m": 8.733848377553774e-12,
         "failures": 0,
         "collision_blocks": 0
       },
@@ -385,7 +436,7 @@
         "collision_blocks": 0
       },
       "psm3": {
-        "max_drift_m": 1.528103361285864e-10,
+        "max_drift_m": 3.5329637488056976e-11,
         "failures": 0,
         "collision_blocks": 0
       },

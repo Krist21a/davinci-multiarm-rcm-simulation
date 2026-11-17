@@ -1,6 +1,6 @@
 {
   "scene": "scenes/davinci_si_instruments.ttt",
-  "scene_sha256": "243a208de9af0af192a63793bab3b2e7e9c3254c9b69be05549159f8a684c247",
+  "scene_sha256": "3bdc0039059454873fdfc18878fb16ca44dd8939c8c24d91c8bdacbeedd1660e",
   "mode": "full",
   "scenario": "nominal",
   "config": {
@@ -29,11 +29,12 @@
       "length_m": 0.009,
       "advance_m": 0.003,
       "align_tolerance_m": 0.0015,
-      "retract_step_m": 0.0005
+      "retract_step_m": 0.0002,
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
     },
     "budgets": {
       "localize_ticks": 5,
-      "expose_ticks": 20,
+      "expose_ticks": 40,
       "align_ticks": 10,
       "camera_adjust_attempts": 3,
       "retract_adjust_attempts": 4,
@@ -59,23 +60,30 @@
       "ok": true
     }
   },
-  "final_state": "FAILED",
-  "final_label": "失败停止",
-  "reason": "psm1 cannot grasp: needs yaw 7.3 deg, pitch -6.2 deg, insertion 41.8 mm; limits +-1.0 / +-0.75 deg, 38-42 mm",
-  "ticks": 3,
+  "final_state": "DONE",
+  "final_label": "完成",
+  "reason": "cut length 10.0 mm reached",
+  "ticks": 13,
   "visited": [
-    "FAILED",
+    "ALIGN",
+    "CUT",
+    "DONE",
+    "EXPOSE",
     "GRASP",
     "INIT",
     "LOCALIZE"
   ],
   "transitions": [
-    "GRASP->FAILED",
+    "ALIGN->CUT",
+    "CUT->DONE",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
     "INIT->LOCALIZE",
     "LOCALIZE->GRASP"
   ],
   "retractors": [
-    "psm1"
+    "psm1",
+    "psm3"
   ],
   "handover": null,
   "log": [
@@ -106,10 +114,10 @@
       "obs": {
         "cut_site_visible": true,
         "scissors_visible": true,
-        "cut_site_offset": 0.24759384961911396,
+        "cut_site_offset": 0.2351175962813418,
         "grasped": {},
-        "tension": 0.0003,
-        "max_strain": 0.1086,
+        "tension": 0.0066,
+        "max_strain": 0.1176,
         "torn": 0,
         "cut_length_m": 0.0,
         "faults": []
@@ -118,32 +126,117 @@
     {
       "tick": 3,
       "frm": "GRASP",
-      "to": "FAILED",
-      "label": "失败停止",
-      "reason": "psm1 cannot grasp: needs yaw 7.3 deg, pitch -6.2 deg, insertion 41.8 mm; limits +-1.0 / +-0.75 deg, 38-42 mm",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "grasped by ['psm1', 'psm3']",
       "obs": {
         "cut_site_visible": true,
         "scissors_visible": true,
-        "cut_site_offset": 0.24759384961911396,
+        "cut_site_offset": 0.2351175962813418,
         "grasped": {},
-        "tension": 0.0003,
-        "max_strain": 0.1086,
+        "tension": 0.0066,
+        "max_strain": 0.1176,
         "torn": 0,
         "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 7,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.052",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23149143642843056,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0516,
+        "max_strain": 0.1201,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.67 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23149143642843056,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0516,
+        "max_strain": 0.1201,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 13,
+      "frm": "CUT",
+      "to": "DONE",
+      "label": "完成",
+      "reason": "cut length 10.0 mm reached",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.18451062446482094,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 22
+        },
+        "tension": 0.0838,
+        "max_strain": 0.1304,
+        "torn": 0,
+        "cut_length_m": 0.01,
         "faults": []
       }
     }
   ],
   "final_observation": {
-    "cut_length_m": 0.0,
-    "tension": 0.0003374524898940301,
-    "max_strain": 0.1085888263813819,
+    "cut_length_m": 0.01,
+    "tension": 0.08384552094205988,
+    "max_strain": 0.1274110220456568,
     "torn": 0
   },
   "tissue": {
-    "cut": 0,
+    "cut": 82,
     "torn": 0,
-    "cut_events": {}
+    "cut_events": [
+      {
+        "arm": "psm2",
+        "constraints": 16,
+        "t": 13.100000000000051
+      },
+      {
+        "arm": "psm2",
+        "constraints": 21,
+        "t": 14.40000000000007
+      },
+      {
+        "arm": "psm2",
+        "constraints": 23,
+        "t": 15.700000000000088
+      },
+      {
+        "arm": "psm2",
+        "constraints": 22,
+        "t": 17.000000000000107
+      }
+    ],
+    "torn_events": {}
   },
   "camera_moves": 0,
   "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer."

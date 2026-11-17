@@ -27,6 +27,8 @@ from simtools import (ENDO_CONFIG, ENDO_SRC, ENDOSCOPE_SCENE, INSTRUMENT_SCENE, 
                       relative, save_scene, sha256, stop_simulation)
 
 LEGACY_NPZ = REPO / 'models' / 'meshes' / 'instrument' / 'legacy_lnd_reference.npz'
+PORT_PLAN = REPO / 'config' / 'instruments' / 'port_plan.json'
+RCM_OUT = REPO / 'config' / 'instruments' / 'rcm_config.json'
 JAW_OPEN_PER_JOINT = 0.5           # rad on each jaw joint = 1.0 rad jaw opening (the panel's "Open jaws", setGrip(0.5))
 ROLL_STEP_RAD = np.radians(5.0)
 INSTRUMENT_PARTS = ('rot_ref_respondable_visual', 'wrist_ref_respondable_visual', 'yaw_ref1_respondable_visual',
@@ -186,6 +188,35 @@ def choose_roll(sim, by, arm, info, labels, allowed, open_q):
         sim.removeObjects([probe])
 
 
+def apply_port_plan(sim, by, rcm, plan):
+    """Set the planned arm postures, move the RCM markers and rings, and return the updated RCM configuration."""
+    out = []
+    for c in rcm:
+        arm = c['arm']
+        if arm not in plan['arms']:
+            out.append(c)
+            continue
+        a = plan['arms'][arm]
+        for n, v in a['joint_positions'].items():
+            sim.setJointPosition(by[n], v)
+        M = guard.world(sim, by[c['shaft_frame']])
+        err = max(float(np.linalg.norm(M[:3, 3] - a['shaft_frame_world'])), float(np.linalg.norm(M[:3, 2] - a['axis_world'])))
+        if err > 1e-6:
+            raise SystemExit(f'{arm}: planned shaft pose not reproduced in the scene ({err})')
+        port = np.array(a['port_world'])
+        for suffix in ('_RCM_reference', '_RCM_projection'):
+            sim.setObjectPosition(by[arm + suffix], -1, port.tolist())
+        sim.removeObjects([by[arm + '_RCM_fixed_ring']])
+        bes.ring(sim, arm + '_RCM_fixed_ring', port, M[:3, 0], M[:3, 1], M[:3, 2], .008)
+        e = dict(c)
+        e.update(rcm_world=port.tolist(), axis_home=M[:3, 2].tolist(), transverse_x=M[:3, 0].tolist(),
+                 transverse_y=M[:3, 1].tolist(), shaft_home=M[:3, 3].tolist(),
+                 rcm_distance_home=float(np.dot(port - M[:3, 3], M[:3, 2])), limits=dict(plan['new_limits']),
+                 port_source='config/instruments/port_plan.json')
+        out.append(e)
+    return out
+
+
 def tcp_length(sim, by, arm):
     """Axial distance from the instrument roll frame (joint8) to the tool tip; replaces the old 0.4498 constant."""
     j8 = guard.world(sim, by[f'{arm}_joint8'])
@@ -278,6 +309,13 @@ def main():
     before = {a: guard.identify_arm(sim, by, a) for a in psms}
     tcp_before = {a: tcp_length(sim, by, a) for a in psms}
 
+    # 2b. Re-planned ports (config/instruments/port_plan.json, scripts/build/plan_psm_ports.py).
+    port_plan = read_json(PORT_PLAN) if PORT_PLAN.exists() else None
+    if port_plan:
+        rcm = apply_port_plan(sim, by, rcm, port_plan)
+        by = aliases(sim)
+        allowed = {a['tool_shape']: (np.array(a['rcm_world']), a['port_radius_m']) for a in rcm}
+
     # 3. Install.
     installed = {a: install(sim, by, a, role_cfg['arms'][a]['instrument']) for a in psms}
     by = aliases(sim)
@@ -326,6 +364,8 @@ def main():
     time.sleep(.3)
     tcp_after = {a: tcp_length(sim, by, a) for a in psms}
     save_scene(sim, args, INSTRUMENT_SCENE)
+    from simtools import write_json as _wj
+    _wj(RCM_OUT, rcm)          # the controller CONFIG of this scene; scripts/task reads it
 
     # 7. Runtime check on the saved file.
     runtime = runtime_check(client, sim, args)
@@ -337,13 +377,15 @@ def main():
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in d.items()}
     inputs = [ENDOSCOPE_SCENE, ENDO_CONFIG / 'rcm_config.json', ENDO_CONFIG / 'collision_pairs.json',
               inst.INSTRUMENT_CONFIG / 'roles.json', ENDO_SRC / 'rcm_controller.lua', INSTRUMENT_SRC / 'capability_guard.lua', TISSUE_SRC / 'tissue.lua',
-              inst.DVRK / 'SOURCE.json'] + [inst.INSTRUMENT_CONFIG / f'{m}.json' for m in guard.MODELS]
+              inst.DVRK / 'SOURCE.json'] + [inst.INSTRUMENT_CONFIG / f'{m}.json' for m in guard.MODELS] + ([PORT_PLAN] if port_plan else [])
     from simtools import write_json
     write_json(INSTRUMENT_VALIDATION / 'install_manifest.json', {
         'built_at_unix': int(time.time()),
         'coppeliasim_version': sim.getInt32Param(sim.intparam_program_full_version),
         'inputs': {relative(f): sha256(f) for f in inputs},
-        'outputs': {relative(f): sha256(f) for f in (INSTRUMENT_SCENE, LEGACY_NPZ)},
+        'outputs': {relative(f): sha256(f) for f in (INSTRUMENT_SCENE, LEGACY_NPZ, RCM_OUT)},
+        'ports': {c['arm']: dict(rcm_world=c['rcm_world'], limits=c['limits'], source=c.get('port_source', 'config/endoscope/rcm_config.json'))
+                  for c in rcm},
         'registration_before_install': {a: dict(closest=b['closest'], scores_m=b['scores_m'], frame=b['frame'])
                                         for a, b in before.items()},
         'installed': {a: clean(v) for a, v in installed.items()},
