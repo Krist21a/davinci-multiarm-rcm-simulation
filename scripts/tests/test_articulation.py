@@ -152,6 +152,109 @@ class ArticulationTests(unittest.TestCase):
             assert(not auto and frozen)
         """)
 
+    def test_tool_pose_fk_leaves_state_byte_identical(self):
+        self.lua("""
+            assert(setWrist(2,0.3,-0.2,0.1))
+            arms[2].lastTarget={1,2,0.045};arms[2].converged=true;arms[2].targetError=0.01
+            arms[2].drift=0.002;arms[2].distance=0.3;arms[2].maxDrift=0.004
+            arms[2].failures=7;arms[2].collisionBlocks=3;arms[2].lastCollision='kept'
+            local function digest()
+                local parts={}
+                for _,h in ipairs(stub.objects) do parts[#parts+1]=h..'='..tostring(stub.q[h]) end
+                local a=arms[2]
+                parts[#parts+1]=tostring(a.failures)..','..tostring(a.collisionBlocks)..','..
+                    tostring(a.drift)..','..tostring(a.maxDrift)..','..tostring(a.targetError)..','..
+                    tostring(a.converged)..','..a.lastCollision
+                for i,v in ipairs(a.lastTarget) do parts[#parts+1]=tostring(v) end
+                local p=sim.getObjectPosition(a.projection,-1)
+                parts[#parts+1]=tostring(p[1])..','..tostring(p[2])..','..tostring(p[3])
+                return table.concat(parts,';')
+            end
+            local before=digest()
+            local r=toolPoseFK(2,0,0,0.045,-0.5,0.4,0.2)
+            assert(r.ok and r.shaft_ok and type(r.tcp)=='table' and #r.tcp==12)
+            -- The stub tcp follows the wrist joints: a different wrist target must move it.
+            local m=toolPoseFK(2,0,0,0.045,-0.5,0.4,0.2).tcp
+            local m2=toolPoseFK(2,0,0,0.045,-0.5,0.4,0.9).tcp
+            assert(m[12]~=m2[12] or m[8]~=m2[8], 'wrist target ignored by FK')
+            assert(digest()==before, 'converged FK mutated state')
+            r=toolPoseFK(2,1.5,0,0.045,0,0,0)     -- unreachable in the stub: solver cannot converge
+            assert(r.ok and r.shaft_ok==false)
+            assert(digest()==before, 'refused FK mutated state')
+            stub.blockWrist=function(a,b) return a=='a2_tool' end
+            r=toolPoseFK(2,0,0,0.046,0,0,0)       -- solver converges then rejects on collision
+            assert(r.ok and r.shaft_ok==false)
+            assert(digest()==before, 'collision FK mutated state or counters')
+            stub.blockWrist=nil
+        """)
+
+    def test_tool_pose_fk_rejects_bad_inputs_without_writes(self):
+        self.lua("""
+            for _,q in ipairs({0/0,math.huge,-math.huge,'bad',{}}) do
+                local calls=stub.writes
+                assert(not toolPoseFK(2,q,0,0.04,0,0,0).ok)
+                assert(not toolPoseFK(2,0,q,0.04,0,0,0).ok)
+                assert(not toolPoseFK(2,0,0,q,0,0,0).ok)
+                assert(not toolPoseFK(2,0,0,0.04,q,0,0).ok)
+                assert(stub.writes==calls, 'invalid FK input moved a joint')
+            end
+            local calls=stub.writes
+            assert(not toolPoseFK(2,6,0,0.04,0,0,0).ok)     -- beyond yaw_deg=5
+            assert(not toolPoseFK(2,0,0,0.06,0,0,0).ok)     -- beyond insertion_max=0.05
+            assert(not toolPoseFK(2,0,0,0.04,5,0,0).ok)     -- beyond wrist roll limit 4.5
+            assert(stub.writes==calls, 'out-of-limit FK input moved a joint')
+            assert(not toolPoseFK(99,0,0,0.04,0,0,0).ok)
+        """)
+
+    def test_tool_pose_calls_refuse_unarticulated_arms(self):
+        self.lua("""
+            local calls=stub.writes
+            assert(not toolPoseFK(1,0,0,0.04,0,0,0).ok)
+            assert(not setToolPose(1,0,0,0.04,0,0,0))
+            assert(stub.writes==calls)
+        """, "INSTRUMENTS.a1.articulation=nil")
+
+    def test_set_tool_pose_lands_atomically(self):
+        self.lua("""
+            assert(setToolPose(2,0,0,0.045,0.3,-0.2,0.1))
+            eq(stub.q.a2_roll,0.3);eq(stub.q.a2_pitch,-0.2);eq(stub.q.a2_yaw,0.1)
+            eq(stub.q.a2_insert,0.045)
+            eq(arms[2].lastTarget[1],0);eq(arms[2].lastTarget[3],0.045)
+            assert(arms[2].converged)
+        """)
+
+    def test_set_tool_pose_collision_rolls_back_shaft_and_wrist(self):
+        self.lua("""
+            assert(setWrist(2,0.1,0,0));assert(setRCMTarget(2,0,0,0.045))
+            -- The pair only collides once the wrist roll crosses 0.25: the shaft leg of the
+            -- path converges, then the combined pose is refused mid-sweep.
+            stub.blockWrist=function(a,b) return a=='a2_tool' and stub.q.a2_roll>0.25 end
+            assert(not setToolPose(2,0,0,0.048,0.6,0.2,-0.3))
+            eq(stub.q.a2_insert,0.045);eq(stub.q.a2_roll,0.1)
+            eq(stub.q.a2_pitch,0);eq(stub.q.a2_yaw,0)
+            eq(arms[2].lastTarget[1],0);eq(arms[2].lastTarget[3],0.045)
+            assert(arms[2].collisionBlocks==1)
+            stub.blockWrist=nil
+            assert(setToolPose(2,0,0,0.048,0.6,0.2,-0.3), 'cleared pair must accept')
+            eq(stub.q.a2_roll,0.6);eq(stub.q.a2_insert,0.048)
+        """)
+
+    def test_set_tool_pose_rejects_bad_inputs_before_moving(self):
+        self.lua("""
+            assert(setWrist(2,0.1,0,0));local calls=stub.writes
+            for _,q in ipairs({0/0,math.huge,-math.huge,'bad',{}}) do
+                calls=stub.writes
+                assert(not setToolPose(2,q,0,0.04,0,0,0))
+                assert(not setToolPose(2,0,0,0.04,0,0,q))
+                assert(stub.writes==calls, 'invalid input moved a joint')
+            end
+            assert(not setToolPose(2,0,0,0.06,0,0,0))       -- beyond insertion_max
+            assert(not setToolPose(2,0,0,0.04,5,0,0))       -- beyond wrist roll limit 4.5
+            assert(not setToolPose(99,0,0,0.04,0,0,0))      -- unknown arm
+            assert(stub.writes==calls)
+            eq(stub.q.a2_roll,0.1)
+        """)
+
 
 if __name__ == '__main__':
     unittest.main()

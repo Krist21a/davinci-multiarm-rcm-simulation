@@ -196,6 +196,8 @@ def bare_world():
     world.events = {}
     world.event_log = []
     world.advanced = 0.0
+    world.align_mode = 'shaft'
+    world._pre_cut_q = None
     world.tick = 0
     world.occluder = None
     return world

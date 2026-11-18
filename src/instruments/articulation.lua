@@ -147,3 +147,108 @@ function sysCall_cleanup()
     if wristBaseCleanup then wristBaseCleanup() end
     for _,w in pairs(wrists) do if w.home then wristRestore(w,w.home) end end
 end
+
+-- Validate a logical wrist target exactly like setWrist's pre-flight (logical limits and the
+-- installed physical interval), returning the physical joint values or nil.
+local function wristTargetChecked(w,index,roll,pitch,yaw)
+    local target={roll,pitch,yaw}
+    for i=1,3 do
+        local value=target[i];local lim=w.limits[i]
+        if not wristFinite(value) or value<lim[1] or value>lim[2] then w.lastError='wrist target outside limits';return nil end
+        local cyclic,range=sim.getJointInterval(w.handles[i]);local q=value*w.signs[i]
+        if not cyclic and (type(range)~='table' or not wristFinite(range[1]) or not wristFinite(range[2]) or
+            range[2]<0 or q<range[1] or q>range[1]+range[2]) then w.lastError='installed joint limit';return nil end
+        target[i]=q
+    end
+    return target
+end
+
+local function snapshotPoseState(arm)
+    return {lastTarget=arm.lastTarget,converged=arm.converged,targetError=arm.targetError,drift=arm.drift,
+            distance=arm.distance,maxDrift=arm.maxDrift,failures=arm.failures,
+            collisionBlocks=arm.collisionBlocks,lastCollision=arm.lastCollision,
+            projection=sim.getObjectPosition(arm.projection,sim.handle_world)}
+end
+
+local function restorePoseState(arm,s)
+    arm.lastTarget=s.lastTarget;arm.converged=s.converged;arm.targetError=s.targetError
+    arm.drift=s.drift;arm.distance=s.distance;arm.maxDrift=s.maxDrift
+    arm.failures=s.failures;arm.collisionBlocks=s.collisionBlocks;arm.lastCollision=s.lastCollision
+    sim.setObjectPosition(arm.projection,sim.handle_world,s.projection)
+end
+
+-- Forward kinematics probe for tool-pose IK: what would the TCP matrix be at
+-- (yaw,pitch,ins) shaft command + (roll,wpitch,wyaw) logical wrist? Purely a dry run —
+-- joints, insertion, wrist, counters and every pose-derived field are restored exactly.
+function toolPoseFK(index,yaw,pitch,ins,roll,wpitch,wyaw)
+    local arm=arms[index];local w=wrists[index]
+    if not arm then return {ok=false,reason='unknown arm'} end
+    if not w or not w.available then return {ok=false,reason=w and w.reason or 'no articulation'} end
+    if not finite(yaw) or not finite(pitch) or not finite(ins) then return {ok=false,reason='non-finite shaft target'} end
+    local L=arm.limits
+    if math.abs(yaw)>L.yaw_deg or math.abs(pitch)>L.pitch_deg or ins<L.insertion_min or ins>L.insertion_max then
+        return {ok=false,reason='shaft target outside limits'}
+    end
+    local wtarget=wristTargetChecked(w,index,roll,wpitch,wyaw)
+    if not wtarget then return {ok=false,reason=w.lastError} end
+    local old={};for i,h in ipairs(arm.handles) do old[i]=sim.getJointPosition(h) end
+    local oldInsert=sim.getJointPosition(arm.insertion)
+    local wold=wristSnapshot(w)
+    local saved=snapshotPoseState(arm)
+    local shaft_ok=control(arm,yaw,pitch,ins)
+    for i,h in ipairs(w.handles) do sim.setJointPosition(h,wtarget[i]) end
+    local tcp=arm.tcp and sim.getObjectMatrix(arm.tcp,sim.handle_world) or nil
+    for i,h in ipairs(arm.handles) do sim.setJointPosition(h,old[i]) end
+    sim.setJointPosition(arm.insertion,oldInsert)
+    wristRestore(w,wold)
+    restorePoseState(arm,saved)
+    return {ok=true,tcp=tcp,shaft_ok=shaft_ok}
+end
+
+-- One atomic shaft+wrist command: both are interpolated together (shaft at setRCMTarget's
+-- 0.5 deg / 5 mm steps, wrist at WRIST_STEP) and every sample must pass the collision gate.
+-- Any failure restores shaft joints, insertion, lastTarget and wrist joints to the
+-- pre-command state; counters follow control()/setWrist semantics.
+function setToolPose(index,yaw,pitch,ins,roll,wpitch,wyaw)
+    local arm=arms[index];local w=wrists[index]
+    if not arm or not w or not w.available then return false end
+    if not finite(yaw) or not finite(pitch) or not finite(ins) then return false end
+    local L=arm.limits
+    if math.abs(yaw)>L.yaw_deg or math.abs(pitch)>L.pitch_deg or ins<L.insertion_min or ins>L.insertion_max then
+        w.lastError='shaft target outside limits';return false
+    end
+    local wtarget=wristTargetChecked(w,index,roll,wpitch,wyaw)
+    if not wtarget then return false end
+    local start=arm.lastTarget
+    local saved={};for i,h in ipairs(arm.handles) do saved[i]=sim.getJointPosition(h) end
+    local savedInsert=sim.getJointPosition(arm.insertion)
+    local wold=wristSnapshot(w)
+    for i=1,3 do if not wristFinite(wold[i]) then w.lastError='invalid joint readback';return false end end
+    local steps=math.max(1,math.ceil(math.abs(yaw-start[1])/.5),math.ceil(math.abs(pitch-start[2])/.5),
+                         math.ceil(math.abs(ins-start[3])/.005))
+    for i=1,3 do steps=math.max(steps,math.ceil(math.abs(wtarget[i]-wold[i])/WRIST_STEP)) end
+    hold()
+    local ran,accepted=pcall(function()
+        for k=1,steps do
+            local f=k/steps
+            if not control(arm,start[1]+f*(yaw-start[1]),start[2]+f*(pitch-start[2]),
+                           start[3]+f*(ins-start[3])) then return false end
+            for i,h in ipairs(w.handles) do sim.setJointPosition(h,wold[i]+(wtarget[i]-wold[i])*f) end
+            if not checkArmCollision(index) then
+                arms[index].collisionBlocks=arms[index].collisionBlocks+1
+                w.lastError='wrist collision';return false
+            end
+        end
+        return true
+    end)
+    if not ran or not accepted then
+        if not ran then w.lastError='tool-pose motion error: '..tostring(accepted) end
+        for i,h in ipairs(arm.handles) do sim.setJointPosition(h,saved[i]) end
+        sim.setJointPosition(arm.insertion,savedInsert)
+        arm.lastTarget=start
+        wristRestore(w,wold)
+        return false
+    end
+    w.lastError=''
+    return true
+end

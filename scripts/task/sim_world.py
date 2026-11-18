@@ -29,6 +29,7 @@ from ground_truth import GroundTruth  # noqa: E402
 from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
 from visibility import depth_visible  # noqa: E402
 
+import tool_pose  # noqa: E402
 import workspace  # noqa: E402
 from workspace import H, NU, NV, PRETENSION  # noqa: E402
 
@@ -80,6 +81,11 @@ class SimWorld:
         self.tick = 0
         self.occluder = None
         self.advanced = 0.0
+        # 'shaft': scissors align/advance along the shaft (setRCMTarget). 'tool_pose': the wrist
+        # aims the tcp + jaw axes with a single 6-DOF command (setToolPose). _pre_cut_q records
+        # the full command before cutting so withdrawal restores the wrist pose too.
+        self.align_mode = cfg.get('cut', {}).get('align_mode', 'shaft')
+        self._pre_cut_q = None
         self.camera_moves = 0
         self.image = None
         self.sheet_origin = None
@@ -153,6 +159,74 @@ class SimWorld:
         if before is not None and after is not None:
             self.refused_failures[arm] = self.refused_failures.get(arm, 0) + (after - before)
         return ok
+
+    # -- 6-DOF tool-pose control (cut.align_mode == 'tool_pose') --------------------------------
+    # TCP frame columns measured on the verified scene: column 2 is the jaw pointing axis
+    # (closed blade direction), column 0 is the jaw opening/hinge axis — it equals the grip
+    # joints' z (psm2_joint10/11) within 1e-3, and a 0.4 rad wrist-yaw command rotates the
+    # other two columns around it. The opening-axis sign is free (mirrored blades).
+    TOOL_AXIS_COL, TOOL_YAW_COL = 2, 0
+
+    def _wrist_state(self, arm):
+        ws = self.call('getWristState', self.index[arm])
+        return ws if isinstance(ws, dict) and ws.get('available') else None
+
+    def _tool_q(self, arm):
+        """Current 6-DOF command vector [yaw_deg, pitch_deg, ins_m, roll, wpitch, wyaw]."""
+        ws = self._wrist_state(arm)
+        if ws is None:
+            return None
+        yaw, pitch, ins = self.target_of(arm)
+        return np.array([yaw, pitch, ins, ws['roll'], ws['pitch'], ws['yaw']], dtype=float), ws
+
+    def _tool_fk(self, arm):
+        i = self.index[arm]
+
+        def fk(q):
+            r = self.call('toolPoseFK', i, *map(float, q))
+            if not isinstance(r, dict) or not r.get('ok'):
+                raise RuntimeError(f"toolPoseFK refused: {(r or {}).get('reason')}")
+            return np.asarray(r['tcp'], dtype=float).reshape(3, 4)
+
+        return fk
+
+    def _tool_limits(self, arm, ws):
+        L = self.arm_cfg[arm]['limits']
+        wl = ws['limits']
+        lo = np.array([-L['yaw_deg'], -L['pitch_deg'], L['insertion_min'],
+                       wl['roll'][0], wl['pitch'][0], wl['yaw'][0]])
+        hi = np.array([L['yaw_deg'], L['pitch_deg'], L['insertion_max'],
+                       wl['roll'][1], wl['pitch'][1], wl['yaw'][1]])
+        return lo, hi
+
+    def tool_command(self, arm, q, n=15):
+        """Atomic shaft+wrist command; refused-candidate accounting identical to command()."""
+        i = self.index[arm]
+        before = self._solver_failures(arm)
+        ok = bool(self.call('setToolPose', i, *map(float, q)))
+        if ok:
+            self.steps(n)
+            return ok
+        after = self._solver_failures(arm)
+        if before is not None and after is not None:
+            self.refused_failures[arm] = self.refused_failures.get(arm, 0) + (after - before)
+        return ok
+
+    def _tool_solve(self, arm, target_p, target_axis=None, target_yaw=None):
+        """IK-solve one tool pose from the current q; returns the tool_pose.solve result."""
+        state = self._tool_q(arm)
+        if state is None:
+            return None
+        q0, ws = state
+        lo, hi = self._tool_limits(arm, ws)
+        try:
+            res = tool_pose.solve(self._tool_fk(arm), q0, (lo, hi), np.asarray(target_p),
+                                  target_axis=target_axis, target_yaw_axis=target_yaw,
+                                  axis_col=self.TOOL_AXIS_COL, yaw_col=self.TOOL_YAW_COL)
+        except RuntimeError:
+            return None
+        res['q0'] = q0
+        return res
 
     def rcm_command_for(self, arm, point):
         """yaw, pitch, insertion that would put this arm's tool tip on `point` (fixed-RCM geometry)."""
@@ -436,6 +510,8 @@ class SimWorld:
 
     def align_scissors(self, cut_start, progress):
         """Lateral distance of the cut front from the blade line, or None if approach was refused."""
+        if self.align_mode == 'tool_pose':
+            return self._align_scissors_tool(cut_start, progress)
         f = self.frame(self.cutter)
         p = self.cut_front()
         d = unit(f['tcp'] - f['pivot'])
@@ -448,7 +524,57 @@ class SimWorld:
             self.advanced += correction       # withdrawal must undo this accepted insertion correction too
         return float(lateral)
 
+    def _align_scissors_tool(self, cut_start, progress):
+        """tool_pose alignment: tcp 1 mm short of the front, jaw axis along v, opening axis along u.
+
+        The blade sweep (tissueCut) rotates the pivot->tip line about the grip-joint z; with the
+        pointing axis on v and the opening axis on u, the sweep fans lie in the v x sheet-normal
+        plane and pinch springs on the cut line."""
+        p = self.cut_front()
+        target = p - 0.001 * self.v
+        state = self._tool_q(self.cutter)
+        if state is None:
+            return None
+        if self._pre_cut_q is None:
+            self._pre_cut_q = state[0].copy()      # pre-cut pose: wrist restore target for withdrawal
+        tcp0 = np.array(self.sim.getObjectPosition(self.by[self.cutter + '_tcp'], -1))
+        res = self._tool_solve(self.cutter, target, self.v, self.u)
+        if res is None or not res['converged']:
+            self.event_log.append(dict(tick=self.tick, event='tool_align', refused=True,
+                                       detail=None if res is None else dict(
+                                           pos_err_m=res['pos_err_m'], axis_err_rad=res['axis_err_rad'],
+                                           yaw_axis_err_rad=res['yaw_axis_err_rad'], at_limit=res['at_limit'])))
+            return None
+        if not self.tool_command(self.cutter, res['q'], 10):
+            return None
+        tcp1 = np.array(self.sim.getObjectPosition(self.by[self.cutter + '_tcp'], -1))
+        # Withdrawal bookkeeping counts forward progress along the cut line, not insertion,
+        # because the jaw axis (not the shaft) is the advance direction in tool_pose mode.
+        self.advanced += float(np.dot(tcp1 - tcp0, self.v))
+        self.event_log.append(dict(tick=self.tick, event='tool_align', refused=False,
+                                   pos_err_m=res['pos_err_m'], axis_err_rad=res['axis_err_rad'],
+                                   yaw_axis_err_rad=res['yaw_axis_err_rad'], iterations=res['iterations'],
+                                   at_limit=res['at_limit']))
+        m = matrix_to_np(self.sim.getObjectMatrix(self.by[self.cutter + '_tcp'], -1))
+        d = m[:3, self.TOOL_AXIS_COL]
+        return float(np.linalg.norm(np.cross(self.cut_front() - m[:3, 3], d)))
+
     def advance_scissors(self, d):
+        if self.align_mode == 'tool_pose':
+            # Advance along the jaw (pointing) axis, holding the current orientation —
+            # not along the shaft, which no longer coincides with the cut direction.
+            m = matrix_to_np(self.sim.getObjectMatrix(self.by[self.cutter + '_tcp'], -1))
+            target = m[:3, 3] + d * m[:3, self.TOOL_AXIS_COL]
+            res = self._tool_solve(self.cutter, target, m[:3, self.TOOL_AXIS_COL],
+                                   m[:3, self.TOOL_YAW_COL])
+            if res is None or not res['converged']:
+                return False
+            tcp0 = m[:3, 3]
+            ok = self.tool_command(self.cutter, res['q'], 15)
+            if ok:
+                tcp1 = np.array(self.sim.getObjectPosition(self.by[self.cutter + '_tcp'], -1))
+                self.advanced += float(np.dot(tcp1 - tcp0, self.v))
+            return ok
         yaw, pitch, ins = self.target_of(self.cutter)
         ok = self.command(self.cutter, yaw, pitch, ins + d, 15)
         if ok:
@@ -461,6 +587,29 @@ class SimWorld:
         Normal completion leaves the scissors closed. If they are open with tissue present,
         closing could cut again: refuse instead of inventing an unverified escape trajectory.
         """
+        if self.align_mode == 'tool_pose':
+            if self._pre_cut_q is None:
+                return True                          # no tool-pose advance recorded: nothing to undo
+            # The restore target is the recorded pre-cut pose, so a net backward alignment (advanced < 0)
+            # is still fully undone; only a corrupted counter is refused.
+            if not math.isfinite(self.advanced):
+                return False
+            state = self.call('getRCMStats')[self.index[self.cutter] - 1]
+            grip = state.get('grip')
+            if grip is None or not math.isfinite(grip):
+                return False
+            if grip != 0.0:
+                tissue = self.truth.tissue_stats()
+                if not isinstance(tissue, dict) or tissue.get('exists') is not False:
+                    return False
+                if not self.call('setGrip', self.index[self.cutter], 0.0):
+                    return False
+            # Atomic: the withdrawal also restores the wrist to its pre-cut angles.
+            if not self.tool_command(self.cutter, self._pre_cut_q, 20):
+                return False
+            self.advanced = 0.0
+            self._pre_cut_q = None
+            return True
         if not math.isfinite(self.advanced) or self.advanced < 0:
             return False
         if self.advanced == 0:

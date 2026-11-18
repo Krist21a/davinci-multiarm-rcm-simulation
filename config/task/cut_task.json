@@ -8,6 +8,8 @@
              "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."},
   "view": {"center_margin": 0.35, "occlusion_wait_ticks": 6},
   "cut": {"length_m": 0.009, "max_overcut_m": 0.001, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+          "align_mode": "tool_pose",
+          "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
           "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
           "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."},
   "budgets": {

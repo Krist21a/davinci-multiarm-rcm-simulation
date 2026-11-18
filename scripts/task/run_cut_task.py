@@ -106,6 +106,8 @@ def main():
     p.add_argument('--sheet', action='store_true', help='also write a contact sheet to docs/fsm_<mode>_<scenario>.png')
     p.add_argument('--trace', action='store_true',
                    help='record per-tick tension, cut length and a tissue-node hash in the report')
+    p.add_argument('--align-mode', choices=['shaft', 'tool_pose'], default=None,
+                   help='override cut.align_mode for this run (default: config value)')
     args = p.parse_args()
     run_id = uuid.uuid4().hex
     name = f'sim_{args.mode}_{args.scenario}'
@@ -125,13 +127,15 @@ def main():
     stage = 'configuration'
     try:
         cfg = json.loads((REPO / 'config' / 'task' / 'cut_task.json').read_text(encoding='utf-8'))
+        if args.align_mode:
+            cfg['cut']['align_mode'] = args.align_mode
         report['config'] = cfg
         stage = 'source provenance'
         scene = args.scene.resolve()
         report.update(scene=relative(scene), scene_sha256=sha256(scene),
                       source_sha256={relative(path): sha256(path) for path in
                                      [HERE / 'cut_fsm.py', HERE / 'sim_world.py', HERE / 'workspace.py',
-                                      HERE / 'ground_truth.py', HERE / 'visibility.py',
+                                      HERE / 'ground_truth.py', HERE / 'visibility.py', HERE / 'tool_pose.py',
                                       Path(__file__).resolve(), REPO / 'config' / 'task' / 'cut_task.json']})
         stage = 'connect'
         client, sim = connect(args)
