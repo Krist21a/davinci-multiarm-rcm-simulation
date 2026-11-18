@@ -153,6 +153,7 @@ class VisibilityTests(unittest.TestCase):
     def test_localize_cannot_bypass_depth_with_tissue_colour(self):
         self.world.render = Mock()
         self.world.sheet_origin = self.point
+        self.world.cut_front = Mock(return_value=self.point)
         self.world.nodes = Mock()
         self.world.depth.fill(0.09)
         self.assertIsNone(self.world.localize())
@@ -184,9 +185,18 @@ class VisibilityTests(unittest.TestCase):
 
 def bare_world():
     world = SimWorld.__new__(SimWorld)
-    world.index = {'psm1': 1, 'psm2': 2, 'psm3': 3}
+    world.index = {'psm1': 1, 'psm2': 2, 'psm3': 3, 'ecm': 4}
+    world.primary, world.assist, world.cutter, world.view = 'psm1', 'psm3', 'psm2', 'ecm'
     world.call = Mock()
     world.steps = Mock()
+    world.truth = sim_world.GroundTruth(world)
+    world.refused_failures = {}
+    world.ever_grasped = set()
+    world.events = {}
+    world.event_log = []
+    world.advanced = 0.0
+    world.tick = 0
+    world.occluder = None
     return world
 
 
@@ -203,7 +213,9 @@ class CommandSafetyTests(unittest.TestCase):
         world = bare_world()
         world.call.return_value = True
         self.assertIs(world.command('psm2', 1, 2, 0.03, 7), True)
-        world.call.assert_called_once_with('setRCMTarget', 2, 1.0, 2.0, 0.03)
+        # The solver-failure snapshot reads getRCMStats before the target command.
+        self.assertEqual(world.call.call_args_list[0], call('getRCMStats'))
+        self.assertEqual(world.call.call_args_list[-1], call('setRCMTarget', 2, 1.0, 2.0, 0.03))
         world.steps.assert_called_once_with(7)
 
     def test_rejected_jaw_motion_does_not_step(self):
@@ -250,6 +262,8 @@ class GraspSafetyTests(unittest.TestCase):
         world.pinned = 0
 
         def controller(name, *args):
+            if name == 'getRCMStats':
+                return [{'arm': a, 'failures': 0} for a in world.index]
             if name == 'setGrip':
                 return open_ok if args[1] == 0.5 else close_ok
             if name == 'setRCMTarget':
@@ -367,6 +381,7 @@ class RetractionDirectionTests(unittest.TestCase):
     """
     def make_world(self):
         world = bare_world()
+        world.cfg = {'grasp': {'min_nodes': 3}}
         world.sheet_origin = np.zeros(3)
         world.u = np.array([1.0, 0.0, 0.0])               # +u = the "psm3 side" by layout convention
         world.by = {'psm1_tcp': 11, 'psm3_tcp': 13}
@@ -379,6 +394,9 @@ class RetractionDirectionTests(unittest.TestCase):
         world.rcm_command_for = Mock(side_effect=lambda arm, point: tuple(np.asarray(point, dtype=float)))
         world.command = Mock(return_value=True)
         world.grasped_points = {}
+        # The live tissue model reports a hold exactly where the world still has a record.
+        world.call.side_effect = lambda name, *a: ({'grasped': {arm: 6 for arm in world.grasped_points}}
+                                                   if name == 'tissueStats' else None)
         return world
 
     def direction(self, world, arm, point, step=0.0002):
@@ -416,6 +434,16 @@ class RetractionDirectionTests(unittest.TestCase):
         self.assertFalse(world.retract('psm1', 0.0002))
         world.command.assert_not_called()
 
+    def test_retract_refuses_when_the_live_hold_is_lost(self):
+        # After a physical slip the grasped_points record is stale: the tissue model holds nothing.
+        world = self.make_world()
+        world.grasped_points['psm1'] = np.array([-0.012, 0.0, 0.05])
+        for grasped in ({}, {'psm1': 2}):                    # nothing held / below min_nodes
+            with self.subTest(grasped=grasped):
+                world.call.side_effect = lambda name, *a: {'grasped': grasped} if name == 'tissueStats' else None
+                self.assertFalse(world.retract('psm1', 0.0002))
+                world.command.assert_not_called()
+
 
 class RetractionSafetyTests(unittest.TestCase):
     def make_world(self, grip=0.0, tissue=True, close_ok=True, motion_ok=True):
@@ -440,8 +468,9 @@ class RetractionSafetyTests(unittest.TestCase):
         world = self.make_world()
         self.assertIs(world.retract_scissors(), True)
         self.assertEqual(world.advanced, 0)
+        # The second getRCMStats is command()'s solver-failure snapshot before the target write.
         self.assertEqual(world.call.call_args_list,
-                         [call('getRCMStats'), call('setRCMTarget', 2, 1.0, 2.0, 0.034)])
+                         [call('getRCMStats'), call('getRCMStats'), call('setRCMTarget', 2, 1.0, 2.0, 0.034)])
         world.steps.assert_called_once_with(20)
         world.call.reset_mock()
         world.steps.reset_mock()
@@ -477,8 +506,9 @@ class RetractionSafetyTests(unittest.TestCase):
         world = self.make_world(grip=0.5, tissue=False)
         self.assertIs(world.retract_scissors(), True)
         self.assertEqual(world.advanced, 0)
-        self.assertEqual(world.call.call_args_list[-2:],
-                         [call('setGrip', 2, 0.0), call('setRCMTarget', 2, 1.0, 2.0, 0.034)])
+        self.assertEqual(world.call.call_args_list,
+                         [call('getRCMStats'), call('tissueStats'), call('setGrip', 2, 0.0),
+                          call('getRCMStats'), call('setRCMTarget', 2, 1.0, 2.0, 0.034)])
 
     def test_rejected_retraction_keeps_advance_for_retry_without_stepping(self):
         world = self.make_world(motion_ok=False)
@@ -507,6 +537,156 @@ class RetractionSafetyTests(unittest.TestCase):
             self.assertIs(world.retract_scissors(), False)
             world.call.assert_not_called()
             world.steps.assert_not_called()
+
+
+class RoleConfigurationTests(unittest.TestCase):
+    """Arm names come from cfg['roles'], not from literals in sim_world.py."""
+    def make_world(self):
+        sim = Mock()
+        config = [[{'arm': a} for a in ('psm1', 'psm2', 'psm3', 'ecm')], {},
+                  {'camera': {'alias': 'camera', 'resolution': [41, 41], 'view_angle_deg': 60, 'far_m': 1.0}}]
+        cfg = {'roles': {'retract_primary': 'psm3', 'cut': 'psm1', 'retract_assist': 'psm2', 'view': 'ecm'}}
+        with patch.object(sim_world, 'read_json', side_effect=config), \
+                patch.object(sim_world, 'load_scene'), \
+                patch.object(sim_world, 'aliases', return_value={'RCMController': 10, 'camera': 11}), \
+                patch.object(simtools, 'refresh_controller', return_value='sha'), \
+                patch.object(SimWorld, 'start'):
+            return SimWorld(None, sim, None, cfg)
+
+    def test_scissors_commands_go_to_the_configured_cutter(self):
+        world = self.make_world()
+        self.assertEqual(world.cutter, 'psm1')
+        world.steps = Mock()
+        world.call = Mock(return_value=True)
+        self.assertTrue(world.open_scissors())
+        self.assertTrue(world.close_scissors())
+        # psm1 is arm index 1 in the rcm order; a hard-coded psm2 would have sent index 2.
+        self.assertEqual(world.call.call_args_list, [call('setGrip', 1, 0.5), call('setGrip', 1, 0.0)])
+
+    def test_camera_motion_goes_to_the_configured_view_arm(self):
+        world = self.make_world()
+        self.assertEqual(world.view, 'ecm')
+        world.steps = Mock()
+        world.call = Mock(return_value=True)
+        world.arm_cfg['ecm'] = dict(world.arm_cfg['psm1'], insertion_home=0.02)
+        self.assertTrue(world.adjust_camera())
+        self.assertEqual(world.call.call_args_list[-1], call('setRCMTarget', 4, 3.0, 0.0, 0.02))
+
+
+class RefusedCandidateTests(unittest.TestCase):
+    """A refused candidate increments the controller failure counter but rolled back: not a fault."""
+    def make_world(self, on_set_target):
+        world = bare_world()
+        failures = {'psm2': 0}
+
+        def controller(name, *args):
+            if name == 'getRCMStats':
+                return [{'arm': a, 'failures': failures.get(a, 0)} for a in world.index]
+            if name == 'setRCMTarget':
+                return on_set_target(failures)
+            raise AssertionError(name)
+
+        world.call.side_effect = controller
+        return world
+
+    def test_refusal_increments_are_accounted_not_faults(self):
+        def reject(failures):
+            failures['psm2'] += 1          # the controller counts even a rolled-back candidate
+            return False
+        world = self.make_world(reject)
+        self.assertIs(world.command('psm2', 1, 2, 0.03, 7), False)
+        self.assertEqual(world.refused_failures['psm2'], 1)
+        world.steps.assert_not_called()
+
+    def test_collision_refusal_without_increment_records_zero(self):
+        world = self.make_world(lambda failures: False)
+        self.assertIs(world.command('psm2', 1, 2, 0.03, 7), False)
+        self.assertEqual(world.refused_failures['psm2'], 0)
+        world.steps.assert_not_called()
+
+    def test_accepted_command_keeps_its_failure_increment_a_fault(self):
+        def accept_but_count(failures):
+            failures['psm2'] += 1
+            return True
+        world = self.make_world(accept_but_count)
+        self.assertIs(world.command('psm2', 1, 2, 0.03, 7), True)
+        self.assertNotIn('psm2', world.refused_failures)
+
+
+class WithdrawalAccountingTests(unittest.TestCase):
+    def make_world(self, motion_ok=True):
+        world = bare_world()
+        world.frame = Mock(return_value={'tcp': np.array([0.0, 0.0, 0.01]), 'pivot': np.zeros(3)})
+        world.cut_front = Mock(return_value=np.array([0.0, 0.0, 0.02]))
+        world.v = np.array([0.0, 0.0, 1.0])
+        world.target_of = Mock(return_value=(0.0, 0.0, 0.04))
+        state = {'ins': 0.04}
+
+        def controller(name, *args):
+            if name == 'getRCMStats':
+                return [{}, {'arm': 'psm2', 'failures': 0, 'target': [0.0, 0.0, state['ins']], 'grip': 0.0}]
+            if name == 'setRCMTarget':
+                state['ins'] = args[3]
+                return motion_ok
+            raise AssertionError(name)
+
+        world.call.side_effect = controller
+        return world
+
+    def test_accepted_alignment_correction_is_withdrawn(self):
+        world = self.make_world()
+        self.assertEqual(world.align_scissors(None, 0), 0.0)
+        self.assertAlmostEqual(world.advanced, 0.009)       # 0.01 approach - 0.001 standoff
+        self.assertTrue(world.advance_scissors(0.003))
+        self.assertAlmostEqual(world.advanced, 0.012)
+        self.assertTrue(world.retract_scissors())
+        last = world.call.call_args_list[-1][0]
+        self.assertEqual(last[:2], ('setRCMTarget', 2))
+        self.assertAlmostEqual(last[4], 0.031)              # 0.043 commanded - (0.009 + 0.003)
+
+    def test_refused_alignment_correction_is_not_counted(self):
+        world = self.make_world(motion_ok=False)
+        self.assertIsNone(world.align_scissors(None, 0))
+        self.assertEqual(world.advanced, 0.0)
+
+
+class EventInjectionTests(unittest.TestCase):
+    def test_slip_releases_tissue_but_keeps_the_stale_record(self):
+        world = bare_world()
+        world.tick = 5
+        world.occluder = None
+        world.events = {'slip': {'psm1': 5}}
+        world.grasped_points = {'psm1': np.array([-0.012, 0.0, 0.05])}
+        world._events()
+        world.call.assert_called_once_with('tissueRelease', 1)
+        self.assertIn('psm1', world.grasped_points)         # stale on purpose; a live check must catch it
+
+    def test_relax_commands_each_holding_arm_inward(self):
+        world = bare_world()
+        world.tick = 7
+        world.occluder = None
+        world.events = {'relax': 7}
+        world.cfg = {'events': {'relax_m': 0.0015}}
+        world.grasped_points = {'psm1': np.zeros(3), 'psm3': np.zeros(3)}
+        world.retract = Mock(side_effect=[True, False])
+        world._events()
+        self.assertEqual(world.retract.call_args_list, [call('psm1', -0.0015), call('psm3', -0.0015)])
+        relaxes = [e for e in world.event_log if e['event'] == 'relax']
+        self.assertEqual([e['accepted'] for e in relaxes], [True, False])
+
+    def test_regrasp_failure_is_injected_before_any_motion(self):
+        world = bare_world()
+        world.cfg = {'grasp': {'min_nodes': 3}}
+        world.arm_cfg = {'psm1': {'limits': {'yaw_deg': 30, 'pitch_deg': 30,
+                                             'insertion_min': 0.0, 'insertion_max': 0.1}}}
+        world.rcm_command_for = Mock(return_value=(0, 0, 0.04))
+        world.grasped_points = {}
+        world.ever_grasped = {'psm1'}
+        world.events = {'regrasp_fails': {'psm1'}}
+        ok, why = world.grasp('psm1', np.zeros(3))
+        self.assertIs(ok, False)
+        self.assertIn('regrasp', why)
+        world.call.assert_not_called()
 
 
 if __name__ == '__main__':

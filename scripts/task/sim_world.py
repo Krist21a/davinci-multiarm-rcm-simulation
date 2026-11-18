@@ -11,18 +11,21 @@ Sensing
 Acting goes through the scene controller only (setRCMTarget, setGrip, tissueGrasp ...), so every motion is
 checked by the guarded RCM controller (limits, IK, mesh collisions).
 
-Modes: 'full' asks PSM1 and PSM3 to grasp the sheet edges; 'cut_only' leaves the sheet on its fixed anchors.
-Injected events: an occluding sphere between the endoscope and the cut site, either for a few ticks
-('occlusion_transient') or until the endoscope moves ('occlusion_persistent').
+Modes: 'full' asks the retraction arms to grasp the sheet edges; 'cut_only' leaves the sheet on its fixed
+anchors. Arm roles come from cfg['roles'] (retract_primary, cut, retract_assist, view).
+Injected events, mirroring fake_world.py semantics (details in SimWorld._events): an occluding sphere between
+the endoscope and the cut site, physical grasp slips, regrasp failures, and retractor creep.
 """
 import math
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 from cut_fsm import Observation, Target  # noqa: E402
+from ground_truth import GroundTruth  # noqa: E402
 from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
 from visibility import depth_visible  # noqa: E402
 
@@ -38,11 +41,24 @@ def unit(v):
 
 
 class SimWorld:
-    def __init__(self, client, sim, args, cfg, mode='cut_only', event=None, event_tick=6, event_ticks=3):
+    def __init__(self, client, sim, args, cfg, mode='cut_only', events=None,
+                 event=None, event_tick=6, event_ticks=3):
         from simtools import refresh_controller
 
         self.client, self.sim, self.cfg, self.mode = client, sim, cfg, mode
-        self.event, self.event_tick, self.event_ticks = event, event_tick, event_ticks
+        roles = cfg.get('roles', {})
+        self.primary, self.assist = roles.get('retract_primary', 'psm1'), roles.get('retract_assist', 'psm3')
+        self.cutter, self.view = roles.get('cut', 'psm2'), roles.get('view', 'ecm')
+        # New-style event dict; the legacy single-event arguments map onto it unchanged.
+        self.events = dict(events or {})
+        if event == 'occlusion_persistent':
+            self.events.setdefault('occlude_until_camera', event_tick)
+        elif event == 'occlusion_transient':
+            self.events.setdefault('occlude', (event_tick, event_tick + event_ticks - 1))
+        self.refused_failures = {}       # arm -> solver-failure increments caused by refused candidates
+        self.ever_grasped = set()
+        self.event_log = []
+        self.timing = {}
         rcm_file = ENDO_CONFIG.parent / 'instruments' / 'rcm_config.json'      # written with the scene by install
         self.rcm = read_json(rcm_file if rcm_file.exists() else ENDO_CONFIG / 'rcm_config.json')
         self.task = read_json(ENDO_CONFIG / 'task.json')
@@ -55,6 +71,7 @@ class SimWorld:
         # Refresh only the stopped, loaded scene; never save the .ttt. In particular,
         # homeRCM must execute the current controller's explicit success/failure contract.
         self.controller_sha256 = refresh_controller(sim, self.ctrl, tissue=True)
+        self.truth = GroundTruth(self)  # sensing reads; actuation keeps direct access (see ground_truth.py)
         self.cam = self.by[self.endo['camera']['alias']]
         c = self.endo['camera']
         self.W, self.H = c['resolution']
@@ -75,18 +92,33 @@ class SimWorld:
         # The bead and ring of the earlier pick-and-place task sit right at the cut site; hide them for this task
         # (staged copy only, the scene file is not changed).
         # The 6 mm magenta wrist marker of that task covers the cut site once the scissors advance.
-        for n in ('TaskBead', 'TaskTarget', 'psm2_TipMarker'):
+        for n in ('TaskBead', 'TaskTarget', f'{self.cutter}_TipMarker'):
             if n in self.by:
                 sim.setObjectInt32Param(self.by[n], sim.objintparam_visibility_layer, 0)
         self.start()
 
     # -- helpers ----------------------------------------------------------------------------------------------
+    def _time(self, name, fn, *a):
+        t0 = time.perf_counter()
+        try:
+            return fn(*a)
+        finally:
+            self.timing.setdefault(name, []).append(time.perf_counter() - t0)
+
     def call(self, name, *a):
-        return self.sim.callScriptFunction(name, self.ctrl, *a)
+        return self._time('call:' + name, self.sim.callScriptFunction, name, self.ctrl, *a)
 
     def steps(self, n):
         for _ in range(n):
-            self.sim.step()
+            self._time('sim_step', self.sim.step)
+
+    def timing_summary(self):
+        out = {}
+        for name, times in self.timing.items():
+            a = np.asarray(times, dtype=float)
+            out[name] = dict(count=int(a.size), total_s=float(a.sum()), mean_s=float(a.mean()),
+                             p95_s=float(np.percentile(a, 95)))
+        return out
 
     def frame(self, arm):
         j9, j10 = (matrix_to_np(self.sim.getObjectMatrix(self.by[f'{arm}_joint{n}'], -1)) for n in (9, 10))
@@ -100,11 +132,26 @@ class SimWorld:
     def target_of(self, arm):
         return self.call('getRCMStats')[self.index[arm] - 1]['target']
 
+    def _solver_failures(self, arm):
+        try:
+            return self.call('getRCMStats')[self.index[arm] - 1].get('failures', 0)
+        except Exception:
+            return None
+
     def command(self, arm, yaw, pitch, ins, n=15):
-        """Advance settling time only for an accepted, synchronous controller command."""
+        """Advance settling time only for an accepted, synchronous controller command.
+
+        A refused candidate rolls back in the controller but still increments its failure counter, so a
+        refusal's increments are tracked separately and never reported as arm faults. Increments under an
+        accepted command stay faults."""
+        before = self._solver_failures(arm)
         ok = bool(self.call('setRCMTarget', self.index[arm], float(yaw), float(pitch), float(ins)))
         if ok:
             self.steps(n)
+            return ok
+        after = self._solver_failures(arm)
+        if before is not None and after is not None:
+            self.refused_failures[arm] = self.refused_failures.get(arm, 0) + (after - before)
         return ok
 
     def rcm_command_for(self, arm, point):
@@ -127,12 +174,16 @@ class SimWorld:
         # Offline safety tests need only numpy, not Pillow or the geometry/Remote API stack.
         from PIL import Image
 
-        s = self.sim
-        s.handleVisionSensor(self.cam)
-        raw, _ = s.getVisionSensorImg(self.cam)
-        d, _ = s.getVisionSensorDepth(self.cam, 1)
-        self.image = Image.frombytes('RGB', (self.W, self.H), bytes(raw)).transpose(Image.FLIP_TOP_BOTTOM)
-        self.depth = np.array(s.unpackFloatTable(d), dtype=float).reshape(self.H, self.W)[::-1]
+        t0 = time.perf_counter()
+        try:
+            s = self.sim
+            s.handleVisionSensor(self.cam)
+            raw, _ = s.getVisionSensorImg(self.cam)
+            d, _ = s.getVisionSensorDepth(self.cam, 1)
+            self.image = Image.frombytes('RGB', (self.W, self.H), bytes(raw)).transpose(Image.FLIP_TOP_BOTTOM)
+            self.depth = np.array(s.unpackFloatTable(d), dtype=float).reshape(self.H, self.W)[::-1]
+        finally:
+            self.timing.setdefault('render', []).append(time.perf_counter() - t0)
 
     def project(self, p):
         R, t = self.camera()
@@ -151,28 +202,21 @@ class SimWorld:
         visible = depth_visible(self.depth, uv, pc[2], tol=tol, window=window, min_clear=min_clear)
         return visible, float(offset)
 
+    # Ground-truth sensing reads; the implementations live in GroundTruth (scripts/task/ground_truth.py)
+    # and count themselves for the report's truth_reads.
     def cut_front(self):
         """Where the next closure has to cut: on the sheet as it is now, between the two centre columns."""
-        n = self.nodes()
-        j = min(int(round(self.cut_length() / H)), NV - 1)
-        return 0.5 * (n[j, NU // 2 - 1] + n[j, NU // 2])
+        return self.truth.cut_front()
 
     def nodes(self):
-        return np.array(self.call('tissueNodes')).reshape(NV, NU, 3)
+        return self.truth.nodes()
 
     def cut_line_tension(self):
         """Median strain of the constraints across the cut line (columns NU/2-1 and NU/2), still uncut.
 
         This is the tension the retraction has to create for the cut; the whole-sheet median stays near zero
         when two graspers pull a sheet that is attached along one edge only."""
-        if self.sheet_origin is None:
-            return 0.0
-        n = self.nodes()
-        L = np.linalg.norm(n[:, NU // 2] - n[:, NU // 2 - 1], axis=1) / (H * (1 - self.pretension)) - 1
-        # Rows already cut, and the two rows just ahead of the cut end where the slit opens, are not tension.
-        ahead = int(round(self.cut_length() / H)) + 2
-        L = L[ahead:NV - 1]
-        return float(np.median(L)) if len(L) else 0.0
+        return self.truth.cut_line_tension()
 
     def cut_length(self):
         """Length of the cut from the near edge: rows whose band to the next row is cut through.
@@ -180,24 +224,7 @@ class SimWorld:
         Row j counts when, for some column gap (i, i+1) near the centre line, the horizontal constraint of row j
         and both diagonals of cell (i, j) are cut, so nothing joins the two sides there. Counted from row 0 and
         stopping at the first row that still holds."""
-        if self.sheet_origin is None:
-            return 0.0
-        c = np.array(self.call('tissueConstraints'), dtype=np.int64).reshape(-1, 3)
-        alive = {(min(a, b), max(a, b)): bool(f) for a, b, f in c}
-
-        def dead(a, b):
-            return not alive.get((min(a, b), max(a, b)), True)
-
-        def nid(i, j):
-            return j * NU + i
-        rows = 0
-        for j in range(NV - 1):
-            through = any(dead(nid(i, j), nid(i + 1, j)) and dead(nid(i, j), nid(i + 1, j + 1)) and
-                          dead(nid(i + 1, j), nid(i, j + 1)) for i in range(NU // 2 - 4, NU // 2 + 3))
-            if not through:
-                break
-            rows += 1
-        return rows * H
+        return self.truth.cut_length()
 
     # -- setup ------------------------------------------------------------------------------------------------
     def start(self):
@@ -205,10 +232,10 @@ class SimWorld:
         s.setStepping(True)
         s.setBoolParam(s.boolparam_realtime_simulation, False)
         s.startSimulation()
-        s.step()
+        self.steps(1)
 
     def place_sheet(self):
-        f = self.frame('psm2')
+        f = self.frame(self.cutter)
         L = workspace.layout(f['pivot'], f['x'], f['axis'], f['tcp'])
         self.v, self.u, self.sheet_origin, self.grasp_points = L['v'], L['u'], L['origin'], L['grasp_points']
         self.call('tissueCreate', dict(origin=self.sheet_origin.tolist(), u=self.u.tolist(), v=self.v.tolist(), nu=NU, nv=NV,
@@ -225,10 +252,13 @@ class SimWorld:
             cut_vis, offset = False, None
         else:
             cut_vis, offset = self.point_visible(self.cut_front())
-        tip_vis, _ = self.point_visible(np.array(self.sim.getObjectPosition(self.by['psm2_tcp'], -1)))
-        st = self.call('tissueStats')
+        tip_vis, _ = self.point_visible(self.truth.tcp(self.cutter))
+        st = self.truth.tissue_stats()
         rs = self.call('getRCMStats')
-        faults = [f"{r['arm']}: {r['failures']} RCM solver failures" for r in rs if r['failures']]
+        # A refused candidate increments the controller failure counter even though it rolled back; only
+        # failures beyond those recorded at refusal are arm faults. Drift faults are unchanged.
+        faults = [f"{r['arm']}: {r['failures'] - self.refused_failures.get(r['arm'], 0)} RCM solver failures"
+                  for r in rs if r['failures'] - self.refused_failures.get(r['arm'], 0) > 0]
         faults += [f"{r['arm']}: RCM drift {r['max_drift_m'] * 1000:.2f} mm" for r in rs if r['max_drift_m'] > 5e-4]
         return Observation(cut_site_visible=cut_vis, scissors_visible=tip_vis, cut_site_offset=offset if cut_vis else None,
                            grasped=dict(st.get('grasped') or {}), tension=self.cut_line_tension(), max_strain=float(st.get('max_strain', 0.0)),
@@ -249,7 +279,7 @@ class SimWorld:
             return False
         self.steps(20)
         for ready in self.task['planning']['command_sequence_checked'][:2]:
-            if not self.call('setRCMTarget', self.index['psm2'], *map(float, ready)):
+            if not self.call('setRCMTarget', self.index[self.cutter], *map(float, ready)):
                 return False
         self.steps(30)
         self.place_sheet()
@@ -267,7 +297,10 @@ class SimWorld:
         Neither the RGB count nor the projected depth gate estimates a target pose from vision.
         """
         self.render()
-        vis, _ = self.point_visible(self.sheet_origin)
+        # Gate on the live cut front, not the recorded origin: the sheet deforms under retraction and
+        # cutting, so the origin point can float off the rendered surface and fail the depth gate even
+        # though the work site is plainly in view.
+        vis, _ = self.point_visible(self.cut_front())
         if not vis:
             return None
         # Coarse sheet-colour presence in the image; this cannot override the depth gate above.
@@ -276,10 +309,10 @@ class SimWorld:
         if tissue.sum() < 30:
             return None
         # Grasp points from the sheet as it is now (it contracts under pre-tension once the sides are free):
-        # one node in from each side edge, at mid length.
+        # one node in from each side edge, at mid length. Primary takes the -u side, assist the +u side.
         n = self.nodes()
         j = NV // 2
-        self.grasp_points = {'psm1': n[j, 1], 'psm3': n[j, NU - 2]}
+        self.grasp_points = {self.primary: n[j, 1], self.assist: n[j, NU - 2]}
         return Target(cut_start=self.sheet_origin, grasp_points=self.grasp_points)
 
     def grasp(self, arm, point):
@@ -289,6 +322,8 @@ class SimWorld:
             return False, (f'needs yaw {yaw:.1f} deg, pitch {pitch:.1f} deg, insertion {ins * 1000:.1f} mm; limits '
                            f"+-{L['yaw_deg']} / +-{L['pitch_deg']} deg, {L['insertion_min'] * 1000:.0f}-{L['insertion_max'] * 1000:.0f} mm")
         i = self.index[arm]
+        if arm in self.ever_grasped and arm in self.events.get('regrasp_fails', ()):
+            return False, 'injected regrasp failure'      # before any jaw motion, like FakeWorld
         # A grasp attempt opens the jaws, which already voids any earlier hold on the sheet.
         self.grasped_points.pop(arm, None)
         if not self.call('setGrip', i, 0.5):
@@ -310,6 +345,7 @@ class SimWorld:
             self.release(arm)       # tissueGrasp may already have pinned an insufficient subset of nodes
             return False, f'grasped {n} nodes'
         self.grasped_points[arm] = np.asarray(point, dtype=float).copy()
+        self.ever_grasped.add(arm)
         return True, ''
 
     def release(self, arm):
@@ -324,6 +360,11 @@ class SimWorld:
         point = self.grasped_points.get(arm)
         if self.sheet_origin is None or point is None:
             return False        # no verified grasp side: refuse rather than pull in a guessed direction
+        # The record can be stale after a physical slip: also require a live hold in the tissue model.
+        stats = self.truth.tissue_stats()
+        held = (stats.get('grasped') or {}).get(arm, 0) if isinstance(stats, dict) else 0
+        if held < self.cfg['grasp']['min_nodes']:
+            return False
         # Outward = away from the cut line, on the side this arm actually holds. The arm's name
         # cannot give this: after a handover psm3 can hold the -u point.
         side = float(np.sign(np.dot(np.asarray(point, dtype=float) - np.asarray(self.sheet_origin, dtype=float), self.u)))
@@ -337,35 +378,41 @@ class SimWorld:
         L = self.arm_cfg[arm]['limits']
         if abs(yaw) > L['yaw_deg'] or abs(pitch) > L['pitch_deg'] or not L['insertion_min'] <= ins <= L['insertion_max']:
             return False
-        return self.command(arm, yaw, pitch, ins, 10)
+        ok = self.command(arm, yaw, pitch, ins, 10)
+        # `side` is +1/-1 along u for the held point, so step*side is the signed pull direction in u.
+        self.event_log.append(dict(tick=self.tick, event='retract', arm=arm, step=float(step), side=float(side),
+                                   accepted=bool(ok)))
+        return ok
 
     def open_scissors(self):
-        ok = bool(self.call('setGrip', self.index['psm2'], 0.5))
+        ok = bool(self.call('setGrip', self.index[self.cutter], 0.5))
         if ok:
             self.steps(3)
         return ok
 
     def close_scissors(self):
-        ok = bool(self.call('setGrip', self.index['psm2'], 0.0))
+        ok = bool(self.call('setGrip', self.index[self.cutter], 0.0))
         if ok:
             self.steps(8)
         return ok
 
     def align_scissors(self, cut_start, progress):
         """Lateral distance of the cut front from the blade line, or None if approach was refused."""
-        f = self.frame('psm2')
+        f = self.frame(self.cutter)
         p = self.cut_front()
         d = unit(f['tcp'] - f['pivot'])
         lateral = np.linalg.norm(np.cross(p - f['pivot'], d))
         if np.dot(p - f['tcp'], self.v) > 0.0025:            # tip more than 2.5 mm short of the cut front
-            yaw, pitch, ins = self.target_of('psm2')
-            if not self.command('psm2', yaw, pitch, ins + np.dot(p - f['tcp'], self.v) - 0.001, 10):
+            yaw, pitch, ins = self.target_of(self.cutter)
+            correction = np.dot(p - f['tcp'], self.v) - 0.001
+            if not self.command(self.cutter, yaw, pitch, ins + correction, 10):
                 return None
+            self.advanced += correction       # withdrawal must undo this accepted insertion correction too
         return float(lateral)
 
     def advance_scissors(self, d):
-        yaw, pitch, ins = self.target_of('psm2')
-        ok = self.command('psm2', yaw, pitch, ins + d, 15)
+        yaw, pitch, ins = self.target_of(self.cutter)
+        ok = self.command(self.cutter, yaw, pitch, ins + d, 15)
         if ok:
             self.advanced += d
         return ok
@@ -380,19 +427,19 @@ class SimWorld:
             return False
         if self.advanced == 0:
             return True
-        state = self.call('getRCMStats')[self.index['psm2'] - 1]
+        state = self.call('getRCMStats')[self.index[self.cutter] - 1]
         grip = state.get('grip')
         if grip is None or not math.isfinite(grip):
             return False
         if grip != 0.0:
             # Missing tissue status is not evidence that an additional closure is safe.
-            tissue = self.call('tissueStats')
+            tissue = self.truth.tissue_stats()
             if not isinstance(tissue, dict) or tissue.get('exists') is not False:
                 return False
-            if not self.call('setGrip', self.index['psm2'], 0.0):
+            if not self.call('setGrip', self.index[self.cutter], 0.0):
                 return False
         yaw, pitch, ins = state['target']
-        if not self.command('psm2', yaw, pitch, ins - self.advanced, 20):
+        if not self.command(self.cutter, yaw, pitch, ins - self.advanced, 20):
             return False
         self.advanced = 0.0       # a second call must not retract the same distance again
         return True
@@ -404,18 +451,29 @@ class SimWorld:
             return False
         yaw, pitch = self.CAMERA_POSES[self.camera_moves]
         self.camera_moves += 1
-        ins = self.arm_cfg['ecm']['insertion_home']
-        return self.command('ecm', yaw, pitch, ins, 25)
+        ins = self.arm_cfg[self.view]['insertion_home']
+        return self.command(self.view, yaw, pitch, ins, 25)
 
     # -- injected events --------------------------------------------------------------------------------------
     def _events(self):
-        if self.event is None or self.tick < self.event_tick:
+        """Event dict semantics, mirroring FakeWorld (scripts/task/fake_world.py):
+          occlude=(start, end)              an occluding sphere blocks the view for those ticks
+          occlude_until_camera=start        it blocks the view from `start` until the camera has moved
+          slip={arm: tick}                  that arm's tissue hold is released at that tick, jaws left
+                                            closed; grasped_points stays stale — only a live check sees it
+          regrasp_fails={arm,...}           that arm cannot grasp again after its first success
+          relax=tick                        retractor creep: every arm holding tissue is commanded
+                                            cfg['events']['relax_m'] toward the cut line
+        """
+        e = self.events
+        if not e:
             return
-        if self.occluder is None and self.tick == self.event_tick:
+        occlude, until = e.get('occlude'), e.get('occlude_until_camera')
+        if self.occluder is None and (until == self.tick or (occlude is not None and self.tick == occlude[0])):
             R, t = self.camera()
             p = self.cut_front()
             ray = unit(p - t)
-            near = self.event == 'occlusion_persistent'
+            near = until is not None
             dist, radius = (0.015, 0.0025) if near else (0.06, 0.004)
             h = self.sim.createPrimitiveShape(self.sim.primitiveshape_spheroid, [2 * radius] * 3, 0)
             self.sim.setObjectAlias(h, 'InjectedOccluder')
@@ -424,7 +482,19 @@ class SimWorld:
             self.sim.setObjectInt32Param(h, self.sim.shapeintparam_static, 1)
             self.sim.setObjectInt32Param(h, self.sim.shapeintparam_respondable, 0)
             self.occluder = h
-        if self.event == 'occlusion_transient' and self.occluder not in (None, -1) and \
-                self.tick >= self.event_tick + self.event_ticks:
+            self.event_log.append(dict(tick=self.tick, event='occlude', persistent=near))
+        if occlude is not None and self.occluder not in (None, -1) and self.tick > occlude[1]:
             self.sim.removeObjects([self.occluder])
             self.occluder = -1
+        for arm, at in sorted(e.get('slip', {}).items()):
+            if self.tick == at:
+                # Physical slip: the hold is gone though the jaws stay closed; the stale record is kept on
+                # purpose so only a live-hold check (retract, grasp supervision) can notice.
+                self.call('tissueRelease', self.index[arm])
+                self.event_log.append(dict(tick=self.tick, event='slip', arm=arm))
+        if e.get('relax') == self.tick:
+            relax_m = self.cfg.get('events', {}).get('relax_m', 0.0015)
+            for arm in list(self.grasped_points):
+                ok = self.retract(arm, -relax_m)
+                self.event_log.append(dict(tick=self.tick, event='relax', arm=arm, relax_m=relax_m,
+                                           accepted=bool(ok)))

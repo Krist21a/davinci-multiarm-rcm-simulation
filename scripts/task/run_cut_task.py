@@ -4,6 +4,10 @@
   python run_cut_task.py --mode cut_only --scenario occlusion_transient
   python run_cut_task.py --mode cut_only --scenario occlusion_persistent
   python run_cut_task.py --mode full --scenario nominal
+  python run_cut_task.py --mode full --scenario slip_regrasp
+  python run_cut_task.py --mode full --scenario slip_handover
+  python run_cut_task.py --mode full --scenario relax
+  python run_cut_task.py --mode full --scenario handover_tension
 
 Writes validation/task/sim_<mode>_<scenario>.json and one endoscope frame per state change
 (validation/task/sim_<mode>_<scenario>/). The scene is loaded from a staged copy and never saved.
@@ -25,6 +29,29 @@ from simtools import ARTICULATED_SCENE as INSTRUMENT_SCENE  # noqa: E402
 from simtools import REPO, add_arguments, connect, relative, sha256, stop_simulation, write_json  # noqa: E402
 
 OUT = REPO / 'validation' / 'task'
+
+# Injected-event ticks are world ticks (one per observe() call), chosen from the nominal full-mode
+# timeline: CUT runs at world ticks ~9-15, so slips land inside it after the first closure, a lone
+# relax drops tension mid-CUT, and the post-handover relax comes a few ticks after the takeover.
+SLIP_TICK = 13
+RELAX_TICK = 11
+HANDOVER_RELAX_TICK = 24
+
+
+def scenario_events(cfg, scenario):
+    """Injected-event spec per scenario, in the SimWorld/FakeWorld dict semantics (sim_world._events)."""
+    r = cfg.get('roles', {})
+    primary, assist = r.get('retract_primary', 'psm1'), r.get('retract_assist', 'psm3')
+    return {
+        'nominal': {},
+        'occlusion_transient': {'occlude': (6, 8)},
+        'occlusion_persistent': {'occlude_until_camera': 6},
+        'slip_regrasp': {'slip': {primary: SLIP_TICK}},
+        'slip_handover': {'slip': {primary: SLIP_TICK, assist: SLIP_TICK}, 'regrasp_fails': [primary]},
+        'relax': {'relax': RELAX_TICK},
+        'handover_tension': {'slip': {primary: SLIP_TICK, assist: SLIP_TICK},
+                             'regrasp_fails': [primary], 'relax': HANDOVER_RELAX_TICK},
+    }[scenario]
 
 
 def write_report(path, report):
@@ -67,7 +94,9 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(p)
     p.add_argument('--mode', choices=['cut_only', 'full'], default='cut_only')
-    p.add_argument('--scenario', choices=['nominal', 'occlusion_transient', 'occlusion_persistent'], default='nominal')
+    p.add_argument('--scenario', choices=['nominal', 'occlusion_transient', 'occlusion_persistent',
+                                          'slip_regrasp', 'slip_handover', 'relax', 'handover_tension'],
+                   default='nominal')
     p.add_argument('--scene', type=Path, default=INSTRUMENT_SCENE, help='instrument scene to load without saving')
     p.add_argument('--sheet', action='store_true', help='also write a contact sheet to docs/fsm_<mode>_<scenario>.png')
     args = p.parse_args()
@@ -95,14 +124,16 @@ def main():
         report.update(scene=relative(scene), scene_sha256=sha256(scene),
                       source_sha256={relative(path): sha256(path) for path in
                                      [HERE / 'cut_fsm.py', HERE / 'sim_world.py', HERE / 'workspace.py',
+                                      HERE / 'ground_truth.py', HERE / 'visibility.py',
                                       Path(__file__).resolve(), REPO / 'config' / 'task' / 'cut_task.json']})
         stage = 'connect'
         client, sim = connect(args)
         # Construction starts the simulator; even partial initialization must reach cleanup/reporting.
         stage = 'world initialization'
-        world = SimWorld(client, sim, args, cfg, mode=args.mode, event=None if args.scenario == 'nominal' else args.scenario)
+        events = scenario_events(cfg, args.scenario)
+        world = SimWorld(client, sim, args, cfg, mode=args.mode, events=events)
         report.update(controller_sha256=getattr(world, 'controller_sha256', None),
-                      roles=getattr(world, 'roles_report', None))
+                      roles=getattr(world, 'roles_report', None), events=events)
         stage = 'FSM initialization'
         fsm = CutTaskFSM(world, cfg, cut_only=args.mode == 'cut_only')
         base_go = fsm.go
@@ -138,6 +169,17 @@ def main():
             except Exception as exc:
                 report['cleanup_error'] = f'{type(exc).__name__}: {exc}'
 
+    if world is not None:
+        try:
+            instrumentation = dict(refused_candidates=world.refused_failures,
+                                   event_log=world.event_log,
+                                   truth_reads=world.truth.reads,
+                                   timing=world.timing_summary())
+            # A duck-typed world without instrumentation contributes nothing rather than failing the report.
+            if all(isinstance(v, (dict, list)) for v in instrumentation.values()):
+                report.update(instrumentation)
+        except Exception as exc:
+            record_error('world instrumentation', exc)
     if fsm is not None:
         try:
             report.update(fsm.report())
