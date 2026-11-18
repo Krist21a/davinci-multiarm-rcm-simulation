@@ -17,6 +17,8 @@ import argparse
 import math
 import sys
 import time
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -25,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 import ecm_pairs  # noqa: E402
 import instrument_guard  # noqa: E402
 from simtools import (ENDO_CONFIG, ENDO_VALIDATION, ENDOSCOPE_SCENE, add_arguments, aliases, connect,  # noqa: E402
-                      load_scene, matrix_to_np, read_json, relative, sha256, stop_simulation, write_json)
+                      load_scene, matrix_to_np, read_json, refresh_controller, relative, sha256, stop_simulation, write_json)
 
 
 def unit(v):
@@ -139,10 +141,18 @@ def main():
     p.add_argument('--max-iter', type=int, default=80, help='max servo cycles per phase')
     p.add_argument('--success-tol', type=float, default=0.002, help='final block-to-target ground-truth tolerance [m]')
     p.add_argument('--name', default='nominal', help='result name: validation/endoscope/visual_task_<name>.json')
+    p.add_argument('--run-id', default=None, help='invocation identifier supplied by the suite (default: random UUID)')
     p.add_argument('--scene', type=Path, default=ENDOSCOPE_SCENE,
                    help='scene to run; the task arm must carry an instrument with the grasp capability')
     p.add_argument('--frames', action='store_true', help='save annotated key frames (PNG) and an MP4 if imageio-ffmpeg is installed')
     args = p.parse_args()
+    run_id = args.run_id or uuid.uuid4().hex
+    started_at = datetime.now(timezone.utc).isoformat()
+    sources = [Path(__file__), Path(__file__).resolve().parents[1] / 'build' / 'simtools.py',
+               Path(ecm_pairs.__file__), Path(instrument_guard.__file__)]
+    source_hashes = {relative(path): sha256(path) for path in sources}
+    config_hashes = {relative(ENDO_CONFIG / name): sha256(ENDO_CONFIG / name)
+                     for name in ('endoscope.json', 'task.json', 'rcm_config.json', 'collision_pairs.json')}
     rng = np.random.default_rng(args.seed)
 
     endo = read_json(ENDO_CONFIG / 'endoscope.json')
@@ -171,9 +181,11 @@ def main():
 
     client, sim = connect(args)
     scene = args.scene.resolve()
+    scene_hash = sha256(scene)
     load_scene(client, sim, args, scene, f'visual_task_{args.name}.ttt')
     by = aliases(sim)
     ctrl = by['RCMController']
+    controller_hash = refresh_controller(sim, ctrl)
     # The task holds the bead with the jaws: the instrument identified from the scene geometry must be able to grasp.
     ident = instrument_guard.require(sim, by, rcm, arm, ['grasp'])
     print(arm, 'instrument', ident['model'], flush=True)
@@ -216,7 +228,12 @@ def main():
     sim.setBoolParam(sim.boolparam_realtime_simulation, False)
     sim.startSimulation()
     sim.step()
-    sim.callScriptFunction('homeRCM', ctrl)
+    if not sim.callScriptFunction('homeRCM', ctrl):
+        sim.removeObjects([probe])
+        stop_simulation(client, sim)
+        sim.setStepping(False)
+        sim.setBoolParam(sim.boolparam_realtime_simulation, True)
+        raise RuntimeError('homeRCM rejected; visual task aborted before motion')
 
     frames, log, phases = [], [], []
     state = dict(holding=False, contacts=[], rejections=0, max_rcm_error=0.0)
@@ -359,17 +376,26 @@ def main():
         grasp_result['grasped'] = ok
     if ok:
         lift = perceive()
-        lift_goal = lift['block']['p'] - app * lift['grasp']['axis']
-        ok = servo('lift', lambda obs: lift_goal, 'block') and servo('pre-place', along_axis(target0, app), 'block') \
-            and servo('place', along_axis(target0, 0.0), 'block')
-    released = False
+        if lift.get('block') is None or lift.get('grasp') is None:
+            ok = False
+            phases.append(dict(phase='lift', converged=False, iterations=0, lost_frames=1,
+                               reason='initial lift detection failed'))
+        else:
+            lift_goal = lift['block']['p'] - app * lift['grasp']['axis']
+            ok = servo('lift', lambda obs: lift_goal, 'block') and servo('pre-place', along_axis(target0, app), 'block') \
+                and servo('place', along_axis(target0, 0.0), 'block')
+    released, retracted = False, False
     if ok:
         released = bool(sim.callScriptFunction('release', ctrl, index)) and \
             bool(sim.callScriptFunction('setGrip', ctrl, index, task['grip_open_rad']))
-        after = perceive()
-        if after['grasp']:
-            back = after['grasp']['p'] - app * after['grasp']['axis']
-            servo('retract', lambda obs: back, 'grasp')
+        if released:
+            after = perceive()
+            if after.get('grasp') is not None:
+                back = after['grasp']['p'] - app * after['grasp']['axis']
+                retracted = servo('retract', lambda obs: back, 'grasp')
+            else:
+                phases.append(dict(phase='retract', converged=False, iterations=0, lost_frames=1,
+                                   reason='initial retract detection failed'))
     gt = truth()
     final_error = float(np.linalg.norm(gt['block'] - gt['target']))
     sim.callScriptFunction('setGrip', ctrl, index, 0.0)
@@ -382,15 +408,17 @@ def main():
     est = [e['ctrl_estimation_error_m'] for e in log]
     blk = [e['block_estimation_error_m'] for e in log if 'block_estimation_error_m' in e]
     tgt = [e['target_estimation_error_m'] for e in log if 'target_estimation_error_m' in e]
-    success = bool(ok and released and final_error <= args.success_tol and not state['contacts'])
+    success = bool(ok and released and retracted and final_error <= args.success_tol and not state['contacts'])
     result = {
-        'scene': relative(scene), 'scene_sha256': sha256(scene),
+        'run_id': run_id, 'name': args.name, 'started_at_utc': started_at,
+        'source_sha256': source_hashes, 'config_sha256': config_hashes, 'controller_sha256': controller_hash,
+        'scene': relative(scene), 'scene_sha256': scene_hash,
         'instrument': dict(arm=arm, model=ident['model'], tcp_length_m=tcp_len),
         'settings': {k: getattr(args, k) for k in ['depth_noise_m', 'calib_rot_deg', 'calib_trans_m', 'seed', 'gain',
                                                     'max_step', 'tol', 'max_iter', 'success_tol']},
         'success': success,
         'final_block_to_target_m': final_error,
-        'grasp': grasp_result, 'released': released, 'static_object_measurement': measured,
+        'grasp': grasp_result, 'released': released, 'retracted': retracted, 'static_object_measurement': measured,
         'phases': phases,
         'servo_cycles': len(log),
         'commands_rejected': state['rejections'],
