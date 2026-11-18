@@ -50,6 +50,7 @@
     "LOCALIZE->GRASP",
     "OCCLUDED->CAMERA_ADJUST",
     "OCCLUDED->RESUME",
+    "RELOCALIZE->FAILED",
     "RELOCALIZE->RESUME",
     "RESUME->ALIGN",
     "RESUME->EXPOSE",
@@ -254,6 +255,114 @@
         "FAILED"
       ]
     },
+    "park_fails": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "park_fails": true
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 regrasp failed: jaws close on nothing; handover to psm3: cutter could not be parked for takeover",
+      "ticks": 10,
+      "visited": [
+        "ALIGN",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "FAILED"
+      ]
+    },
+    "handover_park": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
     "handover_point": {
       "events": {
         "slip": {
@@ -297,7 +406,72 @@
       "handover": {
         "lost": "psm1",
         "taken_by": "psm3",
-        "point": "left flap",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "handover_record": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
         "tick": 10
       },
       "path": [
@@ -361,7 +535,10 @@
       "handover": {
         "lost": "psm1",
         "taken_by": "psm3",
-        "point": "left flap",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
         "tick": 10
       },
       "path": [
@@ -570,7 +747,10 @@
       "handover": {
         "lost": "psm1",
         "taken_by": "psm3",
-        "point": "left flap",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
         "tick": 10
       },
       "path": [
@@ -636,6 +816,54 @@
         "ALIGN",
         "CUT",
         "DONE"
+      ]
+    },
+    "takeover_unreachable": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "takeover_unreachable": [
+          "psm3"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 regrasp failed: jaws close on nothing; handover to psm3: no reachable takeover point on the lost side",
+      "ticks": 10,
+      "visited": [
+        "ALIGN",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "FAILED"
       ]
     },
     "tear": {

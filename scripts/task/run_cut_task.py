@@ -14,11 +14,13 @@ Writes validation/task/sim_<mode>_<scenario>.json and one endoscope frame per st
 (validation/task/sim_<mode>_<scenario>/). The scene is loaded from a staged copy and never saved.
 """
 import argparse
+import hashlib
 import json
 import sys
 import uuid
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
@@ -102,6 +104,8 @@ def main():
                    default='nominal')
     p.add_argument('--scene', type=Path, default=INSTRUMENT_SCENE, help='instrument scene to load without saving')
     p.add_argument('--sheet', action='store_true', help='also write a contact sheet to docs/fsm_<mode>_<scenario>.png')
+    p.add_argument('--trace', action='store_true',
+                   help='record per-tick tension, cut length and a tissue-node hash in the report')
     args = p.parse_args()
     run_id = uuid.uuid4().hex
     name = f'sim_{args.mode}_{args.scenario}'
@@ -145,6 +149,19 @@ def main():
             shots_at.append(world.image)
             base_go(new, reason, obs)
         fsm.go = go
+        if args.trace:
+            trace = []
+            observe = world.observe
+
+            def traced_observe():
+                obs = observe()
+                nodes_sha = hashlib.sha256(np.asarray(world.call('tissueNodes'), dtype=float)
+                                           .tobytes()).hexdigest()[:16]
+                trace.append(dict(tick=world.tick, tension=obs.tension, cut_length_m=obs.cut_length_m,
+                                  nodes_sha256=nodes_sha))
+                return obs
+            world.observe = traced_observe
+            report['trace'] = trace
         stage = 'FSM run'
         fsm.run()
         stage = 'final observation'

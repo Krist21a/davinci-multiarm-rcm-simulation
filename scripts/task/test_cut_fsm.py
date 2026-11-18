@@ -98,6 +98,23 @@ class Scenarios(unittest.TestCase):
         self.assertEqual(m.handover['taken_point'], 'left flap')
         self.assertFalse(m.handover['substituted'])
 
+    def test_cutter_is_parked_before_the_takeover_grasp(self):
+        # The scissors parked mid-cut block the taking-over arm's approach across the midline;
+        # the FSM must park them first and record it in the handover.
+        m, w = run('handover_park', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'})
+        self.assertEqual(m.state, S.DONE)
+        self.assertTrue(m.handover['cutter_parked'])
+        grasp = next(i for i, a in enumerate(w.actions)
+                     if a[0] == 'grasp' and a[1] == 'psm3' and a[2] == 'left flap')
+        self.assertEqual(w.actions[grasp - 1][0], 'retract_scissors')
+
+    def test_cutter_cannot_park_fails_the_handover(self):
+        m, w = run('park_fails', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'}, park_fails=True)
+        self.assertEqual(m.state, S.FAILED)
+        self.assertIn('cutter could not be parked', m.reason)
+        # No grasp at the lost point was attempted while the cutter still blocked the approach.
+        self.assertFalse([a for a in w.actions if a[0] == 'grasp' and a[1] == 'psm3' and a[2] == 'left flap'])
+
     def test_handover_keeps_the_taken_over_point(self):
         # The assist arm must still hold the primary (-u side) point afterwards: re-grasping its own
         # point from the stale observation would undo the takeover and drop the primary point.

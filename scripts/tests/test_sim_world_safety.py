@@ -306,9 +306,22 @@ class GraspSafetyTests(unittest.TestCase):
         self.assertEqual(world.pinned, 3)
         self.assertEqual(world.call.call_args_list[-2:], [call('setGrip', 1, 0.0), call('tissueGrasp', 1)])
 
+    def test_approach_must_land_on_the_point_before_closing(self):
+        # Every command converged, yet the tip ended 5 mm off: closing would pin a neighbouring
+        # patch and still report success by node count.
+        world = self.make_world()
+        world.sim.getObjectPosition = Mock(return_value=(0.005, 0.0, 0.0))
+        ok, why = world.grasp('psm1', np.zeros(3))
+        self.assertIs(ok, False)
+        self.assertIn('mm from the grasp point', why)
+        self.assertEqual(world.pinned, 0)
+        self.assertNotIn(call('setGrip', 1, 0.0), world.call.call_args_list)
+        self.assertNotIn(call('tissueGrasp', 1), world.call.call_args_list)
+
     def test_grasp_records_the_held_point_and_release_clears_it(self):
         world = self.make_world()
         point = np.array([-0.012, 0.0, 0.05])
+        world.sim.getObjectPosition = Mock(return_value=point.tolist())   # tip lands on the point
         self.assertTrue(world.grasp('psm1', point)[0])
         np.testing.assert_array_equal(world.grasped_points['psm1'], point)
         world.release('psm1')

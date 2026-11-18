@@ -338,6 +338,12 @@ class SimWorld:
             c = np.array(self.target_of(arm)) + np.array(self.rcm_command_for(arm, point)) - np.array(self.rcm_command_for(arm, tip))
             if not self.command(arm, *c, 30):
                 return False, 'approach correction refused by the guarded controller'
+        # The commands may all have converged yet left the tip off the node (controller tolerance):
+        # closing here would pin a neighbouring patch and report it as this point.
+        tip = np.array(self.sim.getObjectPosition(self.by[arm + '_tcp'], -1))
+        err = np.linalg.norm(tip - point)
+        if err > 1e-3:
+            return False, f'approach ended {err * 1000:.1f} mm from the grasp point'
         if not self.call('setGrip', i, 0.0):
             return False, 'jaws cannot close'
         n = self.call('tissueGrasp', i)

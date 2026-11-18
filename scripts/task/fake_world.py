@@ -8,6 +8,7 @@ open blades cuts `advance` of tissue. Events are injected by tick:
   slip={'psm1': tick}               that arm loses its grasp at that tick
   regrasp_fails={'psm1'}            that arm cannot grasp again
   takeover_unreachable={'psm3'}     takeover_point() finds nothing for that arm
+  park_fails=True                   retract_scissors() refuses: the cutter cannot park
   relax=tick                        tissue relaxes (strain falls) at that tick
   tear=tick, fault=tick             tissue tears / an unexpected collision is reported
   roles_ok=False, unreachable={'psm1'}, camera_poses=n
@@ -130,7 +131,7 @@ class FakeWorld:
 
     def retract_scissors(self):
         self.actions.append(('retract_scissors', self.tick))
-        return True
+        return not self.e.get('park_fails', False)
 
     def adjust_camera(self):
         if self.camera_moves >= self.e.get('camera_poses', 3):

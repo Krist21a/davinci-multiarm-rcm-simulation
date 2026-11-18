@@ -301,6 +301,10 @@ class CutTaskFSM:
                 taken = self.w.takeover_point(self.assist, lost_point)
                 if taken is None:
                     ok2, why2 = False, 'no reachable takeover point on the lost side'
+                elif not self.w.retract_scissors():
+                    # The scissors parked mid-cut block the takeover sweep across the midline;
+                    # the next ALIGN re-approaches the cut front anyway.
+                    ok2, why2 = False, 'cutter could not be parked for takeover'
                 else:
                     ok2, why2 = self.w.grasp(self.assist, taken)
                 if ok2:
@@ -310,7 +314,7 @@ class CutTaskFSM:
                     handled.add(self.assist)
                     self.handover = dict(lost=arm, taken_by=self.assist, requested_point=str(lost_point),
                                          taken_point=str(taken), substituted=taken is not lost_point,
-                                         tick=self.tick_count)
+                                         cutter_parked=True, tick=self.tick_count)
                     continue
                 why += f'; handover to {self.assist}: {why2}'
             return self.go(S.FAILED, f'{arm} regrasp failed: {why}', obs)
