@@ -7,6 +7,7 @@
   python run_cut_task.py --mode full --scenario slip_regrasp
   python run_cut_task.py --mode full --scenario slip_handover
   python run_cut_task.py --mode full --scenario relax
+  python run_cut_task.py --mode full --scenario relax_large
   python run_cut_task.py --mode full --scenario handover_tension
 
 Writes validation/task/sim_<mode>_<scenario>.json and one endoscope frame per state change
@@ -49,6 +50,7 @@ def scenario_events(cfg, scenario):
         'slip_regrasp': {'slip': {primary: SLIP_TICK}},
         'slip_handover': {'slip': {primary: SLIP_TICK, assist: SLIP_TICK}, 'regrasp_fails': [primary]},
         'relax': {'relax': RELAX_TICK},
+        'relax_large': {'relax': RELAX_TICK, 'relax_m': 0.0015},   # exceeds the recovery budget on purpose
         'handover_tension': {'slip': {primary: SLIP_TICK, assist: SLIP_TICK},
                              'regrasp_fails': [primary], 'relax': HANDOVER_RELAX_TICK},
     }[scenario]
@@ -95,7 +97,8 @@ def main():
     add_arguments(p)
     p.add_argument('--mode', choices=['cut_only', 'full'], default='cut_only')
     p.add_argument('--scenario', choices=['nominal', 'occlusion_transient', 'occlusion_persistent',
-                                          'slip_regrasp', 'slip_handover', 'relax', 'handover_tension'],
+                                          'slip_regrasp', 'slip_handover', 'relax', 'relax_large',
+                                          'handover_tension'],
                    default='nominal')
     p.add_argument('--scene', type=Path, default=INSTRUMENT_SCENE, help='instrument scene to load without saving')
     p.add_argument('--sheet', action='store_true', help='also write a contact sheet to docs/fsm_<mode>_<scenario>.png')

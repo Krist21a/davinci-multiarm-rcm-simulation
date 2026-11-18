@@ -286,8 +286,9 @@ class CutTaskFSM:
             ok, why = self.w.grasp(arm, target.grasp_points[arm])
             if ok:
                 continue
-            # Handover: the primary grasp point matters most. The assist arm gives up its own point (if it held
-            # one) and takes the lost primary point; a lost assist point is simply dropped.
+            # Handover: the primary side matters most. The assist arm gives up its own point (if it held
+            # one) and takes a reachable point near the lost primary point on that side; a lost assist
+            # point is simply dropped.
             if arm == self.assist:
                 self.retractors.remove(arm)
                 self.log.append(dict(tick=self.tick_count, note=f'{arm} assist grasp dropped: {why}'))
@@ -296,13 +297,19 @@ class CutTaskFSM:
                 if self.assist in self.retractors:
                     self.w.release(self.assist)
                     self.retractors.remove(self.assist)
-                ok2, why2 = self.w.grasp(self.assist, target.grasp_points[arm])
+                lost_point = target.grasp_points[arm]
+                taken = self.w.takeover_point(self.assist, lost_point)
+                if taken is None:
+                    ok2, why2 = False, 'no reachable takeover point on the lost side'
+                else:
+                    ok2, why2 = self.w.grasp(self.assist, taken)
                 if ok2:
                     self.retractors[self.retractors.index(arm)] = self.assist
                     # The assist now holds the primary point; its own pending regrasp is skipped so
                     # the takeover is not undone by the stale observation later in this loop.
                     handled.add(self.assist)
-                    self.handover = dict(lost=arm, taken_by=self.assist, point=str(target.grasp_points[arm]),
+                    self.handover = dict(lost=arm, taken_by=self.assist, requested_point=str(lost_point),
+                                         taken_point=str(taken), substituted=taken is not lost_point,
                                          tick=self.tick_count)
                     continue
                 why += f'; handover to {self.assist}: {why2}'

@@ -17,6 +17,7 @@ with patch.object(sys, 'path', [str(TASK), *sys.path]):
     import simtools
     from sim_world import SimWorld, TISSUE_RGB
     from visibility import depth_visible
+    from workspace import H, NU, NV
 
 
 class ImportSafetyTests(unittest.TestCase):
@@ -687,6 +688,63 @@ class EventInjectionTests(unittest.TestCase):
         self.assertIs(ok, False)
         self.assertIn('regrasp', why)
         world.call.assert_not_called()
+
+
+class TakeoverPointTests(unittest.TestCase):
+    """takeover_point() hands the lost side to a node the taking-over arm can actually reach."""
+    def make_world(self, reachable):
+        """reachable: set of (row, col) the arm can command inside its limits; others get a huge insertion."""
+        world = bare_world()
+        world.sheet_origin = np.zeros(3)
+        world.u = np.array([1.0, 0.0, 0.0])               # +u = the "psm3 side" by layout convention
+        world.arm_cfg = {'psm3': {'limits': {'yaw_deg': 5.0, 'pitch_deg': 5.0,
+                                              'insertion_min': 0.0, 'insertion_max': 0.055}}}
+        nodes = np.zeros((NV, NU, 3))
+        for j in range(NV):
+            for i in range(NU):
+                nodes[j, i] = [(i - (NU - 1) / 2) * H, 0.0, j * H]
+        world.nodes = Mock(return_value=nodes)
+
+        def command_for(arm, point):
+            p = np.asarray(point, dtype=float)
+            j = int(round(p[2] / H))
+            i = int(round(p[0] / H + (NU - 1) / 2))
+            return (0.0, 0.0, 0.04) if (j, i) in reachable else (0.0, 0.0, 0.2)
+
+        world.rcm_command_for = Mock(side_effect=command_for)
+        return world, nodes
+
+    def test_nearest_reachable_node_on_the_lost_side_is_taken(self):
+        world, nodes = self.make_world(reachable={(7, 2), (7, 4), (9, 1)})
+        got = world.takeover_point('psm3', nodes[7, 1].copy())
+        np.testing.assert_allclose(got, nodes[7, 2])    # 1 mm away beats n[7,4] (3 mm) and n[9,1] (2 mm)
+
+    def test_nodes_on_the_far_side_are_never_offered(self):
+        world, nodes = self.make_world(reachable={(7, 20)})
+        self.assertIsNone(world.takeover_point('psm3', nodes[7, 1].copy()))
+
+    def test_column_band_keeps_the_jaws_off_the_cut_and_edge(self):
+        # cols 9-11 sit within three columns of the cut line; row 0 and col 0 are off-limits.
+        world, nodes = self.make_world(reachable={(7, 9), (7, 11), (0, 3), (7, 0)})
+        self.assertIsNone(world.takeover_point('psm3', nodes[7, 1].copy()))
+
+    def test_limit_margin_excludes_boundary_points(self):
+        world, nodes = self.make_world(reachable=set())
+        # Insertion at the raw max still fails: the candidate must sit 1 mm inside it.
+        world.rcm_command_for = Mock(return_value=(0.0, 0.0, 0.0545))
+        self.assertIsNone(world.takeover_point('psm3', nodes[7, 1].copy()))
+        # Same for angles: 4.6 deg is inside the raw 5 deg but outside the 0.5 deg margin.
+        world.rcm_command_for = Mock(return_value=(4.6, 0.0, 0.04))
+        self.assertIsNone(world.takeover_point('psm3', nodes[7, 1].copy()))
+
+    def test_no_sheet_or_no_side_means_no_point(self):
+        world = bare_world()
+        world.sheet_origin = None
+        self.assertIsNone(world.takeover_point('psm3', np.zeros(3)))
+        world.sheet_origin = np.zeros(3)
+        world.u = np.array([1.0, 0.0, 0.0])
+        self.assertIsNone(world.takeover_point('psm3', None))
+        self.assertIsNone(world.takeover_point('psm3', np.zeros(3)))     # lost point on the cut line
 
 
 if __name__ == '__main__':

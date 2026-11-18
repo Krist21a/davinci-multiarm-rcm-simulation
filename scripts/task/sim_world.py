@@ -352,6 +352,38 @@ class SimWorld:
         self.call('tissueRelease', self.index[arm])
         self.grasped_points.pop(arm, None)
 
+    def takeover_point(self, arm, lost_point):
+        """Nearest live node to `lost_point` the arm can grasp on the same side of the cut line, or None.
+
+        A handover keeps the side the lost arm held: candidates sit at least three columns in from
+        the cut line, off the edge column and row 0, and inside the arm limits with a small margin
+        (a point at the boundary would likely be refused by the guarded controller anyway)."""
+        if self.sheet_origin is None or lost_point is None:
+            return None
+        origin = np.asarray(self.sheet_origin, dtype=float)
+        lost = np.asarray(lost_point, dtype=float)
+        side = float(np.sign(np.dot(lost - origin, self.u)))
+        if not math.isfinite(side) or side == 0.0:
+            return None        # a point on the cut line gives no side to keep
+        # The cut line runs between columns NU//2-1 and NU//2.
+        lo, hi = (1, NU // 2 - 4) if side < 0 else (NU // 2 + 3, NU - 2)
+        L = self.arm_cfg[arm]['limits']
+        nodes = self.nodes()
+        best, best_d = None, np.inf
+        for j in range(1, NV):
+            for i in range(lo, hi + 1):
+                node = np.asarray(nodes[j, i], dtype=float)
+                if np.sign(np.dot(node - origin, self.u)) != side:
+                    continue
+                yaw, pitch, ins = self.rcm_command_for(arm, node)
+                if (abs(yaw) > L['yaw_deg'] - 0.5 or abs(pitch) > L['pitch_deg'] - 0.5 or
+                        not L['insertion_min'] + 1e-3 <= ins <= L['insertion_max'] - 1e-3):
+                    continue
+                d = float(np.linalg.norm(node - lost))
+                if d < best_d:
+                    best, best_d = node, d
+        return best
+
     def retract(self, arm, step):
         """Pull (step > 0) or relax the grasped edge outward in the sheet plane, away from the cut line.
 
@@ -463,7 +495,8 @@ class SimWorld:
                                             closed; grasped_points stays stale — only a live check sees it
           regrasp_fails={arm,...}           that arm cannot grasp again after its first success
           relax=tick                        retractor creep: every arm holding tissue is commanded
-                                            cfg['events']['relax_m'] toward the cut line
+                                            relax_m toward the cut line (e['relax_m'] if given,
+                                            else cfg['events']['relax_m'])
         """
         e = self.events
         if not e:
@@ -493,7 +526,7 @@ class SimWorld:
                 self.call('tissueRelease', self.index[arm])
                 self.event_log.append(dict(tick=self.tick, event='slip', arm=arm))
         if e.get('relax') == self.tick:
-            relax_m = self.cfg.get('events', {}).get('relax_m', 0.0015)
+            relax_m = e.get('relax_m', self.cfg.get('events', {}).get('relax_m', 0.0005))
             for arm in list(self.grasped_points):
                 ok = self.retract(arm, -relax_m)
                 self.event_log.append(dict(tick=self.tick, event='relax', arm=arm, relax_m=relax_m,

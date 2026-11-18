@@ -81,6 +81,23 @@ class Scenarios(unittest.TestCase):
         self.assertEqual(m.handover['lost'], 'psm1')
         self.assertEqual(m.handover['taken_by'], 'psm3')
 
+    def test_takeover_point_unreachable_fails(self):
+        # Nothing on the lost side is inside the taking-over arm's limits: honest FAILED instead of
+        # grasping a point on the other side.
+        m, w = run('takeover_unreachable', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'},
+                   takeover_unreachable={'psm3'})
+        self.assertEqual(m.state, S.FAILED)
+        self.assertIn('no reachable takeover point on the lost side', m.reason)
+
+    def test_handover_records_requested_and_taken_points(self):
+        m, w = run('handover_record', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'})
+        self.assertEqual(m.state, S.DONE)
+        self.assertEqual(m.handover['lost'], 'psm1')
+        self.assertEqual(m.handover['taken_by'], 'psm3')
+        self.assertEqual(m.handover['requested_point'], 'left flap')
+        self.assertEqual(m.handover['taken_point'], 'left flap')
+        self.assertFalse(m.handover['substituted'])
+
     def test_handover_keeps_the_taken_over_point(self):
         # The assist arm must still hold the primary (-u side) point afterwards: re-grasping its own
         # point from the stale observation would undo the takeover and drop the primary point.
