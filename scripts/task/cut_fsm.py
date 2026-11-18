@@ -15,6 +15,7 @@ An interrupted CUT always comes back through ALIGN: the blades are re-aligned be
 Recovery states keep the first interrupted state as the return target, so nested recoveries return there.
 """
 import enum
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
@@ -130,11 +131,18 @@ class CutTaskFSM:
         s = self.state
         if s in TERMINAL:
             return True
+        if not all(math.isfinite(v) for v in (obs.tension, obs.max_strain, obs.cut_length_m)) or obs.cut_length_m < 0:
+            self.go(S.FAILED, 'invalid tissue observation', obs)
+            return True
         if obs.faults:
             self.go(S.FAILED, 'fault: ' + '; '.join(obs.faults), obs)
             return True
         if obs.torn and self.cfg['tension']['tear_is_failure']:
             self.go(S.FAILED, f'tissue torn ({obs.torn} constraints)', obs)
+            return True
+        limit = self.cfg['cut']['length_m'] + self.cfg['cut'].get('max_overcut_m', 0.0)
+        if obs.cut_length_m > limit + 1e-12:
+            self.go(S.FAILED, f'cut exceeds allowed length ({obs.cut_length_m * 1000:.2f} mm)', obs)
             return True
         if s in NEEDS_VIEW and not self.visible(obs):
             self.go(S.OCCLUDED, 'cut site or scissors not visible', obs)
@@ -210,19 +218,29 @@ class CutTaskFSM:
 
     def on_cut(self, obs):
         if obs.cut_length_m >= self.cfg['cut']['length_m']:
-            self.w.retract_scissors()
-            return self.go(S.DONE, f'cut length {obs.cut_length_m * 1000:.1f} mm reached', obs)
+            if not self.w.retract_scissors():
+                return self.go(S.FAILED, 'scissors retraction refused', obs)
+            # Retraction can fail indirectly (e.g. tissue damage during simulation steps).
+            # The withdrawn tip need not remain in view; only the terminal safety checks apply.
+            final = self.w.observe()
+            issues = completion_issues(final, self.cfg)
+            if issues:
+                return self.go(S.FAILED, '; '.join(issues), final)
+            return self.go(S.DONE, f'cut length {final.cut_length_m * 1000:.1f} mm reached; scissors retracted', final)
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
-        # The last bite only covers what is left, so the cut does not run past the planned length.
-        step = min(self.cfg['cut']['advance_m'], max(0.001, self.cfg['cut']['length_m'] - obs.cut_length_m))
+        # Bound the commanded advance, not the physical cut: blade extent and the tissue grid
+        # can still cause overshoot, which is checked separately by the supervisor.
+        step = min(self.cfg['cut']['advance_m'], self.cfg['cut']['length_m'] - obs.cut_length_m)
         if not self.w.advance_scissors(step):
             return self.go(S.FAILED, 'scissors advance refused (limits or collision)', obs)
-        # Check the view again between advancing and closing: the blades close only on a visible cut site.
-        if not self.visible(self.w.observe()):
-            return self.go(S.OCCLUDED, 'view lost before closing the blades', obs)
+        # Advancing is not instantaneous. Recheck ALL interlocks on the fresh observation,
+        # including faults, tears, grasp loss and strain, before the irreversible closure.
+        fresh = self.w.observe()
+        if self.supervise(fresh):
+            return
         if not self.w.close_scissors():
-            return self.go(S.FAILED, 'scissors cannot close', obs)
+            return self.go(S.FAILED, 'scissors cannot close', fresh)
 
     # -- recovery states --------------------------------------------------------------------------------------
     def on_occluded(self, obs):
@@ -259,8 +277,10 @@ class CutTaskFSM:
             return
         self.target = target
         need = self.cfg['grasp']['min_nodes']
+        handled = set()
         for arm in list(self.retractors):
-            if arm not in self.retractors or obs.grasped.get(arm, 0) >= need:
+            # `obs` predates this handler: an arm that just completed a takeover still reads 0 in it.
+            if arm in handled or arm not in self.retractors or obs.grasped.get(arm, 0) >= need:
                 continue
             self.w.release(arm)
             ok, why = self.w.grasp(arm, target.grasp_points[arm])
@@ -279,6 +299,9 @@ class CutTaskFSM:
                 ok2, why2 = self.w.grasp(self.assist, target.grasp_points[arm])
                 if ok2:
                     self.retractors[self.retractors.index(arm)] = self.assist
+                    # The assist now holds the primary point; its own pending regrasp is skipped so
+                    # the takeover is not undone by the stale observation later in this loop.
+                    handled.add(self.assist)
                     self.handover = dict(lost=arm, taken_by=self.assist, point=str(target.grasp_points[arm]),
                                          tick=self.tick_count)
                     continue
@@ -308,7 +331,9 @@ class CutTaskFSM:
         step = self.cfg['cut'].get('retract_step_m', 0.0005)
         sign = 1.0 if obs.tension < self.cfg['tension']['low_strain'] else -1.0
         for arm in self.retractors:
-            self.w.retract(arm, sign * step)
+            if not self.w.retract(arm, sign * step):
+                self.go(S.FAILED, f'{arm} retraction adjustment refused', obs)
+                return
 
     def report(self):
         return dict(final_state=self.state.name, final_label=self.state.value, reason=self.reason, ticks=self.tick_count,
@@ -320,3 +345,24 @@ def _summary(o):
     return dict(cut_site_visible=o.cut_site_visible, scissors_visible=o.scissors_visible, cut_site_offset=o.cut_site_offset,
                 grasped=o.grasped, tension=round(o.tension, 4), max_strain=round(o.max_strain, 4), torn=o.torn, cut_length_m=round(o.cut_length_m, 5),
                 faults=o.faults)
+
+
+def completion_issues(obs, cfg):
+    """Terminal acceptance, independent of visibility after a successful withdrawal.
+
+    The caller must also require DONE and a successful retraction. These thresholds
+    describe this simulation benchmark, not clinical safety limits.
+    """
+    issues = list(obs.faults)
+    if not all(math.isfinite(v) for v in (obs.cut_length_m, obs.tension, obs.max_strain)):
+        issues.append('invalid final tissue observation')
+    if obs.torn and cfg['tension']['tear_is_failure']:
+        issues.append(f'tissue torn ({obs.torn} constraints)')
+    if obs.tension > cfg['tension']['high_strain']:
+        issues.append('final strain above upper bound')
+    target = cfg['cut']['length_m']
+    if obs.cut_length_m < target - 1e-12:
+        issues.append('cut length below target')
+    if obs.cut_length_m > target + cfg['cut'].get('max_overcut_m', 0.0) + 1e-12:
+        issues.append('cut exceeds allowed length')
+    return issues

@@ -66,7 +66,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 13,
       "visited": [
         "ALIGN",
@@ -190,7 +190,7 @@
       "cut_only": true,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 8,
       "visited": [
         "ALIGN",
@@ -225,7 +225,7 @@
       "final_state": "FAILED",
       "final_label": "失败停止",
       "reason": "strain 0.010 outside band and no retraction arm",
-      "ticks": 8,
+      "ticks": 7,
       "visited": [
         "ALIGN",
         "CUT",
@@ -254,12 +254,139 @@
         "FAILED"
       ]
     },
+    "handover_point": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "point": "left flap",
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "handover_tension": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "relax": 14
+      },
+      "cut_only": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 23,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->ALIGN",
+        "RESUME->EXPOSE",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "point": "left flap",
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
     "nominal": {
       "events": {},
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 13,
       "visited": [
         "ALIGN",
@@ -299,7 +426,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 24,
       "visited": [
         "ALIGN",
@@ -413,7 +540,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 17,
       "visited": [
         "ALIGN",
@@ -468,7 +595,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 18,
       "visited": [
         "ALIGN",
@@ -519,7 +646,7 @@
       "final_state": "FAILED",
       "final_label": "失败停止",
       "reason": "tissue torn (1 constraints)",
-      "ticks": 12,
+      "ticks": 11,
       "visited": [
         "ALIGN",
         "CUT",
@@ -558,7 +685,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 18,
       "visited": [
         "ALIGN",
@@ -610,7 +737,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 19,
       "visited": [
         "ALIGN",
@@ -659,7 +786,7 @@
       "cut_only": false,
       "final_state": "DONE",
       "final_label": "完成",
-      "reason": "cut length 9.0 mm reached",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
       "ticks": 18,
       "visited": [
         "ALIGN",

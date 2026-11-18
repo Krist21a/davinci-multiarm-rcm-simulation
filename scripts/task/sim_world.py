@@ -1,8 +1,9 @@
 """CoppeliaSim world for scripts/task/cut_fsm.py, on scenes/davinci_si_instruments.ttt.
 
 Sensing
-  - endoscope RGB-D (EndoscopeCamera): the cut front and the scissors tip are visible when the rendered depth at
-    their projected pixels is not more than 3 mm in front of them (anything nearer is an occluder);
+  - endoscope RGB-D (EndoscopeCamera): the known cut front and scissors tip pass a simulation visibility gate
+    only when their central 3x3 depth window and enough surrounding pixels have nothing over 3 mm nearer;
+    colour never overrides depth. This uses ground-truth projections, NOT visual localization;
     the cut-site offset is its pixel distance from the image centre (1 = image edge);
   - tissue model (src/tissue/tissue.lua): grasped nodes per arm, maximum strain, torn constraints;
   - cut length: rows of the sheet separated along the cut line (node geometry, not vision);
@@ -19,13 +20,11 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 from cut_fsm import Observation, Target  # noqa: E402
-import instrument_guard  # noqa: E402
-import instruments as inst  # noqa: E402
 from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
+from visibility import depth_visible  # noqa: E402
 
 import workspace  # noqa: E402
 from workspace import H, NU, NV, PRETENSION  # noqa: E402
@@ -40,6 +39,8 @@ def unit(v):
 
 class SimWorld:
     def __init__(self, client, sim, args, cfg, mode='cut_only', event=None, event_tick=6, event_ticks=3):
+        from simtools import refresh_controller
+
         self.client, self.sim, self.cfg, self.mode = client, sim, cfg, mode
         self.event, self.event_tick, self.event_ticks = event, event_tick, event_ticks
         rcm_file = ENDO_CONFIG.parent / 'instruments' / 'rcm_config.json'      # written with the scene by install
@@ -48,9 +49,12 @@ class SimWorld:
         self.endo = read_json(ENDO_CONFIG / 'endoscope.json')
         self.index = {a['arm']: i for i, a in enumerate(self.rcm, 1)}
         self.arm_cfg = {a['arm']: a for a in self.rcm}
-        load_scene(client, sim, args, INSTRUMENT_SCENE, 'cut_task.ttt')
+        load_scene(client, sim, args, getattr(args, 'scene', INSTRUMENT_SCENE), 'cut_task.ttt')
         self.by = aliases(sim)
         self.ctrl = self.by['RCMController']
+        # Refresh only the stopped, loaded scene; never save the .ttt. In particular,
+        # homeRCM must execute the current controller's explicit success/failure contract.
+        self.controller_sha256 = refresh_controller(sim, self.ctrl, tissue=True)
         self.cam = self.by[self.endo['camera']['alias']]
         c = self.endo['camera']
         self.W, self.H = c['resolution']
@@ -62,6 +66,9 @@ class SimWorld:
         self.camera_moves = 0
         self.image = None
         self.sheet_origin = None
+        # The grasp point each arm actually holds. Handover can put an arm on either side of the
+        # cut line, so retraction direction must come from this record, not from the arm's name.
+        self.grasped_points = {}
         # Fixed side anchors pin the sheet at its laid-out width; with 8 % the constraint where the free near edge
         # meets the first anchor tore at 52 % strain before any cut, so the cut-only sheet uses 5 %.
         self.pretension = 0.05 if mode == 'cut_only' else PRETENSION
@@ -83,6 +90,10 @@ class SimWorld:
 
     def frame(self, arm):
         j9, j10 = (matrix_to_np(self.sim.getObjectMatrix(self.by[f'{arm}_joint{n}'], -1)) for n in (9, 10))
+        if arm + '_dvrk_yaw_frame' in self.by:
+            yaw = matrix_to_np(self.sim.getObjectMatrix(self.by[arm + '_dvrk_yaw_frame'], -1))
+            return dict(pivot=j10[:, 3], x=yaw[:, 1], axis=yaw[:, 2],
+                        tcp=np.array(self.sim.getObjectPosition(self.by[f'{arm}_tcp'], -1)))
         return dict(pivot=j10[:, 3], x=unit(j10[:, 3] - j9[:, 3]), axis=j10[:, 2],
                     tcp=np.array(self.sim.getObjectPosition(self.by[f'{arm}_tcp'], -1)))
 
@@ -90,8 +101,10 @@ class SimWorld:
         return self.call('getRCMStats')[self.index[arm] - 1]['target']
 
     def command(self, arm, yaw, pitch, ins, n=15):
+        """Advance settling time only for an accepted, synchronous controller command."""
         ok = bool(self.call('setRCMTarget', self.index[arm], float(yaw), float(pitch), float(ins)))
-        self.steps(n)
+        if ok:
+            self.steps(n)
         return ok
 
     def rcm_command_for(self, arm, point):
@@ -111,6 +124,9 @@ class SimWorld:
         return M[:, :3], M[:, 3]
 
     def render(self):
+        # Offline safety tests need only numpy, not Pillow or the geometry/Remote API stack.
+        from PIL import Image
+
         s = self.sim
         s.handleVisionSensor(self.cam)
         raw, _ = s.getVisionSensorImg(self.cam)
@@ -126,21 +142,14 @@ class SimWorld:
         return (self.W / 2 - self.f * pc[0] / pc[2], self.H / 2 - self.f * pc[1] / pc[2]), pc
 
     def point_visible(self, p, tol=0.003, window=21, min_clear=0.35):
+        """Depth visibility of a known simulation point, not an image-derived position estimate."""
         uv, pc = self.project(p)
-        if uv is None or not (2 <= uv[0] < self.W - 2 and 2 <= uv[1] < self.H - 2):
+        if (uv is None or not np.isfinite(pc).all() or not 0 < pc[2] < self.far or
+                not (2 <= uv[0] < self.W - 2 and 2 <= uv[1] < self.H - 2)):
             return False, None
-        u, v = int(round(uv[0])), int(round(uv[1]))
-        r = window // 2
-        v0, v1, u0, u1 = max(v - r, 0), min(v + r + 1, self.H), max(u - r, 0), min(u + r + 1, self.W)
-        win = self.depth[v0:v1, u0:u1]
-        # A window pixel shows the point's surroundings when it is tissue (the sheet being worked on bends and
-        # wraps the blades) or nothing nearer than the point. The point is visible when enough of the window
-        # does: the scissors cover part of the cut front while cutting, an occluder covers all of it.
-        rgb = np.asarray(self.image, dtype=float)[v0:v1, u0:u1]
-        tissue = np.linalg.norm(rgb - 255 * np.array(TISSUE_RGB), axis=2) < 40
-        clear = tissue | (win >= pc[2] - tol)
         offset = max(abs(uv[0] - self.W / 2) / (self.W / 2), abs(uv[1] - self.H / 2) / (self.H / 2))
-        return bool(clear.mean() >= min_clear), float(offset)
+        visible = depth_visible(self.depth, uv, pc[2], tol=tol, window=window, min_clear=min_clear)
+        return visible, float(offset)
 
     def cut_front(self):
         """Where the next closure has to cut: on the sheet as it is now, between the two centre columns."""
@@ -226,13 +235,18 @@ class SimWorld:
                            torn=int(st.get('torn', 0)), cut_length_m=self.cut_length(), faults=faults)
 
     def check_roles(self):
+        import instrument_guard
+        import instruments as inst
+
         ok, report = instrument_guard.check(self.sim, self.by, self.rcm, inst.roles())
         bad = [f"{a}: {e['identified']} missing {e['missing']}" for a, e in report.items() if not e['ok']]
         self.roles_report = {a: dict(identified=e['identified'], ok=e['ok']) for a, e in report.items()}
         return ok, '; '.join(bad)
 
     def home(self):
-        self.call('homeRCM')
+        # Legacy controllers returning None cannot establish that homing succeeded.
+        if not self.call('homeRCM'):
+            return False
         self.steps(20)
         for ready in self.task['planning']['command_sequence_checked'][:2]:
             if not self.call('setRCMTarget', self.index['psm2'], *map(float, ready)):
@@ -248,12 +262,15 @@ class SimWorld:
         self.call('hold')
 
     def localize(self):
+        """Simulation-ground-truth targets, gated by depth and a coarse colour-presence check.
+
+        Neither the RGB count nor the projected depth gate estimates a target pose from vision.
+        """
         self.render()
         vis, _ = self.point_visible(self.sheet_origin)
         if not vis:
             return None
-        R, t = self.camera()
-        # Tissue must actually be seen: enough pixels of the sheet colour around the planned cut start.
+        # Coarse sheet-colour presence in the image; this cannot override the depth gate above.
         rgb = np.asarray(self.image, dtype=float)
         tissue = np.linalg.norm(rgb - 255 * np.array(TISSUE_RGB), axis=2) < 40
         if tissue.sum() < 30:
@@ -272,6 +289,8 @@ class SimWorld:
             return False, (f'needs yaw {yaw:.1f} deg, pitch {pitch:.1f} deg, insertion {ins * 1000:.1f} mm; limits '
                            f"+-{L['yaw_deg']} / +-{L['pitch_deg']} deg, {L['insertion_min'] * 1000:.0f}-{L['insertion_max'] * 1000:.0f} mm")
         i = self.index[arm]
+        # A grasp attempt opens the jaws, which already voids any earlier hold on the sheet.
+        self.grasped_points.pop(arm, None)
         if not self.call('setGrip', i, 0.5):
             return False, 'jaws cannot open'
         if not self.command(arm, yaw, pitch, ins, 30):
@@ -284,21 +303,32 @@ class SimWorld:
             c = np.array(self.target_of(arm)) + np.array(self.rcm_command_for(arm, point)) - np.array(self.rcm_command_for(arm, tip))
             if not self.command(arm, *c, 30):
                 return False, 'approach correction refused by the guarded controller'
-        self.call('setGrip', i, 0.0)
+        if not self.call('setGrip', i, 0.0):
+            return False, 'jaws cannot close'
         n = self.call('tissueGrasp', i)
         if n is None or n < self.cfg['grasp']['min_nodes']:
+            self.release(arm)       # tissueGrasp may already have pinned an insufficient subset of nodes
             return False, f'grasped {n} nodes'
+        self.grasped_points[arm] = np.asarray(point, dtype=float).copy()
         return True, ''
 
     def release(self, arm):
         self.call('tissueRelease', self.index[arm])
+        self.grasped_points.pop(arm, None)
 
     def retract(self, arm, step):
         """Pull (step > 0) or relax the grasped edge outward in the sheet plane, away from the cut line.
 
         Pulling back along the shaft would lift the sheet out of its plane and load only the few grasped nodes
         (that tore the sheet at 47 % strain in the first run); a lateral pull spreads the tension across it."""
-        side = -1.0 if arm == 'psm1' else 1.0
+        point = self.grasped_points.get(arm)
+        if self.sheet_origin is None or point is None:
+            return False        # no verified grasp side: refuse rather than pull in a guessed direction
+        # Outward = away from the cut line, on the side this arm actually holds. The arm's name
+        # cannot give this: after a handover psm3 can hold the -u point.
+        side = float(np.sign(np.dot(np.asarray(point, dtype=float) - np.asarray(self.sheet_origin, dtype=float), self.u)))
+        if not math.isfinite(side) or side == 0.0 or not math.isfinite(step):
+            return False        # a grasp on the cut line has no unambiguous outward direction
         tip = np.array(self.sim.getObjectPosition(self.by[arm + '_tcp'], -1))
         # Relative command: the jaw tip of a curved instrument is off the shaft axis, so an absolute
         # point command would jump by that offset (1.4 mm for the Maryland tip).
@@ -311,23 +341,26 @@ class SimWorld:
 
     def open_scissors(self):
         ok = bool(self.call('setGrip', self.index['psm2'], 0.5))
-        self.steps(3)
+        if ok:
+            self.steps(3)
         return ok
 
     def close_scissors(self):
         ok = bool(self.call('setGrip', self.index['psm2'], 0.0))
-        self.steps(8)
+        if ok:
+            self.steps(8)
         return ok
 
     def align_scissors(self, cut_start, progress):
-        """Lateral distance of the cut front from the blade line, and how far the blade tip is past it."""
+        """Lateral distance of the cut front from the blade line, or None if approach was refused."""
         f = self.frame('psm2')
         p = self.cut_front()
         d = unit(f['tcp'] - f['pivot'])
         lateral = np.linalg.norm(np.cross(p - f['pivot'], d))
         if np.dot(p - f['tcp'], self.v) > 0.0025:            # tip more than 2.5 mm short of the cut front
             yaw, pitch, ins = self.target_of('psm2')
-            self.command('psm2', yaw, pitch, ins + np.dot(p - f['tcp'], self.v) - 0.001, 10)
+            if not self.command('psm2', yaw, pitch, ins + np.dot(p - f['tcp'], self.v) - 0.001, 10):
+                return None
         return float(lateral)
 
     def advance_scissors(self, d):
@@ -338,9 +371,31 @@ class SimWorld:
         return ok
 
     def retract_scissors(self):
-        yaw, pitch, ins = self.target_of('psm2')
-        self.call('setGrip', self.index['psm2'], 0.0)
-        self.command('psm2', yaw, pitch, ins - self.advanced, 20)
+        """Undo accepted cutting advances, without an extra bite merely to close for retreat.
+
+        Normal completion leaves the scissors closed. If they are open with tissue present,
+        closing could cut again: refuse instead of inventing an unverified escape trajectory.
+        """
+        if not math.isfinite(self.advanced) or self.advanced < 0:
+            return False
+        if self.advanced == 0:
+            return True
+        state = self.call('getRCMStats')[self.index['psm2'] - 1]
+        grip = state.get('grip')
+        if grip is None or not math.isfinite(grip):
+            return False
+        if grip != 0.0:
+            # Missing tissue status is not evidence that an additional closure is safe.
+            tissue = self.call('tissueStats')
+            if not isinstance(tissue, dict) or tissue.get('exists') is not False:
+                return False
+            if not self.call('setGrip', self.index['psm2'], 0.0):
+                return False
+        yaw, pitch, ins = state['target']
+        if not self.command('psm2', yaw, pitch, ins - self.advanced, 20):
+            return False
+        self.advanced = 0.0       # a second call must not retract the same distance again
+        return True
 
     CAMERA_POSES = [(3.0, 0.0), (-3.0, 0.0), (0.0, 3.0), (0.0, -3.0), (4.5, 3.0), (-4.5, -3.0)]
 

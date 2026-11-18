@@ -1,0 +1,221 @@
+{
+  "mode": "cut_only",
+  "scenario": "nominal",
+  "success": true,
+  "final_state": "DONE",
+  "final_label": "完成",
+  "reason": "cut length 9.0 mm reached; scissors retracted",
+  "ticks": 8,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "INIT",
+    "LOCALIZE"
+  ],
+  "transitions": [
+    "ALIGN->CUT",
+    "CUT->DONE",
+    "EXPOSE->ALIGN",
+    "INIT->LOCALIZE",
+    "LOCALIZE->EXPOSE"
+  ],
+  "retractors": [],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "note": "GRASP skipped: cut-only mode, the tissue is held by fixed anchors"
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "cut site localized (cut-only mode)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.24170865742776126,
+        "grasped": {},
+        "tension": 0.0505,
+        "max_strain": 0.2592,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.050",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.24170865742776126,
+        "grasped": {},
+        "tension": 0.0505,
+        "max_strain": 0.2592,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 4,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.43 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.24170865742776126,
+        "grasped": {},
+        "tension": 0.0505,
+        "max_strain": 0.2592,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "CUT",
+      "to": "DONE",
+      "label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.19893228915834626,
+        "grasped": {},
+        "tension": 0.0579,
+        "max_strain": 0.1999,
+        "torn": 0,
+        "cut_length_m": 0.009,
+        "faults": []
+      }
+    }
+  ],
+  "controller_sha256": "31db7b5069f4fe6e490b91059c7b617f179113a68dafacccdd68b4e29075e38c",
+  "acceptance_issues": [],
+  "final_observation": {
+    "cut_site_visible": true,
+    "scissors_visible": true,
+    "cut_site_offset": 0.19893228915834626,
+    "grasped": {},
+    "tension": 0.057913388292117673,
+    "torn": 0,
+    "cut_length_m": 0.009000000000000001,
+    "faults": [],
+    "max_strain": 0.19991953419388886
+  },
+  "controller_stats": [
+    {
+      "shaft_distance_m": 0.3387999177024349,
+      "drift_m": 5.720019435423596e-14,
+      "holding": false,
+      "max_drift_m": 8.733848377553774e-12,
+      "failures": 0,
+      "target_error_m": 7.571511433819171e-14,
+      "last_collision": "",
+      "converged": true,
+      "grip": 0.0,
+      "collision_blocks": 0,
+      "arm": "psm1",
+      "target": [
+        0,
+        0,
+        0.04
+      ]
+    },
+    {
+      "shaft_distance_m": 0.3593248499508731,
+      "drift_m": 9.359813083866228e-09,
+      "holding": false,
+      "max_drift_m": 1.114281087315118e-08,
+      "failures": 0,
+      "target_error_m": 1.415469404826604e-08,
+      "last_collision": "",
+      "converged": true,
+      "grip": 0.0,
+      "collision_blocks": 0,
+      "arm": "psm2",
+      "target": [
+        -3.75,
+        -3.75,
+        0.016043991410816194
+      ]
+    },
+    {
+      "shaft_distance_m": 0.32572837657853393,
+      "drift_m": 5.402084997154667e-12,
+      "holding": false,
+      "max_drift_m": 3.5329637488056976e-11,
+      "failures": 0,
+      "target_error_m": 1.0280163106396976e-11,
+      "last_collision": "",
+      "converged": true,
+      "grip": 0.0,
+      "collision_blocks": 0,
+      "arm": "psm3",
+      "target": [
+        0,
+        0,
+        0.04
+      ]
+    },
+    {
+      "shaft_distance_m": -0.0652751763228987,
+      "drift_m": 4.1910000110727263e-16,
+      "holding": false,
+      "max_drift_m": 4.1910000110727263e-16,
+      "failures": 0,
+      "target_error_m": 4.1910000110727263e-16,
+      "last_collision": "",
+      "converged": true,
+      "grip": 0,
+      "collision_blocks": 0,
+      "arm": "ecm",
+      "target": [
+        0,
+        0,
+        0.08
+      ]
+    }
+  ],
+  "seconds": 24.655,
+  "source_sha256": {
+    "scripts/task/cut_fsm.py": "6bc4d991b07b9849db380e47c1cd4cdfa83dd7784bfb8f6bb1076c1a8eefd6e6",
+    "scripts/task/sim_world.py": "3da6208261c81c794f479c44d4589b65ca0a69e8cb0f2bc00371729dfbb084e7",
+    "scripts/task/visibility.py": "7df52bcee081993da8fd9fc0be23b0e68c3c897b48e7c51fe9346c3b56854083",
+    "scripts/task/workspace.py": "cae1ed99e81d554bfcc448510bfcdd4f7ccfd8778c0f9527fedbdcd42a149362",
+    "src/endoscope/rcm_controller.lua": "25a1c0b0c2f1ef94fb3c500f89e56e31ac7647c4764aebd5932e1a33834611ee",
+    "src/tissue/tissue.lua": "fef835e9ea89abf34bb6d315cc00d4a8f64e2a5f57d1d27150a10cf2444d4f36",
+    "src/instruments/capability_guard.lua": "39e822ac9240e32d635dfe2da154ef4e8e97f8c39efb4dbfff2c8a6418eb98f1",
+    "config/task/cut_task.json": "436c67fe110cc6e45ff5abadf1b6f4084bac594c1471548e298cecc44815f265",
+    "scenes/davinci_si_instruments.ttt": "601a88e1ff2cb9574b6ff75457681cbb02e1869d8671aedd0db160500e07352f"
+  }
+}

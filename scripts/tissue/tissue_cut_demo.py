@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 from simtools import (ENDO_CONFIG, INSTRUMENT_SCENE, REPO, TISSUE_VALIDATION, add_arguments, aliases, connect,  # noqa: E402
-                      load_scene, matrix_to_np, read_json, relative, sha256, stop_simulation, write_json)
+                      load_scene, matrix_to_np, read_json, refresh_controller, relative, sha256, stop_simulation, write_json)
 
 H = 0.001                       # node spacing [m]
 PRETENSION = 0.08               # rest length 8 % below the laid-out spacing: the sheet is held under tension
@@ -43,6 +43,7 @@ def main():
     load_scene(client, sim, args, INSTRUMENT_SCENE, 'tissue_cut_demo.ttt')
     by = aliases(sim)
     ctrl = by['RCMController']
+    controller_hash = refresh_controller(sim, ctrl, tissue=True)
     cam = by[endo['camera']['alias']]
     W, Hh = endo['camera']['resolution']
 
@@ -93,9 +94,12 @@ def main():
     sim.setBoolParam(sim.boolparam_realtime_simulation, False)
     sim.startSimulation()
     sim.step()
-    call('homeRCM')
+    if not call('homeRCM'):
+        stop_simulation(client, sim)
+        raise RuntimeError('homing refused')
     steps(20)
-    result = {'scene': relative(INSTRUMENT_SCENE), 'scene_sha256': sha256(INSTRUMENT_SCENE), 'spacing_m': H,
+    result = {'scene': relative(INSTRUMENT_SCENE), 'scene_sha256': sha256(INSTRUMENT_SCENE),
+              'controller_sha256': controller_hash, 'spacing_m': H,
               'pretension': PRETENSION}
 
     # A. Grasper: sheet through the jaw line of PSM1 (the jaws lie in the sheet).

@@ -23,6 +23,8 @@ class FakeWorld:
         self.base_strain = 0.08 if cut_only else 0.0       # anchors pre-tension the cut-only sheet
         self.k = 60.0                                       # strain per metre of retraction
         self.grasped = {}
+        self.points = {}          # arm -> grasp point actually held (handover changes the holder, not the side)
+        self.ever_grasped = set()
         self.blades_open = False
         self.aligned = False
         self.cut = 0.0
@@ -44,6 +46,7 @@ class FakeWorld:
         for arm, t in self.e.get('slip', {}).items():
             if self.tick == t:
                 self.grasped[arm] = 0
+                self.points.pop(arm, None)
         if self.e.get('relax') == self.tick:
             self.retraction -= 0.0005
             self.base_strain = max(0.0, self.base_strain - 0.07)
@@ -78,16 +81,22 @@ class FakeWorld:
     def grasp(self, arm, point):
         if arm in self.e.get('unreachable', set()):
             return False, 'out of reach'
-        if arm in self.grasped and arm in self.e.get('regrasp_fails', set()):
+        if arm in self.ever_grasped and arm in self.e.get('regrasp_fails', set()):
             return False, 'jaws close on nothing'
         self.grasped[arm] = 6
+        self.points[arm] = point
+        self.ever_grasped.add(arm)
         self.actions.append(('grasp', arm, point, self.tick))
         return True, ''
 
     def release(self, arm):
+        self.grasped.pop(arm, None)
+        self.points.pop(arm, None)
         self.actions.append(('release', arm, self.tick))
 
     def retract(self, arm, step):
+        if arm not in self.points:
+            return False        # same contract as SimWorld: refuse a pull with no recorded held point
         self.retraction += step / max(1, len(self.grasped))
         self.actions.append(('retract', arm, step, self.tick))
         return True
@@ -115,6 +124,7 @@ class FakeWorld:
 
     def retract_scissors(self):
         self.actions.append(('retract_scissors', self.tick))
+        return True
 
     def adjust_camera(self):
         if self.camera_moves >= self.e.get('camera_poses', 3):

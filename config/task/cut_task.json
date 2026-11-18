@@ -5,7 +5,8 @@
               "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."},
   "grasp": {"min_nodes": 3},
   "view": {"center_margin": 0.35, "occlusion_wait_ticks": 6},
-  "cut": {"length_m": 0.009, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+  "cut": {"length_m": 0.009, "max_overcut_m": 0.001, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+          "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
           "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."},
   "budgets": {
     "localize_ticks": 5,

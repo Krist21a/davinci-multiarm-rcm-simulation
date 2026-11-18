@@ -81,6 +81,43 @@ class Scenarios(unittest.TestCase):
         self.assertEqual(m.handover['lost'], 'psm1')
         self.assertEqual(m.handover['taken_by'], 'psm3')
 
+    def test_handover_keeps_the_taken_over_point(self):
+        # The assist arm must still hold the primary (-u side) point afterwards: re-grasping its own
+        # point from the stale observation would undo the takeover and drop the primary point.
+        m, w = run('handover_point', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'})
+        self.assertEqual(m.state, S.DONE)
+        self.assertEqual(m.retractors, ['psm3'])
+        self.assertEqual(w.points['psm3'], 'left flap')
+        self.assertNotIn('psm1', w.points)
+        undo = [a for a in w.actions if a[0] == 'grasp' and a[1] == 'psm3' and a[2] == 'right flap' and a[3] >= m.handover['tick']]
+        self.assertEqual(undo, [])
+
+    def test_handover_then_tension_adjust_pulls_the_taking_over_arm(self):
+        # psm1 slips and cannot regrasp, so psm3 takes the -u point; a later tension drop during the
+        # resumed cut must pull psm3 — the arm holding it — and the task still completes.
+        m, w = run('handover_tension', slip={'psm1': 9, 'psm3': 9}, regrasp_fails={'psm1'}, relax=14)
+        self.assertEqual(m.state, S.DONE)
+        p = self.path(m)
+        self.assertLess(p.index('RELOCALIZE'), p.index('RETRACT_ADJUST'))
+        pulls = [a for a in w.actions if a[0] == 'retract' and a[3] >= m.handover['tick']]
+        self.assertTrue(pulls)
+        self.assertEqual({a[1] for a in pulls}, {'psm3'})
+        self.assertTrue(all(a[2] > 0 for a in pulls))
+
+    def test_tension_adjust_pulls_the_arm_holding_the_point(self):
+        # Post-handover state: psm3 holds the -u point. A low-tension adjustment must pull psm3 —
+        # the arm actually holding the point — and pulling an empty-handed arm is refused.
+        w = FakeWorld()
+        w.grasped, w.points, w.ever_grasped = {'psm3': 6}, {'psm3': 'left flap'}, {'psm1', 'psm3'}
+        w.base_strain = 0.0
+        m = CutTaskFSM(w, CFG)
+        m.state, m.retractors, m.return_to = S.RETRACT_ADJUST, ['psm3'], S.EXPOSE
+        m.tick()
+        pulls = [a for a in w.actions if a[0] == 'retract']
+        self.assertEqual([a[1] for a in pulls], ['psm3'])
+        self.assertGreater(pulls[0][2], 0.0)
+        self.assertFalse(w.retract('psm1', CFG['cut']['retract_step_m']))
+
     def test_assist_unreachable_is_not_fatal(self):
         m, w = run('assist_unreachable', unreachable={'psm3'})
         self.assertEqual(m.state, S.DONE)

@@ -1,5 +1,7 @@
 # 达芬奇式多臂手术机器人仿真：前列腺邻近组织切割的多臂协同视觉伺服
 
+> **2026-11-17 修复版入口**：`scenes/davinci_si_articulated_verified.ttt` 增加独立腕部 yaw，区分 RCM 杆轴摆角与末端 roll/pitch/yaw/grip；包含本轮 P0 修复。原 `davinci_si_instruments.ttt` 和下文历史演示保留，不代表修复版自动验收。修复、测试与模型边界见 `docs/SI_KINEMATICS_AND_SAFETY_zh.md`；P1–P4 阶段门槛见 `docs/DEVELOPMENT_ROADMAP_zh.md`。
+
 这个项目在 CoppeliaSim 里搭了一台达芬奇式多臂手术机器人，从脚端对接到一具成年男性解剖模型上。它包含三条持器械臂（PSM）和一条内窥镜臂（ECM）。四条臂都用软件 RCM 绕腹壁穿刺点运动。系统在内窥镜引导下完成三臂协同任务：牵拉组织、剪开组织、保持视野。
 
 ![系统总览：三条 PSM、ECM、分腿手术台和 BodyParts3D 人体](docs/overview_si_instruments.png)

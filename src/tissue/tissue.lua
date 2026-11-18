@@ -7,12 +7,15 @@
 --                        row j=nv-1 (and columns 0, nu-1 from row 1 when anchor_sides) are anchored.
 --   tissueGrasp(index)   needs 'grasp_tissue': pins nodes within grasp_radius of the closed jaws to the tool tip.
 --   tissueRelease(index)
---   closing scissors     setGrip with a smaller angle than before (from >= 0.15 rad) on an arm with 'cut' cuts
---                        every constraint crossing the wedge between the open blades, or within cut_radius of
---                        the closed blade line (pivot -> tool tip).
+--   closing scissors     actual opening >= 0.15 rad arms one closing cycle. Every accepted smaller angle cuts
+--                        ONLY the two blade sweeps from the old angle to the new angle, including small steps
+--                        below 0.15. Closure ends the cycle; reopening below 0.15 cancels it.
 --   tissueStats(), tissueNodes(), tissueRemove()
 -- A constraint stretched beyond tear_ratio * rest length breaks and counts as torn (tissue damage).
 local T=nil
+local cutArmed={}
+local CLOSED_EPS=1e-6   -- numerical joint-position tolerance, not a tissue/contact model
+local function finite(x) return type(x)=='number' and x==x and math.abs(x)<math.huge end
 local function v3(a) return {a[1],a[2],a[3]} end
 local function vadd(a,b) return {a[1]+b[1],a[2]+b[2],a[3]+b[3]} end
 local function vsub(a,b) return {a[1]-b[1],a[2]-b[2],a[3]-b[3]} end
@@ -66,7 +69,7 @@ end
 
 function tissueRemove()
     if T and T.shape then sim.removeObjects({T.shape}) end
-    T=nil
+    T=nil;cutArmed={}
 end
 
 function tissueCreate(spec)
@@ -131,33 +134,66 @@ local function segTri(p,q,a,b,c)
     return t>=0 and t<=1
 end
 
--- Closing blades cut what lies between them: every constraint that crosses the wedge swept by the two blade
--- lines (pivot -> blade tip, each blade turned by its opening angle about its jaw joint axis), plus every
--- constraint within cut_radius of the closed blade line.
-function tissueCut(index,openAngle)
-    local arm=arms[index]
-    if not T or not arm or not hasInstrumentCapability(index,'cut') then return 0 end
-    local P,Q=jawSegment(arm)
-    local wedge=nil
-    if openAngle and openAngle>0 and #arm.grip>=2 then
-        local tips={}
-        for i=1,2 do
-            local m=sim.getObjectMatrix(arm.grip[i],sim.handle_world)
-            tips[i]=vadd(P,rotate(vsub(Q,P),{m[3],m[7],m[11]},openAngle))
+-- Includes coplanar segments and segments parallel to, but within cut_radius of, a swept triangle.
+local function nearTri(p,q,a,b,c,r2)
+    if segTri(p,q,a,b,c) or segDist2(p,q,a,b)<=r2 or segDist2(p,q,b,c)<=r2 or segDist2(p,q,c,a)<=r2 then return true end
+    local e1,e2=vsub(b,a),vsub(c,a)
+    local aa,bb,cc=vdot(e1,e1),vdot(e1,e2),vdot(e2,e2)
+    local den=aa*cc-bb*bb
+    if den<=0 then return false end
+    for _,x in ipairs({p,q}) do
+        local d=vsub(x,a);local da,db=vdot(d,e1),vdot(d,e2)
+        local u,v=(cc*da-bb*db)/den,(aa*db-bb*da)/den
+        if u>=0 and v>=0 and u+v<=1 then
+            local off=vsub(d,vadd(vmul(e1,u),vmul(e2,v)))
+            if vdot(off,off)<=r2 then return true end
         end
-        wedge={P,tips[1],tips[2]}
+    end
+    return false
+end
+
+-- Both joints receive the SAME positive angle, but their world axes face opposite ways (install_instruments).
+-- Sweep each blade separately: a single triangle between open tips would cut the still-open centre gap.
+-- Fan triangles approximate the circular tip arc to <= 0.05 rad per sector; no centre-line cut is added.
+function tissueCut(index,oldAngle,newAngle)
+    local arm=arms[index]
+    if not T or not arm or not arm.tcp or not arm.grip or #arm.grip<2 or not hasInstrumentCapability(index,'cut') then return 0 end
+    if not finite(oldAngle) or not finite(newAngle) or newAngle>=oldAngle or oldAngle<=0 then return 0 end
+    oldAngle=math.max(0,oldAngle);newAngle=math.max(0,newAngle)
+    local Q=sim.getObjectPosition(arm.tcp,sim.handle_world)
+    local sectors={};local steps=math.max(1,math.ceil((oldAngle-newAngle)/0.05))
+    for i=1,2 do
+        local P=sim.getObjectPosition(arm.grip[i],sim.handle_world)
+        local m=sim.getObjectMatrix(arm.grip[i],sim.handle_world)
+        local axis={m[3],m[7],m[11]};local line=vsub(Q,P)
+        local prev=vadd(P,rotate(line,axis,oldAngle))
+        for k=1,steps do
+            local tip=vadd(P,rotate(line,axis,oldAngle+(newAngle-oldAngle)*k/steps))
+            sectors[#sectors+1]={P,prev,tip};prev=tip
+        end
     end
     local r2,n=T.p.cut_radius^2,0
     for _,s in ipairs(T.springs) do
         if s.alive then
             local a,b=T.x[s.a],T.x[s.b]
-            if segDist2(a,b,P,Q)<r2 or (wedge and segTri(a,b,wedge[1],wedge[2],wedge[3])) then s.alive=false;n=n+1 end
+            for _,tr in ipairs(sectors) do
+                if nearTri(a,b,tr[1],tr[2],tr[3],r2) then s.alive=false;n=n+1;break end
+            end
         end
     end
     T.cut=T.cut+n
-    T.cutLog[#T.cutLog+1]={arm=arm.arm,t=sim.getSimulationTime(),constraints=n}
+    T.cutLog[#T.cutLog+1]={arm=arm.arm,t=sim.getSimulationTime(),constraints=n,from_angle=oldAngle,to_angle=newAngle}
     render()
     return n
+end
+
+local function jawsClosed(arm)
+    if not arm or not arm.grip or #arm.grip<2 or not arm.tcp then return false end
+    for _,h in ipairs(arm.grip) do
+        local q=sim.getJointPosition(h)
+        if not finite(q) or math.abs(q)>CLOSED_EPS then return false end
+    end
+    return true
 end
 
 function tissueGrasp(index)
@@ -167,6 +203,7 @@ function tissueGrasp(index)
         arm.capabilityRefusals=(arm.capabilityRefusals or 0)+1
         return -1
     end
+    if not jawsClosed(arm) then tissueRelease(index);return 0 end
     local P,Q=jawSegment(arm)
     local inv=sim.getMatrixInverse(sim.getObjectMatrix(arm.tcp,sim.handle_world))
     local n=0
@@ -187,6 +224,8 @@ end
 
 local function tissueStep()
     if not T then return end
+    -- Also release after an external joint change, not only after commands through setGrip.
+    for i,arm in ipairs(arms) do if not jawsClosed(arm) then tissueRelease(i) end end
     for k,p in pairs(T.pinned) do
         if p.arm then T.x[k]=sim.multiplyVector(sim.getObjectMatrix(arms[p.arm].tcp,sim.handle_world),p.rel) else T.x[k]=v3(p.fixed) end
     end
@@ -256,9 +295,23 @@ end
 local cutSetGrip=setGrip
 function setGrip(index,angle)
     local arm=arms[index]
-    local before=arm and arm.gripAngle or 0
+    -- Reject before the capability wrapper's moving-hinge arithmetic as well as in the base controller.
+    if not finite(angle) or not arm or not arm.grip or #arm.grip==0 then return false end
+    local before=sim.getJointPosition(arm.grip[1])
     local ok=cutSetGrip(index,angle)
-    if ok and T and angle<before-1e-3 and before>=0.15 and hasInstrumentCapability(index,'cut') then tissueCut(index,before-angle) end
+    if ok then
+        local after=sim.getJointPosition(arm.grip[1])
+        if not jawsClosed(arm) then tissueRelease(index) end
+        if after>before+1e-9 then
+            cutArmed[index]=after>=0.15
+        elseif after<before-1e-9 then
+            local armed=cutArmed[index] or before>=0.15
+            if armed and T then tissueCut(index,before,after) end
+            cutArmed[index]=armed and after>CLOSED_EPS
+        elseif after>=0.15 then
+            cutArmed[index]=true
+        end
+    end
     return ok
 end
 

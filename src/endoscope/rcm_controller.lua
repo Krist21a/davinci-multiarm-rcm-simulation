@@ -15,6 +15,7 @@ local function sub(a,b) return {a[1]-b[1],a[2]-b[2],a[3]-b[3]} end
 local function mul(a,k) return {a[1]*k,a[2]*k,a[3]*k} end
 local function dot(a,b) return a[1]*b[1]+a[2]*b[2]+a[3]*b[3] end
 local function norm(a) return math.sqrt(dot(a,a)) end
+local function finite(x) return type(x)=='number' and x==x and math.abs(x)<math.huge end
 local function cross(a,b) return {a[2]*b[3]-a[3]*b[2],a[3]*b[1]-a[1]*b[3],a[1]*b[2]-a[2]*b[1]} end
 local function frame(h) local m=sim.getObjectMatrix(h,sim.handle_world);return {m[4],m[8],m[12]},{m[3],m[7],m[11]},{m[1],m[5],m[9]} end
 local function solve(A,b)
@@ -57,6 +58,12 @@ local function collisionFree(arm)
   end
  end
  arm.lastCollision='';return true
+end
+
+-- Shared collision policy for optional distal articulation; no motion or counter changes here.
+function checkArmCollision(index)
+    local arm=arms and arms[index]
+    return arm~=nil and collisionFree(arm)
 end
 
 local function control(arm,yaw,pitch,insertion)
@@ -129,21 +136,40 @@ function sysCall_init()
         arm.lastTarget={0,0,arm.insertion_home}
         arm.grip={};arm.gripAngle=0
         for i,n in ipairs(arm.grip_joints or {}) do arm.grip[i]=need(n) end
+        if #arm.grip>0 then arm.gripAngle=sim.getJointPosition(arm.grip[1]) end
         if arm.tcp_frame then arm.tcp=need(arm.tcp_frame) end
     end
     grasped={}   -- object handle -> {parent, local matrix, arm} at the first grasp, restored at cleanup
 end
--- Jaw opening (rad, both jaw joints); refused and rolled back if the jaws would hit anything.
+-- Jaw opening (rad on EACH joint, same sign; total opening is twice this angle).
+-- Validate the scene's actual intervals before moving either jaw; never cache an invalid request.
 function setGrip(index,angle)
     local arm=arms[index]
-    if not arm or #arm.grip==0 then return false end
-    local old={};for i,h in ipairs(arm.grip) do old[i]=sim.getJointPosition(h);sim.setJointPosition(h,angle) end
-    if not collisionFree(arm) then
+    if not arm or not arm.grip or #arm.grip==0 or not finite(angle) then return false end
+    local old,intervals={},{}
+    for i,h in ipairs(arm.grip) do
+        old[i]=sim.getJointPosition(h)
+        local cyclic,lim=sim.getJointInterval(h)
+        if not cyclic then
+            if not lim or not finite(lim[1]) or not finite(lim[2]) or lim[2]<0 or angle<lim[1] or angle>lim[1]+lim[2] then return false end
+            intervals[i]=lim
+        end
+    end
+    for _,h in ipairs(arm.grip) do sim.setJointPosition(h,angle) end
+    local actual,valid=nil,true
+    for i,h in ipairs(arm.grip) do
+        local q=sim.getJointPosition(h);local lim=intervals[i]
+        if not finite(q) or (lim and (q<lim[1]-1e-9 or q>lim[1]+lim[2]+1e-9)) or (actual and math.abs(q-actual)>1e-7) then valid=false end
+        actual=actual or q
+    end
+    local blocked=valid and not collisionFree(arm)
+    if not valid or blocked then
         for i,h in ipairs(arm.grip) do sim.setJointPosition(h,old[i]) end
-        arm.collisionBlocks=arm.collisionBlocks+1
+        arm.gripAngle=sim.getJointPosition(arm.grip[1])
+        if blocked then arm.collisionBlocks=arm.collisionBlocks+1 end
         return false
     end
-    arm.gripAngle=angle
+    arm.gripAngle=actual
     return true
 end
 -- Kinematic grasp: the object follows the instrument tip frame until released (no contact physics).
@@ -163,7 +189,7 @@ function release(index)
 end
 function setRCMTarget(index,yaw,pitch,insertion)
     local arm=arms[index]
-    if not arm then return false end
+    if not arm or not finite(yaw) or not finite(pitch) or not finite(insertion) then return false end
     local L=arm.limits
     if math.abs(yaw)>L.yaw_deg or math.abs(pitch)>L.pitch_deg or insertion<L.insertion_min or insertion>L.insertion_max then return false end
     auto=false;frozen=false
@@ -184,8 +210,31 @@ end
 function setAuto(enabled) auto=enabled;frozen=false end
 function hold() auto=false;frozen=true end
 function homeRCM()
+    -- Homing is one group operation: no partially homed group or stale target/projection on rejection.
+    -- Keep failure/collision counters as diagnostics, but restore all pose-derived state and mode.
+    local saved={};local wasAuto,wasFrozen=auto,frozen
+    local fields={'lastTarget','converged','targetError','drift','distance','maxDrift'}
+    for i,arm in ipairs(arms) do
+        local s={q={},insertion=sim.getJointPosition(arm.insertion),projection=sim.getObjectPosition(arm.projection,sim.handle_world),state={}}
+        for j,h in ipairs(arm.handles) do s.q[j]=sim.getJointPosition(h) end
+        for _,key in ipairs(fields) do s.state[key]=arm[key] end
+        saved[i]=s
+    end
     auto=false;frozen=false
-    for _,arm in ipairs(arms) do control(arm,0,0,arm.insertion_home) end
+    for _,arm in ipairs(arms) do
+        if not control(arm,0,0,arm.insertion_home) then
+            for i,a in ipairs(arms) do
+                local s=saved[i]
+                for j,h in ipairs(a.handles) do sim.setJointPosition(h,s.q[j]) end
+                sim.setJointPosition(a.insertion,s.insertion)
+                sim.setObjectPosition(a.projection,sim.handle_world,s.projection)
+                for _,key in ipairs(fields) do a[key]=s.state[key] end
+            end
+            auto=wasAuto;frozen=wasFrozen
+            return false
+        end
+    end
+    return true
 end
 function getRCMStats()
     local result={}
