@@ -428,6 +428,7 @@ class SimWorld:
                     scene_sha256=file_sha256(self.scene_file) if self.scene_file.exists() else None,
                     scenario=getattr(self.args, 'scenario', None),
                     run_name=getattr(self.args, 'report_name', None),
+                    initial_view=getattr(self.args, 'initial_view', None),
                     estimator='cut_perception.CutPerception',
                     estimator_args=dict(W=self.W, H=self.H, f=self.f, far=self.far,
                                         rcm_world=list(rcm), marker_radius=cut_perception.MARKER_RADIUS,
@@ -440,7 +441,8 @@ class SimWorld:
                                                         list(cut_perception.MARKER_THIRD_RGB)],
                                         tcp_local=getattr(self, '_tcp_local', None),
                                         jaw_axis_local=getattr(self, '_jaw_axis_local', None),
-                                        tcp_len=self._marker_tcp_len),
+                                        tcp_len=self._marker_tcp_len,
+                                        sheet_width_m=(NU - 1) * H),
                     perception_cfg=dict(self.perc_cfg))
 
     def _dump_frame(self):
@@ -520,6 +522,12 @@ class SimWorld:
         s.setBoolParam(s.boolparam_realtime_simulation, False)
         s.startSimulation()
         self.steps(1)
+        iv = getattr(self.args, 'initial_view', None)
+        if iv is not None:
+            yaw, pitch = iv
+            if not self.command(self.view, yaw, pitch,
+                                self.arm_cfg[self.view]['insertion_home'], 25):
+                raise RuntimeError(f'initial view {iv} unreachable')
 
     def place_sheet(self):
         if self.roi_proxy is not None:

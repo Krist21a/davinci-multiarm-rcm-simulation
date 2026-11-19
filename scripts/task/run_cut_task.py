@@ -110,8 +110,17 @@ def main():
                    help='override cut.align_mode for this run (default: config value)')
     p.add_argument('--perception', default=None,
                    help='JSON object merged into cfg["perception"] (mode/markers/depth_noise_m/camera_pose_error/seed)')
+    p.add_argument('--initial-view', default=None, metavar='YAW,PITCH',
+                   help='absolute initial camera angles in degrees, applied once after start '
+                        '(same convention as CAMERA_POSES)')
     p.add_argument('--name', default=None, help='report name override (default sim_<mode>_<scenario>)')
     args = p.parse_args()
+    if args.initial_view is not None:
+        try:
+            args.initial_view = [float(v) for v in args.initial_view.split(',')]
+            assert len(args.initial_view) == 2
+        except (ValueError, AssertionError):
+            p.error('--initial-view must be YAW,PITCH in degrees')
     run_id = uuid.uuid4().hex
     name = args.name or f'sim_{args.mode}_{args.scenario}'
     args.report_name = name                          # recorded in the perception frame-dump meta.json
@@ -136,6 +145,7 @@ def main():
         if args.perception:
             cfg.setdefault('perception', {}).update(json.loads(args.perception))
         report['config'] = cfg
+        report['initial_view'] = args.initial_view
         stage = 'source provenance'
         scene = args.scene.resolve()
         report.update(scene=relative(scene), scene_sha256=sha256(scene),

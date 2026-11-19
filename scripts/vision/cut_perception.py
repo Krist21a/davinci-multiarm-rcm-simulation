@@ -71,15 +71,9 @@ GAP_DEPTH_M = 0.0005                     # depth behind the plane that reads as 
 SLIT_MIN_LEN_M = 0.001                   # contiguous run that counts as a slit at all
 SLIT_UPDATE_M = 0.003                    # run length that may refit the cut line/direction
 RUN_GAP_BINS = 2                         # empty bins tolerated inside a slit run (1 mm)
-DWELL_TOL_M = 0.0015                     # tip this still between ticks => dwell = engaged snip
-TIP_LEAD_M = 0.0025                      # an unengaged on-sheet tip this far ahead of the
-                                         # best front evidence means the estimate is a
-                                         # stale lower bound only -> fail closed
 LAT_SMOOTH = 0.6                         # low-pass on the remembered cut-line lateral:
-                                         # the crack line is persistent, the Kabsch tip
-                                         # lateral jitters ~mm under depth noise
-TIP_ONSHEET_H_M = 0.0025                 # |tip height above the plane| for 'tip is on the sheet'
-TIP_EDGE_PAD_M = 0.002                   # tip this far outside the strip extent is off-sheet
+                                         # the crack line is persistent, single-frame
+                                         # lateral measurements jitter ~mm under depth noise
 PLANE_GATE_M = 0.00075                   # iterative plane-fit residual gate
 NEAR_EVIDENCE_M = 0.0015                 # tissue-evidence radius around the pre-cut front
 MIN_NEAR_PX = 2                          # sheet pixels inside it for a valid pre-cut front
@@ -196,12 +190,37 @@ def _kabsch(offsets, centres):
     return R, t, rms
 
 
+def _provable_ahead(s, band, occ, b_start, edges, sa_px, mask, depth, pz, far):
+    """The one front-provability test: the look-ahead window [s, s+AHEAD+0.5 mm]
+    inside the cut-line band proves no crack past s — mostly seen, at most half
+    foreground-covered, at least MIN_AHEAD_PX sheet pixels, and no slit (occ) bins.
+    """
+    ahead = band & (sa_px >= s) & (sa_px < s + AHEAD_WINDOW_M + 0.0005)
+    if int(ahead.sum()) == 0:
+        return False
+    seen = ahead & np.isfinite(depth) & (depth < far * 0.999)
+    if int(seen.sum()) * 2 < int(ahead.sum()):
+        return False
+    covered = int((seen & (depth < pz - COVER_DEPTH_M)).sum())
+    if covered > 0.5 * int(seen.sum()):
+        return False
+    # Mostly intact sheet: blades lying on the surface are neither 'behind' nor
+    # >COVER_DEPTH_M covered, so a pixel count alone cannot see them — the window
+    # must be over half sheet to prove the crack stopped before it.
+    if int((ahead & mask).sum()) < max(MIN_AHEAD_PX, int(0.5 * int(seen.sum())) + 1):
+        return False
+    b0 = max(b_start, np.digitize(s, edges) - 1)
+    b1 = np.digitize(s + AHEAD_WINDOW_M + 0.0005, edges) - 1
+    return not occ[b0:min(len(occ), b1 + 1)].any()
+
+
 class CutPerception:
     """One estimator instance per run; state: post-grasp width w0, remembered cut prior."""
 
     def __init__(self, W, H, f, far, rcm_world, marker_radius=MARKER_RADIUS,
                  marker_offsets=MARKER_OFFS, marker_colours=MARKER_COLOURS,
-                 tcp_local=None, jaw_axis_local=None, tcp_len=None):
+                 tcp_local=None, jaw_axis_local=None, tcp_len=None,
+                 sheet_width_m=None):
         self.W, self.H, self.f, self.far = W, H, f, far
         self.rcm_world = np.asarray(rcm_world, dtype=float)
         self.marker_radius = marker_radius
@@ -210,27 +229,30 @@ class CutPerception:
         self.tcp_local = None if tcp_local is None else np.asarray(tcp_local, dtype=float)
         self.jaw_axis_local = (None if jaw_axis_local is None
                                else unit(np.asarray(jaw_axis_local, dtype=float)))
+        self.sheet_width_m = sheet_width_m   # known full strip width (truncation check)
         self.w0 = None                   # first post-grasp tissue width
         self._cut_dir = None             # remembered near->far cut direction (camera frame)
         self._cut_lat = None             # remembered cut-line lateral position
+        self._slit_seen = False          # a slit was measured at least once: no pre-cut ever again
         self._front_d = None             # remembered front offset from the near edge (m):
                                          # the crack is permanent and only grows
         self._front_lat = None           # remembered front lateral offset (plane coords)
         self._front_ext = None           # sheet along-extent when the front was updated
-        self._prev_tip_s = None          # previous tick's tip along-position (dwell test)
-        self._tip_hist = []              # last valid tip along-positions for the dwell test
 
     @classmethod
     def from_meta(cls, meta):
         """Build from a frame-dump meta.json dict (SimWorld._dump_meta)."""
         a = meta.get('estimator_args', meta)
+        sheet_width_m = a.get('sheet_width_m')
+        if sheet_width_m is None and 'NU' in meta and 'spacing_m' in meta:
+            sheet_width_m = (meta['NU'] - 1) * meta['spacing_m']
         return cls(a['W'], a['H'], a['f'], a['far'],
                    np.asarray(a['rcm_world'], dtype=float),
                    marker_radius=a.get('marker_radius', MARKER_RADIUS),
                    marker_offsets=a.get('marker_offsets', MARKER_OFFS),
                    marker_colours=a.get('marker_colours', MARKER_COLOURS),
                    tcp_local=a.get('tcp_local'), jaw_axis_local=a.get('jaw_axis_local'),
-                   tcp_len=a.get('tcp_len'))
+                   tcp_len=a.get('tcp_len'), sheet_width_m=sheet_width_m)
 
     # -- field estimators -------------------------------------------------------------------------------------
     def _tissue(self, rgb, depth):
@@ -318,7 +340,8 @@ class CutPerception:
         first = np.flatnonzero(occ[b_start:])
         if len(first) == 0 or edges[b_start + int(first[0])] > s_near + 0.0025:
             return dict(run_end=None, run_len=0.0, slit_sel=np.zeros(mask.shape, bool),
-                        recovery=False, reach_far=False)
+                        recovery=False, reach_far=False,
+                        band=band, occ=occ, b_start=b_start, edges=edges)
         lo = b_start + int(first[0])
         end_b, gap_b = lo, 0
         for b in range(lo + 1, len(edges) - 1):
@@ -331,17 +354,12 @@ class CutPerception:
         run_end = float(edges[min(end_b + 1, len(edges) - 1)])
         reach_far = run_end >= s_far - 0.001
         slit_sel = behind & (sa_px >= edges[lo]) & (sa_px < run_end)
-        # Fail closed: visible intact sheet must follow the apex; a far-edge run or an
-        # ahead window that is unseen / covered by foreground proves nothing.
-        ahead = band & (sa_px >= run_end) & (sa_px < run_end + AHEAD_WINDOW_M + 0.0005)
-        seen = ahead & np.isfinite(depth) & (depth < self.far * 0.999)
-        covered = int((seen & (depth < pz - COVER_DEPTH_M)).sum())
-        sheet_ahead = int((ahead & mask).sum())
-        recovery = (not reach_far and not (int(ahead.sum()) > 0 and
-                                           covered > 0.5 * int(seen.sum())) and
-                    sheet_ahead >= MIN_AHEAD_PX)
+        recovery = (not reach_far and
+                    _provable_ahead(run_end, band, occ, b_start, edges,
+                                    sa_px, mask, depth, pz, self.far))
         return dict(run_end=run_end, run_len=run_end - float(edges[lo]),
-                    slit_sel=slit_sel, recovery=recovery, reach_far=reach_far)
+                    slit_sel=slit_sel, recovery=recovery, reach_far=reach_far,
+                    band=band, occ=occ, b_start=b_start, edges=edges)
 
     def _cut(self, tissue, mask, plane, pts, scis, depth):
         """Cut start / front / direction in the fitted sheet plane.
@@ -377,16 +395,29 @@ class CutPerception:
         sa = (pts - c) @ direction
         sb = (pts - c) @ lat_ax
         s_near, s_far = np.percentile(sa, [2, 98])
-        line_lat = float(np.median(sb)) if self._cut_lat is None else self._cut_lat
         start_sa = float(np.percentile(sa, 1))
-        start = c + start_sa * direction + line_lat * lat_ax
+        extent = s_far - s_near
+
+        # Cut-line lateral before any slit: the midpoint of the lateral extent of
+        # the ~3 mm of sheet at the near edge. A median is biased when the view
+        # truncates the strip; the extent midpoint is not.
+        near = sa < s_near + 0.003
+        w_src = sb[near] if int(near.sum()) >= 8 else sb
+        w_lo, w_hi = np.percentile(w_src, [2, 98])
+        line_lat = 0.5 * (w_lo + w_hi) if self._cut_lat is None else self._cut_lat
+
+        # A visible extent much narrower than the real strip makes the lateral
+        # centre unreliable — fail closed on the front (the direction stays valid).
+        # min/max over the component-cleaned mask; percentiles would under-read
+        # even a fully visible sheet (the mask never covers the outer edge px).
+        truncated = self.sheet_width_m is not None and \
+            float(sb.max() - sb.min()) < 0.85 * self.sheet_width_m
 
         sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
         res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
 
         # A long enough slit defines the cut line itself: refit direction, clamped to
-        # the prior. The lateral anchor comes from the engaged tip only — slit pixels
-        # are too noisy laterally.
+        # the prior.
         if res['run_len'] >= SLIT_UPDATE_M and int(res['slit_sel'].sum()) >= 6:
             hs_dir, hs_lat = sa_px[res['slit_sel']], sb_px[res['slit_sel']]
             q = np.stack([hs_dir - hs_dir.mean(), hs_lat - hs_lat.mean()], axis=1)
@@ -401,97 +432,78 @@ class CutPerception:
                 sb = (pts - c) @ lat_ax
                 s_near, s_far = np.percentile(sa, [2, 98])
                 start_sa = float(np.percentile(sa, 1))
-                start = c + start_sa * direction + line_lat * lat_ax
+                extent = s_far - s_near
                 sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
                 res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
 
+        slit_px_n = int(res['slit_sel'].sum())
+        slit_meas = res['run_len'] >= SLIT_MIN_LEN_M and slit_px_n >= 2
+
+        # Once a slit is measured, the crack line is the median lateral of its gap
+        # pixels, low-passed — a single frame jitters, the crack line is persistent.
+        if slit_meas:
+            self._slit_seen = True
+            slit_lat = float(np.median(sb_px[res['slit_sel']]))
+            new_lat = slit_lat if self._cut_lat is None else \
+                LAT_SMOOTH * self._cut_lat + (1.0 - LAT_SMOOTH) * slit_lat
+            if new_lat != line_lat:
+                # The band moved: re-scan around the updated line before scoring —
+                # a fraction of a millimetre of band shift changes the look-ahead.
+                line_lat = new_lat
+                res = self._gap_scan(mask, sa_px, sb_px, pz, depth,
+                                     line_lat, s_near, s_far)
+                slit_px_n = int(res['slit_sel'].sum())
+                slit_meas = res['run_len'] >= SLIT_MIN_LEN_M and slit_px_n >= 2
+            self._cut_lat = new_lat
+            line_lat = self._cut_lat
+
+        start = c + start_sa * direction + line_lat * lat_ax
         cut = dict(valid=True, reason='', direction=direction.tolist(), start=start.tolist())
         meta = dict(lat=lat_ax, line_lat=line_lat)
 
-        # Scissors-tip engagement: the blades dwell about two ticks at each cut position,
-        # so a dwelling tip that is on the sheet sits at the crack tip — the most precise
-        # front measurement there is. A tip that is still moving, parked off-sheet, or
-        # invisible contributes nothing.
-        tip_s = None
-        tip_lat = None
-        engaged = False
-        if scis is not None and scis.get('tip') is not None:
-            tip = np.asarray(scis['tip'])
-            tip_s = float((tip - c) @ direction)
-            tip_lat = float((tip - c) @ lat_ax)
-            tip_h = float((tip - c) @ normal)
-            w_lo, w_hi = np.percentile(sb, [1, 99])
-            on_sheet = (abs(tip_h) < TIP_ONSHEET_H_M and
-                        w_lo - TIP_EDGE_PAD_M < tip_lat < w_hi + TIP_EDGE_PAD_M and
-                        s_near - TIP_EDGE_PAD_M < tip_s < s_far + TIP_EDGE_PAD_M)
-            # Engaged: the blades are at the crack — either the tip sits inside/at the
-            # measured slit, or it dwells (~2 ticks per cut position) while on the sheet.
-            in_gap = res['run_end'] is not None and tip_s <= res['run_end'] + 0.0005
-            dwell = any(abs(tip_s - h) <= DWELL_TOL_M for h in self._tip_hist)
-            engaged = on_sheet and (in_gap or dwell)
-            self._tip_hist.append(tip_s)
-            self._tip_hist = self._tip_hist[-2:]
-            self._prev_tip_s = tip_s
-            if engaged:
-                if self._cut_lat is None:
-                    self._cut_lat = tip_lat
-                else:
-                    self._cut_lat = LAT_SMOOTH * self._cut_lat + \
-                        (1.0 - LAT_SMOOTH) * tip_lat
-                line_lat = self._cut_lat
-        else:
-            self._tip_hist = []
-            self._prev_tip_s = None
+        if truncated:
+            return dict(cut, front_valid=False,
+                        mode='slit' if self._slit_seen else 'pre_cut',
+                        slit_px=slit_px_n, reason='sheet lateral extent truncated'), meta
 
-        # Candidate fronts: the crack only grows, so fuse the supported sources with a
-        # max — the slit apex (a lower bound), the engaged tip (the cutting point), and
-        # the remembered material-relative front (dropped if the sheet extent changed
-        # since — a repositioned view cannot re-anchor the offset).
-        slit_ok = res['run_len'] >= SLIT_MIN_LEN_M and res['recovery']
-        slit_lat = float(np.median(sb_px[res['slit_sel']])) if slit_ok and slit_ok and \
-            int(res['slit_sel'].sum()) >= 2 else line_lat
+        def provable(s):
+            return _provable_ahead(s, res['band'], res['occ'], res['b_start'],
+                                   res['edges'], sa_px, mask, depth, pz, self.far)
+
+        # Candidate fronts — slit apex | memory | pre-cut start — each admitted only
+        # if its look-ahead proves the crack ends there (see _provable_ahead). Once a
+        # slit has ever been measured there is no fall-back to the pre-cut start.
         cands = []                            # (source, along, lateral)
-        if slit_ok:
-            cands.append(('slit', res['run_end'], slit_lat))
-        if engaged:
-            cands.append(('tip', tip_s, self._cut_lat))
-        extent = s_far - s_near
+        if slit_meas:
+            cands.append(('slit', res['run_end'], line_lat))
         if self._front_d is not None and \
                 (self._front_ext is None or abs(extent - self._front_ext) < 0.003):
             cands.append(('memory', s_near + self._front_d,
                           self._front_lat if self._front_lat is not None else line_lat))
+        evidence = int((((sa_px - start_sa) ** 2 +
+                         (sb_px - line_lat) ** 2 < NEAR_EVIDENCE_M ** 2) & mask).sum())
+        if not self._slit_seen and evidence >= MIN_NEAR_PX:
+            cands.append(('pre_cut', start_sa, line_lat))
 
-        # Confident evidence advances the remembered front (cracks are permanent).
-        if engaged:
-            self._front_d = tip_s - s_near if self._front_d is None \
-                else max(self._front_d, tip_s - s_near)
-            self._front_lat, self._front_ext = self._cut_lat, extent
-        elif slit_ok:
+        ok = [cd for cd in cands if provable(cd[1])]
+        if not ok:
+            if self._slit_seen:
+                reason = 'slit seen but no front candidate provable ahead'
+            elif res['run_end'] is not None:
+                reason = 'sub-minimum slit and no provable pre-cut front'
+            else:
+                reason = f'no provable pre-cut front ({evidence} px at the near edge)'
+            return dict(cut, front_valid=False,
+                        mode='slit' if self._slit_seen else 'pre_cut',
+                        slit_px=slit_px_n, reason=reason), meta
+
+        src, front_s, front_lat = max(ok, key=lambda kv: kv[1])
+        # The remembered front advances only from a provable slit apex; a remembered
+        # crack cannot shrink (cracks are permanent).
+        if src == 'slit':
             self._front_d = res['run_end'] - s_near if self._front_d is None \
                 else max(self._front_d, res['run_end'] - s_near)
-            self._front_lat, self._front_ext = slit_lat, extent
-
-        slit_px_n = int(res['slit_sel'].sum())
-        if not cands:
-            if res['run_end'] is not None and res['run_len'] >= SLIT_MIN_LEN_M:
-                return dict(cut, front_valid=False, mode='slit', slit_px=slit_px_n,
-                            reason='slit apex not provable: reaches the far edge or the '
-                                   'look-ahead is unseen/foreground-covered'), meta
-            # Pre-cut: the front is the near-edge midpoint, gated on tissue evidence.
-            evidence = ((sa_px - start_sa) ** 2 +
-                        (sb_px - line_lat) ** 2 < NEAR_EVIDENCE_M ** 2) & mask
-            if int(evidence.sum()) < MIN_NEAR_PX:
-                return dict(cut, front_valid=False,
-                            reason=f'no tissue evidence at the near edge ({int(evidence.sum())} px)'), meta
-            return self._front_out(cut, start_sa, line_lat, c, direction, lat_ax,
-                                   mode='pre_cut', slit_open=0.0, slit_px=slit_px_n), meta
-
-        src, front_s, front_lat = max(cands, key=lambda kv: kv[1])
-        if not engaged and tip_s is not None and on_sheet and \
-                tip_s - front_s > TIP_LEAD_M:
-            return dict(cut, front_valid=False, mode=src, slit_px=slit_px_n,
-                        reason='tip advancing beyond the provable front: '
-                               'estimate is a stale lower bound'), meta
+            self._front_lat, self._front_ext = line_lat, extent
         front_s = min(max(front_s, s_near), s_far - 0.0005)
         hs_lat = sb_px[res['slit_sel'] & (sa_px > front_s - 0.0015)]
         slit_open = float(np.percentile(hs_lat, 95) - np.percentile(hs_lat, 5)) \

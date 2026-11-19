@@ -159,12 +159,53 @@ class GeometryTests(unittest.TestCase):
         self.assertLess(angle(cut['direction'], E_V), 3.0)
 
     def test_occluded_apex_fails_closed(self):
-        """Foreground covering the band past the slit -> front_valid False, not wrong."""
+        """Slit continuing under a foreground cover beyond the apex -> invalid."""
         rgb, depth = render(slit_sv=FRONT_SV + 0.002, occlude_sv=FRONT_SV)
         est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
         cut = est['cut']
         self.assertFalse(cut['front_valid'], cut)
         self.assertNotEqual(cut.get('reason'), '')
+
+    def test_pre_cut_covered_lookahead_fails_closed(self):
+        """Foreground over the near-edge look-ahead: the crack start is unprovable."""
+        rgb, depth = render(occlude_sv=0.0)
+        est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3), post_grasp=True)
+        cut = est['cut']
+        self.assertFalse(cut['front_valid'], cut)
+        self.assertNotEqual(cut.get('reason'), '')
+
+    def test_front_never_reads_the_tip(self):
+        """Anti-circularity: after the near edge is chosen the front is tissue-only —
+        the same slit frame with an absent / on-sheet / dwelling / distant scissors
+        must give bit-identical front fields."""
+        rgb0, depth0 = render()                      # establish the near edge
+        rgb_s, depth_s = render(slit_sv=FRONT_SV)
+        fields = ('front_valid', 'front', 'mode', 'slit_opening_m')
+
+        def front_seq(scis_ret):
+            est = estimator()
+            est.estimate(rgb0, depth0, np.eye(3), np.zeros(3))   # pick the near edge
+            assert est._cut_dir is not None
+            est._scissors = lambda rgb, depth, _r=scis_ret: _r
+            seq = []
+            for _ in range(3):
+                cut = est.estimate(rgb_s, depth_s, np.eye(3),
+                                   np.zeros(3))['cut']
+                seq.append(tuple(tuple(cut[k]) if isinstance(cut[k], list)
+                                 else cut[k] for k in fields))
+            return seq
+
+        absent = (dict(valid=False, reason='patched'), None)
+
+        def scis(tip):
+            d = dict(valid=True, tip=np.asarray(tip).tolist(), tip_uv=(100.0, 60.0))
+            return (d, d)
+
+        base = front_seq(absent)
+        for variant in (scis(FRONT_TRUE + 0.002 * E_V),      # on-sheet ahead of apex
+                        scis(P0 + 0.004 * E_V),              # dwelling at one spot
+                        scis(P0 + 0.05 * E_U + 0.05 * NORMAL)):   # far off-sheet
+            self.assertEqual(base, front_seq(variant))
 
     def test_depth_noise_increases_tip_error(self):
         errs = []
