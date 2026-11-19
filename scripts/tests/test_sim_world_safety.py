@@ -13,6 +13,7 @@ import numpy as np
 
 TASK = Path(__file__).resolve().parents[1] / 'task'
 with patch.object(sys, 'path', [str(TASK), *sys.path]):
+    import ground_truth
     import sim_world
     import simtools
     from sim_world import SimWorld, TISSUE_RGB
@@ -94,6 +95,7 @@ class ControllerStartupTests(unittest.TestCase):
 class VisibilityTests(unittest.TestCase):
     def setUp(self):
         self.world = SimWorld.__new__(SimWorld)
+        self.world.truth = sim_world.GroundTruth(self.world)   # localize() tags its reads
         self.world.W = self.world.H = 41
         self.world.f = 20.0
         self.world.far = 1.0
@@ -760,6 +762,262 @@ class TakeoverPointTests(unittest.TestCase):
         world.u = np.array([1.0, 0.0, 0.0])
         self.assertIsNone(world.takeover_point('psm3', None))
         self.assertIsNone(world.takeover_point('psm3', np.zeros(3)))     # lost point on the cut line
+
+
+class GroundTruthPurposeTests(unittest.TestCase):
+    """reads_by_purpose accounting and the strict untagged-read gate (m5b_protocol.json)."""
+    def make_world(self):
+        world = bare_world()
+        world.sheet_origin = np.zeros(3)
+        world.pretension = 0.08
+        world.call = Mock(return_value={'grasped': {}})
+        return world
+
+    def test_untagged_strict_read_raises(self):
+        world = self.make_world()
+        world.truth.strict = True
+        with self.assertRaises(ground_truth.TruthReadInControl):
+            world.truth.tissue_stats()
+
+    def test_tagged_reads_count_per_purpose_and_totals_unchanged(self):
+        world = self.make_world()
+        world.truth.strict = True
+        with world.truth.purpose('grasp_signal_and_safety_monitor'):
+            world.truth.tissue_stats()
+        with world.truth.purpose('safety_monitor'):
+            world.truth.tissue_stats()
+        self.assertEqual(world.truth.reads['tissue_stats'], 2)
+        self.assertEqual(world.truth.reads_by_purpose,
+                         {'grasp_signal_and_safety_monitor': {'tissue_stats': 1},
+                          'safety_monitor': {'tissue_stats': 1}})
+
+    def test_nested_purposes_use_the_innermost_tag(self):
+        world = self.make_world()
+        with world.truth.purpose('outer'):
+            world.truth.tissue_stats()
+            with world.truth.purpose('inner'):
+                world.truth.tissue_stats()
+            world.truth.tissue_stats()
+        self.assertEqual(world.truth.reads_by_purpose,
+                         {'outer': {'tissue_stats': 2}, 'inner': {'tissue_stats': 1}})
+
+    def test_non_strict_untagged_read_lands_in_untagged_without_raising(self):
+        world = self.make_world()
+        world.truth.tissue_stats()
+        self.assertEqual(world.truth.reads['tissue_stats'], 1)
+        self.assertEqual(world.truth.reads_by_purpose['untagged']['tissue_stats'], 1)
+
+
+class VisionModeTests(unittest.TestCase):
+    """M5b cutter-arm vision control on SimWorld.__new__ stubs (m5b_protocol.json)."""
+
+    EST = dict(scissors={'valid': True, 'tip': [0.0, 0.0, 0.10], 'jaw_axis': [0.0, 0.0, 1.0]},
+               tissue={'valid': True, 'normal': [0.0, 1.0, 0.0]},
+               cut={'valid': True, 'front_valid': True,
+                    'front': [0.0, 0.0, 0.05], 'direction': [0.0, 0.0, 1.0], 'start': [0.0, 0.0, 0.04]})
+
+    def vision_world(self, est=None, strict=True):
+        world = bare_world()
+        world.vision = True
+        world.truth.strict = strict
+        world.perc_mode = 'off'
+        world.tick = 0
+        world.sheet_origin = np.zeros(3)
+        world.grasped_points = {}
+        world.u = np.array([1.0, 0.0, 0.0])
+        world.v = np.array([0.0, 0.0, 1.0])
+        world.camera_moves = len(SimWorld.CAMERA_POSES)
+        world.pretension = 0.08
+        world.W = world.H = 41
+        world.f = 20.0
+        world.far = 1.0
+        world.camera = Mock(return_value=(np.eye(3), np.zeros(3)))
+        world.render = Mock()
+        world._protected_tick = Mock()
+        world._estimate = Mock(return_value=est)
+        world._score_shadow = Mock()
+        nodes = []
+        for j in range(NV):
+            for i in range(NU):
+                nodes += [i * H, 0.0, j * H]
+        truth_payload = {'tissueStats': {'grasped': {'psm1': 4}, 'torn': 0, 'max_strain': 0.05},
+                         'tissueConstraints': [],
+                         'tissueNodes': nodes}
+        stats = [{'arm': a, 'failures': 0, 'max_drift_m': 0.0} for a in world.index]
+
+        def controller(name, *a):
+            if name in truth_payload:
+                return truth_payload[name]
+            if name == 'getRCMStats':
+                return stats
+            return True                                      # actuation stubs (setGrip, commands)
+
+        world.call = Mock(side_effect=controller)
+        return world
+
+    def test_observe_maps_the_estimate_and_makes_no_untagged_read(self):
+        world = self.vision_world(self.EST)
+        obs = world.observe()
+        self.assertTrue(obs.cut_site_visible)
+        self.assertTrue(obs.scissors_visible)
+        self.assertTrue(obs.tissue_visible)
+        self.assertAlmostEqual(obs.cut_progress_m, 0.01)          # (front - start).direction
+        self.assertEqual(obs.grasped, {'psm1': 4})
+        self.assertAlmostEqual(obs.tension, 1.0 / 0.92 - 1.0, places=5)
+        self.assertEqual(obs.cut_length_m, 0.0)
+        self.assertNotIn('untagged', world.truth.reads_by_purpose)
+        self.assertEqual(set(world.truth.reads_by_purpose),
+                         {'grasp_signal_and_safety_monitor', 'tension_until_m6', 'safety_monitor'})
+        self.assertIsNotNone(world._fix)
+        self.assertEqual(world._fix['tick'], world.tick)
+
+    def test_observe_without_a_fix_reports_the_front_hidden(self):
+        est = dict(scissors={'valid': True}, tissue={'valid': True},
+                   cut={'valid': True, 'front_valid': False})
+        world = self.vision_world(est)
+        obs = world.observe()
+        self.assertFalse(obs.cut_site_visible)
+        self.assertTrue(obs.scissors_visible)
+        self.assertIsNone(obs.cut_progress_m)
+
+    def test_fix_age_and_commanded_invalidation(self):
+        world = self.vision_world()
+        world.tick = 10
+        fix = dict(front=np.zeros(3), direction=np.array([0.0, 0.0, 1.0]),
+                   normal=np.array([0.0, 1.0, 0.0]), progress=0.0, tick=10, epoch=0)
+        world._fix = dict(fix, tick=3)
+        self.assertFalse(world._fix_valid())                      # 7 > fix_max_age 6
+        world._fix = dict(fix, tick=4)
+        self.assertTrue(world._fix_valid())                       # exactly at the boundary
+
+        world._fix = dict(fix)
+        world._closure_event = Mock()
+        self.assertTrue(world.close_scissors())
+        self.assertIsNone(world._fix)                             # closure voids the fix
+
+        for method, args in ((world.retract, ('psm1', 0.0002)),
+                             (world.release, ('psm1',)),
+                             (world.takeover_point, ('psm3', np.zeros(3))),
+                             (world.adjust_camera, ())):
+            world._fix = dict(fix)
+            method(*args)
+            self.assertIsNone(world._fix, method.__name__)
+
+        world.cfg = {'grasp': {'min_nodes': 3}}
+        world.arm_cfg = {'psm1': {'limits': {'yaw_deg': 30, 'pitch_deg': 30,
+                                             'insertion_min': 0.0, 'insertion_max': 0.1}}}
+        world.rcm_command_for = Mock(return_value=(0, 0, 0.04))
+        world.target_of = Mock(return_value=(0, 0, 0))
+        world.by = {'psm1_tcp': 7}
+        world.sim = SimpleNamespace(getObjectPosition=Mock(return_value=(0, 0, 0)))
+        world._fix = dict(fix)
+        world.grasp('psm1', np.zeros(3))
+        self.assertIsNone(world._fix)
+
+    def test_injected_events_do_not_invalidate_the_fix(self):
+        world = self.vision_world()
+        world.tick = 10
+        world._fix = dict(front=np.zeros(3), direction=np.array([0.0, 0.0, 1.0]),
+                          normal=np.array([0.0, 1.0, 0.0]), progress=0.0, tick=10, epoch=0)
+        world._in_event = True                                    # inside _events()
+        world.retract('psm1', 0.0002)
+        self.assertIsNotNone(world._fix)
+        world._in_event = False
+        world.retract('psm1', 0.0002)
+        self.assertIsNone(world._fix)
+
+    def align_world(self, tip, jaw=None):
+        world = self.vision_world()
+        world.align_mode = 'tool_pose'
+        world.v = np.array([0.0, 0.0, 1.0])
+        world.u = np.array([1.0, 0.0, 0.0])
+        world.cfg = {'cut': {'align_tolerance_m': 0.0015}}
+        world.tick = 1
+        world._fix = dict(front=np.asarray(self.EST['cut']['front'], dtype=float),
+                          direction=np.array([0.0, 0.0, 1.0]), normal=np.array([0.0, 1.0, 0.0]),
+                          progress=0.0, tick=1, epoch=0)
+        world._last_est = dict(scissors={'valid': True, 'tip': list(tip),
+                                         'jaw_axis': jaw or [0.0, 0.0, 1.0]},
+                               tissue={'valid': True})
+        tcp0 = np.array([0.0, 0.0, 0.04])
+        M = np.eye(3, 4)
+        M[:, 3] = tcp0
+        world.tcp1 = np.array([0.0, 0.0, 0.049])
+        world.sim = SimpleNamespace(
+            getObjectMatrix=Mock(return_value=M.reshape(-1).tolist()),
+            getObjectPosition=Mock(return_value=world.tcp1.tolist()))
+        world.by = {'psm2_tcp': 99}
+        world._tool_q = Mock(return_value=(np.zeros(6), {'limits': {'roll': (-1, 1),
+                                                                   'pitch': (-1, 1), 'yaw': (-1, 1)}}))
+        world._tool_solve = Mock(return_value={'converged': True, 'q': np.ones(6)})
+        world.tool_command = Mock(return_value=True)
+        world.target_of = Mock(return_value=(0.0, 0.0, 0.04))
+        return world
+
+    def test_align_vision_commands_the_relative_target(self):
+        tip = np.array([0.002, 0.0, 0.049])                       # 2 mm lateral, 1 mm short
+        world = self.align_world(tip)
+        e = world._align_scissors_vision(0.0)
+        self.assertAlmostEqual(e, 0.002)                          # max(err_lat 2 mm, err_along 0)
+        target, direction, lat = world._tool_solve.call_args[0][1:4]
+        front = np.asarray(self.EST['cut']['front'])
+        np.testing.assert_allclose(target, np.array([0.0, 0.0, 0.04])
+                                   + (front - 0.001 * np.array([0.0, 0.0, 1.0])) - tip)
+        np.testing.assert_allclose(direction, [0, 0, 1])
+        np.testing.assert_allclose(lat, [1, 0, 0])                # cross(normal,dir), signed to u
+        self.assertTrue(world.tool_command.called)
+        self.assertIsNotNone(world._pre_cut_q)
+        ev = world.event_log[-1]
+        self.assertEqual(ev['event'], 'vision_align')
+        self.assertTrue(ev['moved'])
+        self.assertEqual(ev['fix_age'], 0)
+
+    def test_align_vision_inside_tolerance_does_not_move(self):
+        front = np.asarray(self.EST['cut']['front'])
+        tip = front - 0.001 * np.array([0.0, 0.0, 1.0])           # exactly on the target
+        world = self.align_world(tip)
+        self.assertAlmostEqual(world._align_scissors_vision(0.0), 0.0)
+        world._tool_solve.assert_not_called()
+        self.assertIsNone(world._pre_cut_q)                       # nothing moved yet
+
+    def test_align_vision_refuses_without_fresh_tip_or_agreeing_direction(self):
+        world = self.align_world([0, 0, 0.049])
+        world._last_est = dict(scissors={'valid': False}, tissue={'valid': True})
+        self.assertIsNone(world._align_scissors_vision(0.0))
+        world._last_est = dict(scissors={'valid': True, 'tip': [0, 0, 0.049],
+                                         'jaw_axis': [0, 0, 1]}, tissue={'valid': True})
+        world._fix['direction'] = np.array([0.0, 0.0, -1.0])      # disagrees with the sheet v
+        self.assertIsNone(world._align_scissors_vision(0.0))
+        world._fix['direction'] = np.array([0.0, 0.0, 1.0])
+        world._fix['tick'] = -10                                  # age 11 > fix_max_age 6: stale
+        self.assertIsNone(world._align_scissors_vision(0.0))
+
+    def test_retract_scissors_vision_refuses_open_jaws_without_a_truth_read(self):
+        world = self.vision_world()
+        world.align_mode = 'tool_pose'
+        world._pre_cut_q = np.zeros(6)
+        world.advanced = 0.003
+        world.call = Mock(side_effect=lambda name, *a: [{'arm': 'psm1'},
+                                                        {'target': [1.0, 2.0, 0.04], 'grip': 0.5}]
+                          if name == 'getRCMStats' else (_ for _ in ()).throw(AssertionError(name)))
+        self.assertFalse(world.retract_scissors())
+        self.assertEqual(world.truth.reads, {})                   # strict: any read would raise
+
+    def test_retract_scissors_vision_withdraws_when_closed(self):
+        world = self.vision_world()
+        world.align_mode = 'tool_pose'
+        world._pre_cut_q = np.zeros(6)
+        world.advanced = 0.003
+        world.call = Mock(side_effect=lambda name, *a: [{'arm': 'psm1'},
+                                                        {'target': [1.0, 2.0, 0.04], 'grip': 0.0}]
+                          if name == 'getRCMStats' else True)
+        world.tool_command = Mock(return_value=True)
+        self.assertTrue(world.retract_scissors())
+        args = world.tool_command.call_args[0]
+        self.assertEqual(args[0], 'psm2')
+        np.testing.assert_array_equal(args[1], np.zeros(6))       # the recorded pre-cut pose
+        self.assertEqual(args[2], 20)
+        self.assertEqual(world.advanced, 0.0)
 
 
 if __name__ == '__main__':

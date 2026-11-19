@@ -7,19 +7,46 @@ reported as truth_reads in the run report.
 These are SENSING reads only: actuation (setRCMTarget/setGrip/tissueGrasp) and the
 control-motion helpers that need the live sim state (rcm_command_for, frame) keep their
 direct sim access in sim_world.py.
+
+M5b: every read also carries a purpose tag (reads_by_purpose). In vision-control mode
+(cut.control_source == 'vision') strict=True makes an untagged read raise
+TruthReadInControl, so a control path can never silently depend on truth.
 """
+import contextlib
+
 import numpy as np
 
 from workspace import H, NU, NV
+
+
+class TruthReadInControl(RuntimeError):
+    """A GroundTruth method ran with no declared purpose while strict mode was on."""
 
 
 class GroundTruth:
     def __init__(self, world):
         self.world = world          # SimWorld; only .call(), .sim, .by and sheet state are read
         self.reads = {}
+        self.reads_by_purpose = {}
+        self.strict = False         # vision mode: untagged reads raise TruthReadInControl
+        self._purposes = []
+
+    @contextlib.contextmanager
+    def purpose(self, name):
+        """Tag every read inside the block (nested blocks inherit the innermost tag)."""
+        self._purposes.append(name)
+        try:
+            yield
+        finally:
+            self._purposes.pop()
 
     def _read(self, name, fn):
         self.reads[name] = self.reads.get(name, 0) + 1
+        purpose = self._purposes[-1] if self._purposes else 'untagged'
+        if purpose == 'untagged' and self.strict:
+            raise TruthReadInControl(name)
+        by = self.reads_by_purpose.setdefault(purpose, {})
+        by[name] = by.get(name, 0) + 1
         return fn()
 
     # -- tissue model -----------------------------------------------------------------------------------------

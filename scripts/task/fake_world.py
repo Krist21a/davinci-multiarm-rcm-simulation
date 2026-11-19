@@ -17,9 +17,16 @@ from cut_fsm import Observation, Target
 
 
 class FakeWorld:
-    def __init__(self, cut_only=False, **events):
+    def __init__(self, cut_only=False, vision=False, **events):
         self.e = events
         self.cut_only = cut_only
+        # Opt-in M5b vision mode: the observation carries the estimator-side fields the
+        # FSM reads (front fix -> cut_progress_m/cut_site_visible, tissue_visible). The
+        # 'fix' is lost on every closure (like SimWorld) and on front_hidden ticks, and is
+        # restored by a successful clear_view back-off.
+        self.vision = vision
+        self.fix_lost = False
+        self.cleared_view = False
         self.tick = 0
         self.retraction = 0.0
         self.base_strain = 0.08 if cut_only else 0.0       # anchors pre-tension the cut-only sheet
@@ -57,10 +64,20 @@ class FakeWorld:
         offset = 0.6 if drift is not None and self.tick >= drift and self.camera_moves == 0 else 0.1
         strain = max(0.0, self.base_strain + self.k * max(self.retraction, 0.0)) if (self.grasped or self.cut_only) else 0.0
         faults = ['psm2 shaft / Patient_HipBone'] if self.e.get('fault') == self.tick else []
-        return Observation(cut_site_visible=not hidden, scissors_visible=not hidden, cut_site_offset=None if hidden else offset,
-                           grasped={a: n for a, n in self.grasped.items()}, tension=strain, max_strain=strain,
-                           torn=1 if self.e.get('tear') is not None and self.tick >= self.e['tear'] else 0,
-                           cut_length_m=self.cut, faults=faults)
+        obs = Observation(cut_site_visible=not hidden, scissors_visible=not hidden, cut_site_offset=None if hidden else offset,
+                          grasped={a: n for a, n in self.grasped.items()}, tension=strain, max_strain=strain,
+                          torn=1 if self.e.get('tear') is not None and self.tick >= self.e['tear'] else 0,
+                          cut_length_m=self.cut, faults=faults)
+        if self.vision:
+            # The remembered front is lost while the front is explicitly hidden or a
+            # closure just voided the fix; a back-off (clear_view) restores it.
+            front_known = not hidden and not self.fix_lost and \
+                (self.cleared_view or self.tick not in self.e.get('front_hidden', set()))
+            obs.cut_site_visible = front_known
+            obs.tissue_visible = not hidden
+            obs.cut_progress_m = None if not front_known else self.cut + self.e.get('progress_bias_m', 0.0)
+            obs.cut_site_offset = None if not front_known else offset
+        return obs
 
     # -- acting -----------------------------------------------------------------------------------------------
     def check_roles(self):
@@ -110,6 +127,20 @@ class FakeWorld:
 
     def open_scissors(self):
         self.blades_open = True
+        self.actions.append(('open_scissors', self.tick))
+        return True
+
+    def jaws_closed(self):
+        return not self.blades_open
+
+    def clear_view(self, d):
+        """CLEAR_VIEW back-off: a working one restores the remembered front fix."""
+        self.actions.append(('clear_view', d, self.tick))
+        if self.e.get('clear_view_refused'):
+            return False
+        if not self.e.get('clear_view_useless'):
+            self.cleared_view = True
+            self.fix_lost = False
         return True
 
     def align_scissors(self, cut_start, progress):
@@ -127,6 +158,8 @@ class FakeWorld:
             self.cut += self.pending
         self.pending = 0.0
         self.blades_open = False
+        if self.vision:
+            self.fix_lost = True                # like SimWorld: a closure voids the front fix
         return True
 
     def retract_scissors(self):

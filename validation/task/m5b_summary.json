@@ -1,0 +1,924 @@
+{
+  "protocol": "config/task/m5b_protocol.json",
+  "generated": "mechanically from validation/task/m5b_*.json reports; criteria evaluated as written",
+  "b0_reference": "validation/task/m5a_trace_check.json",
+  "runs": {
+    "V_nominal": {
+      "report": "validation/task/m5b_V_nominal.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "ticks": 34,
+      "truth_cut_length_m": 0.009000000000000001,
+      "torn": 0,
+      "max_strain": 0.14809984033821277,
+      "clear_view": [
+        {
+          "entry_tick": 11,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 18,
+          "exit_tick": 21,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        },
+        {
+          "entry_tick": 30,
+          "exit_tick": 34,
+          "exit_to": "FAILED",
+          "attempts": 3,
+          "restored": false
+        }
+      ],
+      "closures": [
+        {
+          "tick": 11,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0003106436142391235
+        },
+        {
+          "tick": 19,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00014269755496016572
+        },
+        {
+          "tick": 32,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00018248092629824362
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 16,
+        "front_valid": 12,
+        "availability": 0.75
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 38
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 38,
+          "nodes": 37,
+          "cut_length": 37
+        },
+        "safety_monitor": {
+          "cut_length": 38
+        },
+        "scoring": {
+          "nodes": 114,
+          "cut_length": 114,
+          "cut_front": 40,
+          "cut_line_tension": 37
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_occlusion_transient": {
+      "report": "validation/task/m5b_V_occlusion_transient.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "ticks": 39,
+      "truth_cut_length_m": 0.009000000000000001,
+      "torn": 0,
+      "max_strain": 0.14809984033821277,
+      "clear_view": [
+        {
+          "entry_tick": 16,
+          "exit_tick": 18,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 23,
+          "exit_tick": 26,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        },
+        {
+          "entry_tick": 35,
+          "exit_tick": 39,
+          "exit_to": "FAILED",
+          "attempts": 3,
+          "restored": false
+        }
+      ],
+      "closures": [
+        {
+          "tick": 16,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0003106436142391235
+        },
+        {
+          "tick": 24,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00014269755496016572
+        },
+        {
+          "tick": 37,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00018248092629824362
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 16,
+        "front_valid": 12,
+        "availability": 0.75
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 43
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 43,
+          "nodes": 42,
+          "cut_length": 42
+        },
+        "safety_monitor": {
+          "cut_length": 43
+        },
+        "scoring": {
+          "nodes": 129,
+          "cut_length": 129,
+          "cut_front": 45,
+          "cut_line_tension": 42
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        },
+        "event_injection": {
+          "cut_front": 1,
+          "nodes": 1,
+          "cut_length": 1
+        }
+      },
+      "strict_exception": false
+    },
+    "V_slip_regrasp": {
+      "report": "validation/task/m5b_V_slip_regrasp.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "alignment not reached (None)",
+      "ticks": 34,
+      "truth_cut_length_m": 0.006,
+      "torn": 0,
+      "max_strain": 0.11287162883200841,
+      "clear_view": [
+        {
+          "entry_tick": 11,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 20,
+          "exit_tick": 23,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        }
+      ],
+      "closures": [
+        {
+          "tick": 11,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0003106436142391235
+        },
+        {
+          "tick": 21,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0003126139936284644
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 18,
+        "front_valid": 15,
+        "availability": 0.8333333333333334
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 37
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 37,
+          "nodes": 36,
+          "cut_length": 36
+        },
+        "safety_monitor": {
+          "cut_length": 37
+        },
+        "scoring": {
+          "nodes": 110,
+          "cut_length": 110,
+          "cut_front": 38,
+          "cut_line_tension": 36
+        },
+        "retractor_planning": {
+          "cut_front": 2,
+          "nodes": 4,
+          "cut_length": 2,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_relax": {
+      "report": "validation/task/m5b_V_relax.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "camera adjustment exhausted",
+      "ticks": 25,
+      "truth_cut_length_m": 0.0,
+      "torn": 0,
+      "max_strain": 0.14369420486602325,
+      "clear_view": [],
+      "closures": [],
+      "fresh_front_align_cut": {
+        "ticks": 3,
+        "front_valid": 1,
+        "availability": 0.3333333333333333
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 27
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 27,
+          "nodes": 26,
+          "cut_length": 26
+        },
+        "safety_monitor": {
+          "cut_length": 27
+        },
+        "scoring": {
+          "nodes": 78,
+          "cut_length": 78,
+          "cut_front": 26,
+          "cut_line_tension": 26
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 14
+        }
+      },
+      "strict_exception": false
+    },
+    "V_noise_depth_0p5": {
+      "report": "validation/task/m5b_V_noise_depth_0p5.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "cut length below target",
+      "ticks": 27,
+      "truth_cut_length_m": 0.008,
+      "torn": 0,
+      "max_strain": 0.14292665692607343,
+      "clear_view": [
+        {
+          "entry_tick": 5,
+          "exit_tick": 6,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        },
+        {
+          "entry_tick": 14,
+          "exit_tick": 17,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        },
+        {
+          "entry_tick": 23,
+          "exit_tick": 25,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        }
+      ],
+      "closures": [
+        {
+          "tick": 14,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.001028885572867119
+        },
+        {
+          "tick": 23,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.002373664185404796
+        },
+        {
+          "tick": 25,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0025791872023924038
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 10,
+        "front_valid": 5,
+        "availability": 0.5
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 32
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 32,
+          "nodes": 31,
+          "cut_length": 31
+        },
+        "safety_monitor": {
+          "cut_length": 32
+        },
+        "scoring": {
+          "nodes": 96,
+          "cut_length": 96,
+          "cut_front": 34,
+          "cut_line_tension": 31
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_noise_depth_1p0": {
+      "report": "validation/task/m5b_V_noise_depth_1p0.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "DONE",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "ticks": 37,
+      "truth_cut_length_m": 0.01,
+      "torn": 0,
+      "max_strain": 0.1733711881158635,
+      "clear_view": [
+        {
+          "entry_tick": 4,
+          "exit_tick": 5,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        },
+        {
+          "entry_tick": 8,
+          "exit_tick": 9,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        },
+        {
+          "entry_tick": 12,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        },
+        {
+          "entry_tick": 16,
+          "exit_tick": 18,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 24,
+          "exit_tick": 25,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        },
+        {
+          "entry_tick": 32,
+          "exit_tick": 33,
+          "exit_to": "RESUME",
+          "attempts": 0,
+          "restored": true
+        }
+      ],
+      "closures": [
+        {
+          "tick": 24,
+          "fix_age": 5,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0004656889492124705
+        },
+        {
+          "tick": 30,
+          "fix_age": 0,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0004847647871345982
+        },
+        {
+          "tick": 32,
+          "fix_age": 0,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0008631738634792271
+        },
+        {
+          "tick": 34,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00044293409124248473
+        },
+        {
+          "tick": 36,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0005961870947146189
+        },
+        {
+          "tick": 42,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00047475043188449477
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 13,
+        "front_valid": 7,
+        "availability": 0.5384615384615384
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 45
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 45,
+          "nodes": 44,
+          "cut_length": 44
+        },
+        "safety_monitor": {
+          "cut_length": 45
+        },
+        "scoring": {
+          "nodes": 138,
+          "cut_length": 138,
+          "cut_front": 50,
+          "cut_line_tension": 44
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_cam_trans_1mm_fixed": {
+      "report": "validation/task/m5b_V_cam_trans_1mm_fixed.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "ticks": 34,
+      "truth_cut_length_m": 0.009000000000000001,
+      "torn": 0,
+      "max_strain": 0.14809984033821277,
+      "clear_view": [
+        {
+          "entry_tick": 11,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 18,
+          "exit_tick": 21,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        },
+        {
+          "entry_tick": 30,
+          "exit_tick": 34,
+          "exit_to": "FAILED",
+          "attempts": 3,
+          "restored": false
+        }
+      ],
+      "closures": [
+        {
+          "tick": 11,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00031064361420381
+        },
+        {
+          "tick": 19,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00014269755531729386
+        },
+        {
+          "tick": 32,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00018248096734770463
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 16,
+        "front_valid": 12,
+        "availability": 0.75
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 38
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 38,
+          "nodes": 37,
+          "cut_length": 37
+        },
+        "safety_monitor": {
+          "cut_length": 38
+        },
+        "scoring": {
+          "nodes": 114,
+          "cut_length": 114,
+          "cut_front": 40,
+          "cut_line_tension": 37
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_cam_rot_1deg_fixed": {
+      "report": "validation/task/m5b_V_cam_rot_1deg_fixed.json",
+      "report_only": false,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "camera adjustment exhausted",
+      "ticks": 38,
+      "truth_cut_length_m": 0.005,
+      "torn": 0,
+      "max_strain": 0.10247834124865585,
+      "clear_view": [
+        {
+          "entry_tick": 11,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 18,
+          "exit_tick": 21,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        }
+      ],
+      "closures": [
+        {
+          "tick": 11,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0004528589825965888
+        },
+        {
+          "tick": 19,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00023546980688057327
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 14,
+        "front_valid": 11,
+        "availability": 0.7857142857142857
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 41
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 41,
+          "nodes": 40,
+          "cut_length": 40
+        },
+        "safety_monitor": {
+          "cut_length": 41
+        },
+        "scoring": {
+          "nodes": 122,
+          "cut_length": 122,
+          "cut_front": 42,
+          "cut_line_tension": 40
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_cam_trans_1mm_per_tick": {
+      "report": "validation/task/m5b_V_cam_trans_1mm_per_tick.json",
+      "report_only": true,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "ticks": 34,
+      "truth_cut_length_m": 0.009000000000000001,
+      "torn": 0,
+      "max_strain": 0.14809984033821277,
+      "clear_view": [
+        {
+          "entry_tick": 11,
+          "exit_tick": 13,
+          "exit_to": "RESUME",
+          "attempts": 1,
+          "restored": true
+        },
+        {
+          "entry_tick": 18,
+          "exit_tick": 21,
+          "exit_to": "RESUME",
+          "attempts": 2,
+          "restored": true
+        },
+        {
+          "entry_tick": 30,
+          "exit_tick": 34,
+          "exit_to": "FAILED",
+          "attempts": 3,
+          "restored": false
+        }
+      ],
+      "closures": [
+        {
+          "tick": 11,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.00031064361420381
+        },
+        {
+          "tick": 19,
+          "fix_age": 1,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0001426975555787757
+        },
+        {
+          "tick": 32,
+          "fix_age": 3,
+          "scissors_valid": true,
+          "lateral_truth_m": 0.0001824810400422774
+        }
+      ],
+      "fresh_front_align_cut": {
+        "ticks": 16,
+        "front_valid": 12,
+        "availability": 0.75
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 38
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 38,
+          "nodes": 37,
+          "cut_length": 37
+        },
+        "safety_monitor": {
+          "cut_length": 38
+        },
+        "scoring": {
+          "nodes": 114,
+          "cut_length": 114,
+          "cut_front": 40,
+          "cut_line_tension": 37
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    },
+    "V_relax_large": {
+      "report": "validation/task/m5b_V_relax_large.json",
+      "report_only": true,
+      "control_source": "vision",
+      "final_state": "FAILED",
+      "reason": "retraction adjustment exhausted",
+      "ticks": 15,
+      "truth_cut_length_m": 0.0,
+      "torn": 0,
+      "max_strain": 0.13480564695441632,
+      "clear_view": [],
+      "closures": [],
+      "fresh_front_align_cut": {
+        "ticks": 3,
+        "front_valid": 1,
+        "availability": 0.3333333333333333
+      },
+      "truth_reads_by_purpose": {
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 17
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 17,
+          "nodes": 16,
+          "cut_length": 16
+        },
+        "safety_monitor": {
+          "cut_length": 17
+        },
+        "scoring": {
+          "nodes": 48,
+          "cut_length": 48,
+          "cut_front": 16,
+          "cut_line_tension": 16
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 16
+        }
+      },
+      "strict_exception": false
+    },
+    "T_nominal_identity": {
+      "report": "validation/task/m5b_T_nominal_identity.json",
+      "report_only": false,
+      "control_source": "truth",
+      "final_state": "DONE",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "ticks": 12,
+      "truth_cut_length_m": 0.01,
+      "torn": 0,
+      "max_strain": 0.1378014087077466,
+      "clear_view": [],
+      "closures": [],
+      "fresh_front_align_cut": {
+        "ticks": 0,
+        "front_valid": 0,
+        "availability": null
+      },
+      "truth_reads_by_purpose": {
+        "untagged": {
+          "tcp": 17,
+          "cut_front": 18,
+          "nodes": 18,
+          "cut_length": 18
+        },
+        "grasp_signal_and_safety_monitor": {
+          "tissue_stats": 17
+        },
+        "tension_until_m6": {
+          "cut_line_tension": 17,
+          "nodes": 16,
+          "cut_length": 16
+        },
+        "safety_monitor": {
+          "cut_length": 17
+        },
+        "retractor_planning": {
+          "cut_front": 1,
+          "nodes": 2,
+          "cut_length": 1,
+          "tissue_stats": 6
+        }
+      },
+      "strict_exception": false
+    }
+  },
+  "criteria": {
+    "B0_truth_identity": {
+      "result": true,
+      "detail": "17 ticks; full per-tick dicts identical = True"
+    },
+    "B1_zero_control_truth_reads": {
+      "result": true,
+      "detail": "clean"
+    },
+    "B2_done": {
+      "result": false,
+      "detail": "0/4 DONE: []"
+    },
+    "B3_cut_length": {
+      "result": true,
+      "detail": {
+        "V_noise_depth_1p0": 1
+      },
+      "per_run": {
+        "V_noise_depth_1p0": 0.01
+      }
+    },
+    "B4_no_tear": {
+      "result": true,
+      "detail": "no tears"
+    },
+    "B5_safe_outcome": {
+      "result": true,
+      "detail": {
+        "V_nominal": true,
+        "V_occlusion_transient": true,
+        "V_slip_regrasp": true,
+        "V_relax": true,
+        "V_noise_depth_0p5": true,
+        "V_noise_depth_1p0": true,
+        "V_cam_trans_1mm_fixed": true,
+        "V_cam_rot_1deg_fixed": true,
+        "V_cam_trans_1mm_per_tick": true,
+        "V_relax_large": true
+      }
+    },
+    "B6_observe_before_act": {
+      "result": true,
+      "detail": "25 closures; violations: []"
+    },
+    "B7_closure_alignment": {
+      "result": true,
+      "detail": {
+        "n": 17,
+        "median_m": 0.0004528589825965888,
+        "values_mm": [
+          0.311,
+          0.143,
+          0.182,
+          1.029,
+          2.374,
+          2.579,
+          0.466,
+          0.485,
+          0.863,
+          0.443,
+          0.596,
+          0.475,
+          0.311,
+          0.143,
+          0.182,
+          0.453,
+          0.235
+        ]
+      }
+    },
+    "B8_noise_done_rate": {
+      "result": false,
+      "detail": "1/4 DONE (['V_noise_depth_1p0']); all B5: True"
+    }
+  },
+  "overall": {
+    "B0_truth_identity": true,
+    "B1_zero_control_truth_reads": true,
+    "B2_done": false,
+    "B3_cut_length": true,
+    "B4_no_tear": true,
+    "B5_safe_outcome": true,
+    "B6_observe_before_act": true,
+    "B7_closure_alignment": true,
+    "B8_noise_done_rate": false
+  }
+}

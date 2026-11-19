@@ -108,6 +108,8 @@ def main():
                    help='record per-tick tension, cut length and a tissue-node hash in the report')
     p.add_argument('--align-mode', choices=['shaft', 'tool_pose'], default=None,
                    help='override cut.align_mode for this run (default: config value)')
+    p.add_argument('--control-source', choices=['truth', 'vision'], default=None,
+                   help='override cut.control_source for this run (default: config value)')
     p.add_argument('--perception', default=None,
                    help='JSON object merged into cfg["perception"] (mode/markers/depth_noise_m/camera_pose_error/seed)')
     p.add_argument('--initial-view', default=None, metavar='YAW,PITCH',
@@ -142,10 +144,13 @@ def main():
         cfg = json.loads((REPO / 'config' / 'task' / 'cut_task.json').read_text(encoding='utf-8'))
         if args.align_mode:
             cfg['cut']['align_mode'] = args.align_mode
+        if args.control_source:
+            cfg['cut']['control_source'] = args.control_source
         if args.perception:
             cfg.setdefault('perception', {}).update(json.loads(args.perception))
         report['config'] = cfg
         report['initial_view'] = args.initial_view
+        report['control_source'] = cfg['cut'].get('control_source', 'truth')
         stage = 'source provenance'
         scene = args.scene.resolve()
         report.update(scene=relative(scene), scene_sha256=sha256(scene),
@@ -215,6 +220,7 @@ def main():
             instrumentation = dict(refused_candidates=world.refused_failures,
                                    event_log=world.event_log,
                                    truth_reads=world.truth.reads,
+                                   truth_reads_by_purpose=world.truth.reads_by_purpose,
                                    timing=world.timing_summary(),
                                    perception=getattr(world, 'perc_log', []),
                                    # Model distances in the synthetic scene, NOT clinical

@@ -18,11 +18,15 @@ CFG = json.loads((REPO / 'config' / 'task' / 'cut_task.json').read_text(encoding
 RESULTS = {}
 
 
-def run(name, cut_only=False, **events):
-    w = FakeWorld(cut_only=cut_only, **events)
-    m = CutTaskFSM(w, CFG, cut_only=cut_only)
+def run(name, cut_only=False, vision=False, **events):
+    w = FakeWorld(cut_only=cut_only, vision=vision, **events)
+    cfg = json.loads(json.dumps(CFG)) if vision else CFG
+    if vision:
+        cfg['cut']['control_source'] = 'vision'
+    m = CutTaskFSM(w, cfg, cut_only=cut_only)
     m.run()
     RESULTS[name] = dict(events={k: (sorted(v) if isinstance(v, set) else v) for k, v in events.items()}, cut_only=cut_only,
+                         vision=vision,
                          **{k: v for k, v in m.report().items() if k != 'log'},
                          path=[e['to'] for e in m.log if 'to' in e])
     return m, w
@@ -192,6 +196,46 @@ class Scenarios(unittest.TestCase):
         m, w = run('cut_only_relax', cut_only=True, relax=8)
         self.assertEqual(m.state, S.FAILED)
         self.assertIn('no retraction arm', m.reason)
+
+    # -- M5b vision-mode scenarios (front fix + CLEAR_VIEW; m5b_protocol.json) ------------------------------------
+    def test_vision_nominal_reaches_done(self):
+        m, w = run('vision_nominal', vision=True)
+        self.assertEqual(m.state, S.DONE)
+        self.assertIn('CLEAR_VIEW', self.path(m))      # every closure voids the fix
+        self.assertTrue(any(a[0] == 'clear_view' for a in w.actions))
+        self.assertEqual(w.closures_while_hidden, 0)
+
+    def test_vision_front_hidden_recovers_via_clear_view(self):
+        m, w = run('vision_front_hidden', vision=True, front_hidden={10, 11})
+        self.assertEqual(m.state, S.DONE)
+        p = self.path(m)
+        i = p.index('CLEAR_VIEW')
+        self.assertEqual(p[i:i + 2], ['CLEAR_VIEW', 'RESUME'])
+
+    def test_vision_clear_view_exhaustion_fails(self):
+        m, w = run('vision_clear_fail', vision=True,
+                   front_hidden=set(range(8, 400)), clear_view_useless=True)
+        self.assertEqual(m.state, S.FAILED)
+        self.assertIn('clear-and-look exhausted', m.reason)
+        n = sum(1 for a in w.actions if a[0] in ('clear_view', 'retract_scissors'))
+        self.assertLessEqual(n, 3)                     # back-off, withdrawal-or-back-off, look-only
+
+    def test_vision_both_hidden_goes_occluded(self):
+        m, w = run('vision_occluded', vision=True, occlude=(10, 12))
+        self.assertEqual(m.state, S.DONE)
+        p = self.path(m)
+        i = p.index('OCCLUDED')
+        self.assertEqual(p[i:i + 2], ['OCCLUDED', 'RESUME'])
+        self.assertEqual(w.closures_while_hidden, 0)
+
+    def test_vision_progress_drives_completion_not_truth(self):
+        # The fix reports done while the true cut is short: completion fires on
+        # cut_progress_m and the truth-based acceptance then honestly fails it.
+        m, w = run('vision_progress_poison', vision=True, progress_bias_m=0.009)
+        self.assertEqual(m.state, S.FAILED)
+        self.assertIn('cut length below target', m.reason)
+        # Completion ran at ALIGN entry, before any jaw opening.
+        self.assertFalse(any(a[0] == 'open_scissors' for a in w.actions))
 
     @classmethod
     def tearDownClass(cls):

@@ -45,6 +45,16 @@ def unit(v):
 
 
 class SimWorld:
+    # Defaults for the M5b vision state so SimWorld.__new__ test stubs behave as truth mode;
+    # __init__ always overwrites them.
+    vision = False
+    _fix = None
+    _fix_epoch = 0
+    _fix_max_age = 6
+    _last_est = None
+    _pose_err_fixed = None
+    _in_event = False
+
     def __init__(self, client, sim, args, cfg, mode='cut_only', events=None,
                  event=None, event_tick=6, event_ticks=3):
         from simtools import refresh_controller
@@ -94,6 +104,11 @@ class SimWorld:
         # homeRCM must execute the current controller's explicit success/failure contract.
         self.controller_sha256 = refresh_controller(sim, self.ctrl, tissue=True)
         self.truth = GroundTruth(self)  # sensing reads; actuation keeps direct access (see ground_truth.py)
+        # M5b: 'vision' drives the cutter from the cut_perception estimate; every GroundTruth
+        # read then needs a declared purpose or TruthReadInControl raises (config/task/m5b_protocol.json).
+        self.vision = cfg.get('cut', {}).get('control_source', 'truth') == 'vision'
+        if self.vision:
+            self.truth.strict = True
         self.cam = self.by[self.endo['camera']['alias']]
         c = self.endo['camera']
         self.W, self.H = c['resolution']
@@ -140,11 +155,21 @@ class SimWorld:
         self._dump_dir = None
         self._dump_meta_written = False
         self._perc_meta = None
+        # M5b vision-mode state: the remembered front fix, this tick's estimate, the
+        # fixed-mode camera-pose draw, and the injected-event suppression flag.
+        self._fix = None
+        self._fix_epoch = 0
+        self._last_est = None
+        self._pose_err_fixed = None
+        self._in_event = False
+        self._fix_max_age = cfg.get('vision', {}).get('fix_max_age_ticks', 6)
         if self.perc_mode == 'shadow' and self.perc_cfg.get('dump_dir'):
             self._dump_dir = REPO / self.perc_cfg['dump_dir']
             self._dump_dir.mkdir(parents=True, exist_ok=True)
         if self.perc_cfg.get('markers', True):
             self._create_markers()
+        if self.vision and not self.perc_cfg.get('markers', True):
+            raise RuntimeError('vision control requires perception markers')
 
     # -- helpers ----------------------------------------------------------------------------------------------
     def _time(self, name, fn, *a):
@@ -358,7 +383,9 @@ class SimWorld:
             self.sim.setObjectPosition(h, yaw_h, list(off))
             self.markers.append(h)
 
-    def _perception_tick(self):
+    def _estimate(self):
+        """One estimator run on this tick's frame. No GroundTruth access: the camera
+        pose is proprioception and the injected perturbations come from perc_rng."""
         if self._perc_estimator is None:
             # Live and offline are identical: the estimator is built from the same meta
             # dict the frame dump writes (CutPerception.from_meta).
@@ -368,12 +395,26 @@ class SimWorld:
         rng = self.perc_rng
         R_true, t_true = self.camera()
         e = self.perc_cfg.get('camera_pose_error') or {}
-        R_est = cut_perception.rotvec(unit(rng.normal(size=3)) * math.radians(e.get('rot_deg', 0.0))) @ R_true
-        t_est = t_true + unit(rng.normal(size=3)) * e.get('trans_m', 0.0)
+        if e.get('mode', 'per_tick') == 'fixed':
+            # A calibration bias: axis and direction drawn once per run (m5b_protocol.json).
+            if self._pose_err_fixed is None:
+                self._pose_err_fixed = (unit(rng.normal(size=3)), unit(rng.normal(size=3)))
+            axis, tdir = self._pose_err_fixed
+        else:
+            axis, tdir = unit(rng.normal(size=3)), unit(rng.normal(size=3))
+        R_est = cut_perception.rotvec(axis * math.radians(e.get('rot_deg', 0.0))) @ R_true
+        t_est = t_true + tdir * e.get('trans_m', 0.0)
         noise = self.perc_cfg.get('depth_noise_m', 0.0)
         depth = self.depth if noise <= 0 else self.depth + rng.normal(0.0, noise, self.depth.shape)
-        est = self._perc_estimator.estimate(np.asarray(self.image, dtype=float), depth,
-                                            R_est, t_est, post_grasp=bool(self.grasped_points))
+        return self._perc_estimator.estimate(np.asarray(self.image, dtype=float), depth,
+                                             R_est, t_est, post_grasp=bool(self.grasped_points))
+
+    def _perception_tick(self):
+        self._score_shadow(self._estimate())
+
+    def _score_shadow(self, est):
+        """Truth scoring of an estimate for the shadow log/dump. Never control input."""
+        est = est or {}
         # Scoring only (m5a_gates.json definitions): tip vs the tcp pose, jaw_axis vs the
         # tcp matrix' tool-axis column, front vs GroundTruth.cut_front, direction vs the
         # live centre line m[j0+3]-m[j0], j0 = min(round(cut_length/H), NV-4).
@@ -387,12 +428,13 @@ class SimWorld:
                 errors['jaw_axis_err_rad'] = float(math.acos(float(np.clip(
                     unit(np.asarray(scis['jaw_axis'])) @ jaw_true, -1, 1))))
         if self.sheet_origin is not None:
-            n = self.truth.nodes()
-            m = 0.5 * (n[:, NU // 2 - 1] + n[:, NU // 2])
-            j0 = min(int(round(self.cut_length() / H)), NV - 4)
-            truth = dict(cut_front=self.cut_front(), direction=unit(m[j0 + 3] - m[j0]).tolist(),
-                         tcp=tcp.tolist(), jaw_axis=jaw_true.tolist(),
-                         tension=self.cut_line_tension())
+            with self.truth.purpose('scoring'):
+                n = self.truth.nodes()
+                m = 0.5 * (n[:, NU // 2 - 1] + n[:, NU // 2])
+                j0 = min(int(round(self.cut_length() / H)), NV - 4)
+                truth = dict(cut_front=self.cut_front(), direction=unit(m[j0 + 3] - m[j0]).tolist(),
+                             tcp=tcp.tolist(), jaw_axis=jaw_true.tolist(),
+                             tension=self.cut_line_tension())
             cut = est.get('cut') or {}
             if cut.get('front_valid') and cut.get('front') is not None:
                 errors['front_pos_err_m'] = float(np.linalg.norm(
@@ -402,7 +444,35 @@ class SimWorld:
                     np.asarray(cut['direction']) @ np.asarray(truth['direction']), -1, 1))))
         self.perc_log.append(dict(tick=self.tick, estimate=est, truth=truth, errors=errors))
         if self._dump_dir is not None:
-            self._dump_frame()
+            with self.truth.purpose('scoring'):
+                self._dump_frame()
+
+    # -- M5b: the remembered front fix (vision mode) -------------------------------------------------------------
+    def _update_fix(self, est):
+        """Refresh the remembered front from a fresh estimate that sees a valid front."""
+        cut = est.get('cut') or {}
+        tissue = est.get('tissue') or {}
+        if not (cut.get('front_valid') and cut.get('front') is not None
+                and cut.get('direction') is not None and cut.get('start') is not None):
+            return
+        front = np.asarray(cut['front'], dtype=float)
+        direction = np.asarray(cut['direction'], dtype=float)
+        normal = tissue.get('normal')
+        self._fix = dict(front=front, direction=direction,
+                         normal=None if normal is None else np.asarray(normal, dtype=float),
+                         progress=max(0.0, float(np.dot(
+                             front - np.asarray(cut['start'], dtype=float), direction))),
+                         tick=self.tick, epoch=self._fix_epoch)
+
+    def _fix_valid(self):
+        return self._fix is not None and self.tick - self._fix['tick'] <= self._fix_max_age
+
+    def _invalidate_fix(self):
+        """Commanded motion voids the remembered front; injected events must not."""
+        if self.vision and not self._in_event:
+            if self._fix is not None:
+                self._fix_epoch += 1
+            self._fix = None
 
     def _dump_meta(self):
         """Static run metadata for the frame dump; written once (first dumped tick)."""
@@ -612,7 +682,26 @@ class SimWorld:
         self.tick += 1
         self._events()
         self.render()
-        if self.perc_mode == 'shadow':
+        if self.vision:
+            try:
+                self._last_est = self._estimate()
+                if self._last_est is not None:
+                    self._update_fix(self._last_est)
+            except Exception as exc:
+                import traceback
+                self.event_log.append(dict(tick=self.tick, event='perception_error',
+                                           error=f'{type(exc).__name__}: {exc}',
+                                           trace=traceback.format_exc(limit=6)))
+                self._last_est = None           # fail closed: every vision field invalid
+            if self.perc_mode == 'shadow':
+                try:
+                    self._score_shadow(self._last_est)
+                except Exception as exc:
+                    import traceback
+                    self.event_log.append(dict(tick=self.tick, event='perception_error',
+                                               error=f'{type(exc).__name__}: {exc}',
+                                               trace=traceback.format_exc(limit=6)))
+        elif self.perc_mode == 'shadow':
             try:
                 self._perception_tick()
             except Exception as exc:
@@ -620,22 +709,45 @@ class SimWorld:
                 self.event_log.append(dict(tick=self.tick, event='perception_error',
                                            error=f'{type(exc).__name__}: {exc}',
                                            trace=traceback.format_exc(limit=6)))
-        if self.sheet_origin is None:
-            cut_vis, offset = False, None
+        progress = tissue_vis = None
+        if self.vision:
+            est = self._last_est or {}
+            tip_vis = bool((est.get('scissors') or {}).get('valid'))
+            tissue_vis = bool((est.get('tissue') or {}).get('valid'))
+            cut_vis = self._fix_valid()
+            if cut_vis:
+                progress = float(self._fix['progress'])
+                uv, pc = self.project(np.asarray(self._fix['front'], dtype=float))
+                if uv is not None and np.isfinite(pc).all() and 0 < pc[2] < self.far:
+                    offset = float(max(abs(uv[0] - self.W / 2) / (self.W / 2),
+                                       abs(uv[1] - self.H / 2) / (self.H / 2)))
+                else:
+                    offset = None
+            else:
+                offset = None
         else:
-            cut_vis, offset = self.point_visible(self.cut_front())
-        tip_vis, _ = self.point_visible(self.truth.tcp(self.cutter))
+            if self.sheet_origin is None:
+                cut_vis, offset = False, None
+            else:
+                cut_vis, offset = self.point_visible(self.cut_front())
+            tip_vis, _ = self.point_visible(self.truth.tcp(self.cutter))
         self._protected_tick()
-        st = self.truth.tissue_stats()
+        with self.truth.purpose('grasp_signal_and_safety_monitor'):
+            st = self.truth.tissue_stats()
         rs = self.call('getRCMStats')
         # A refused candidate increments the controller failure counter even though it rolled back; only
         # failures beyond those recorded at refusal are arm faults. Drift faults are unchanged.
         faults = [f"{r['arm']}: {r['failures'] - self.refused_failures.get(r['arm'], 0)} RCM solver failures"
                   for r in rs if r['failures'] - self.refused_failures.get(r['arm'], 0) > 0]
         faults += [f"{r['arm']}: RCM drift {r['max_drift_m'] * 1000:.2f} mm" for r in rs if r['max_drift_m'] > 5e-4]
+        with self.truth.purpose('tension_until_m6'):
+            tension = self.cut_line_tension()
+        with self.truth.purpose('safety_monitor'):
+            cut_length = self.cut_length()
         return Observation(cut_site_visible=cut_vis, scissors_visible=tip_vis, cut_site_offset=offset if cut_vis else None,
-                           grasped=dict(st.get('grasped') or {}), tension=self.cut_line_tension(), max_strain=float(st.get('max_strain', 0.0)),
-                           torn=int(st.get('torn', 0)), cut_length_m=self.cut_length(), faults=faults)
+                           grasped=dict(st.get('grasped') or {}), tension=tension, max_strain=float(st.get('max_strain', 0.0)),
+                           torn=int(st.get('torn', 0)), cut_length_m=cut_length, faults=faults,
+                           cut_progress_m=progress if self.vision else cut_length, tissue_visible=tissue_vis)
 
     def check_roles(self):
         import instrument_guard
@@ -673,22 +785,24 @@ class SimWorld:
         # Gate on the live cut front, not the recorded origin: the sheet deforms under retraction and
         # cutting, so the origin point can float off the rendered surface and fail the depth gate even
         # though the work site is plainly in view.
-        vis, _ = self.point_visible(self.cut_front())
-        if not vis:
-            return None
-        # Coarse sheet-colour presence in the image; this cannot override the depth gate above.
-        rgb = np.asarray(self.image, dtype=float)
-        tissue = np.linalg.norm(rgb - 255 * np.array(TISSUE_RGB), axis=2) < 40
-        if tissue.sum() < 30:
-            return None
-        # Grasp points from the sheet as it is now (it contracts under pre-tension once the sides are free):
-        # one node in from each side edge, at mid length. Primary takes the -u side, assist the +u side.
-        n = self.nodes()
-        j = NV // 2
-        self.grasp_points = {self.primary: n[j, 1], self.assist: n[j, NU - 2]}
+        with self.truth.purpose('retractor_planning'):      # retractor planning stays truth until M6
+            vis, _ = self.point_visible(self.cut_front())
+            if not vis:
+                return None
+            # Coarse sheet-colour presence in the image; this cannot override the depth gate above.
+            rgb = np.asarray(self.image, dtype=float)
+            tissue = np.linalg.norm(rgb - 255 * np.array(TISSUE_RGB), axis=2) < 40
+            if tissue.sum() < 30:
+                return None
+            # Grasp points from the sheet as it is now (it contracts under pre-tension once the sides are free):
+            # one node in from each side edge, at mid length. Primary takes the -u side, assist the +u side.
+            n = self.nodes()
+            j = NV // 2
+            self.grasp_points = {self.primary: n[j, 1], self.assist: n[j, NU - 2]}
         return Target(cut_start=self.sheet_origin, grasp_points=self.grasp_points)
 
     def grasp(self, arm, point):
+        self._invalidate_fix()
         yaw, pitch, ins = self.rcm_command_for(arm, np.asarray(point))
         L = self.arm_cfg[arm]['limits']
         if abs(yaw) > L['yaw_deg'] or abs(pitch) > L['pitch_deg'] or not L['insertion_min'] <= ins <= L['insertion_max']:
@@ -728,6 +842,7 @@ class SimWorld:
         return True, ''
 
     def release(self, arm):
+        self._invalidate_fix()
         self.call('tissueRelease', self.index[arm])
         self.grasped_points.pop(arm, None)
 
@@ -737,6 +852,7 @@ class SimWorld:
         A handover keeps the side the lost arm held: candidates sit at least three columns in from
         the cut line, off the edge column and row 0, and inside the arm limits with a small margin
         (a point at the boundary would likely be refused by the guarded controller anyway)."""
+        self._invalidate_fix()
         if self.sheet_origin is None or lost_point is None:
             return None
         origin = np.asarray(self.sheet_origin, dtype=float)
@@ -747,7 +863,8 @@ class SimWorld:
         # The cut line runs between columns NU//2-1 and NU//2.
         lo, hi = (1, NU // 2 - 4) if side < 0 else (NU // 2 + 3, NU - 2)
         L = self.arm_cfg[arm]['limits']
-        nodes = self.nodes()
+        with self.truth.purpose('retractor_planning'):
+            nodes = self.nodes()
         best, best_d = None, np.inf
         for j in range(1, NV):
             for i in range(lo, hi + 1):
@@ -768,11 +885,13 @@ class SimWorld:
 
         Pulling back along the shaft would lift the sheet out of its plane and load only the few grasped nodes
         (that tore the sheet at 47 % strain in the first run); a lateral pull spreads the tension across it."""
+        self._invalidate_fix()
         point = self.grasped_points.get(arm)
         if self.sheet_origin is None or point is None:
             return False        # no verified grasp side: refuse rather than pull in a guessed direction
         # The record can be stale after a physical slip: also require a live hold in the tissue model.
-        stats = self.truth.tissue_stats()
+        with self.truth.purpose('retractor_planning'):
+            stats = self.truth.tissue_stats()
         held = (stats.get('grasped') or {}).get(arm, 0) if isinstance(stats, dict) else 0
         if held < self.cfg['grasp']['min_nodes']:
             return False
@@ -805,10 +924,44 @@ class SimWorld:
         ok = bool(self.call('setGrip', self.index[self.cutter], 0.0))
         if ok:
             self.steps(8)
+            if self.vision:
+                self._closure_event()
+                self._invalidate_fix()
         return ok
+
+    def _closure_event(self):
+        """M5b B6/B7 record: the fix age and fresh scissors estimate at a closure, plus
+        the truth lateral error of the true cut front from the true jaw line (scoring)."""
+        est = self._last_est or {}
+        scis = est.get('scissors') or {}
+        ev = dict(tick=self.tick, event='closure',
+                  fix_age=None if self._fix is None else int(self.tick - self._fix['tick']),
+                  scissors_valid=bool(scis.get('valid')), lateral_truth_m=None)
+        try:
+            tcp_M = matrix_to_np(self.sim.getObjectMatrix(self.by[self.cutter + '_tcp'], -1))
+            jaw = unit(tcp_M[:, self.TOOL_AXIS_COL])
+            with self.truth.purpose('scoring'):
+                cf = np.asarray(self.cut_front(), dtype=float)
+            ev['lateral_truth_m'] = float(np.linalg.norm(np.cross(cf - tcp_M[:, 3], jaw)))
+        except Exception:
+            pass
+        self.event_log.append(ev)
+
+    def jaws_closed(self):
+        try:
+            grip = self.call('getRCMStats')[self.index[self.cutter] - 1].get('grip')
+        except Exception:
+            return False
+        return bool(grip == 0.0)
+
+    def clear_view(self, d):
+        """CLEAR_VIEW back-off: withdraw the cutter along its jaw axis, jaws unchanged."""
+        return self.advance_scissors(-d)
 
     def align_scissors(self, cut_start, progress):
         """Lateral distance of the cut front from the blade line, or None if approach was refused."""
+        if self.vision:
+            return self._align_scissors_vision(progress)
         if self.align_mode == 'tool_pose':
             return self._align_scissors_tool(cut_start, progress)
         f = self.frame(self.cutter)
@@ -858,6 +1011,71 @@ class SimWorld:
         d = m[:3, self.TOOL_AXIS_COL]
         return float(np.linalg.norm(np.cross(self.cut_front() - m[:3, 3], d)))
 
+    def _align_scissors_vision(self, progress):
+        """tool_pose alignment on the remembered front fix and this tick's tip estimate.
+
+        The move is RELATIVE (tcp_fk + (fix.front - 1 mm*dir) - tip_est) so a kinematic
+        offset cancels; the pre-move combined error is returned so the next ALIGN tick
+        verifies against a fresh estimate. None on missing evidence or refusal."""
+        est = self._last_est or {}
+        scis = est.get('scissors') or {}
+        if (not self._fix_valid() or not scis.get('valid')
+                or scis.get('tip') is None or scis.get('jaw_axis') is None
+                or self._fix['direction'] is None or self._fix['normal'] is None):
+            return None
+        direction = np.asarray(self._fix['direction'], dtype=float)
+        if float(direction @ self.v) <= 0:
+            return None                       # fix direction disagrees with the sheet frame
+        front = np.asarray(self._fix['front'], dtype=float)
+        tip = np.asarray(scis['tip'], dtype=float)
+        jaw = unit(np.asarray(scis['jaw_axis'], dtype=float))
+        # Opening axis of the cut, signed to agree with the placement frame u.
+        lat = unit(np.cross(np.asarray(self._fix['normal'], dtype=float), direction))
+        if float(lat @ self.u) < 0:
+            lat = -lat
+        err_lat = float(np.linalg.norm(np.cross(front - tip, jaw)))
+        err_along = abs(float((front - tip) @ direction) - 0.001)
+        e = max(err_lat, err_along)
+        fix_age = int(self.tick - self._fix['tick'])
+        if e <= self.cfg['cut']['align_tolerance_m']:
+            return e                                          # verified; no motion
+        moved = False
+        if self.align_mode == 'tool_pose':
+            state = self._tool_q(self.cutter)
+            if state is None:
+                return None
+            if self._pre_cut_q is None:
+                self._pre_cut_q = state[0].copy()             # wrist restore target for withdrawal
+            tcp_M = matrix_to_np(self.sim.getObjectMatrix(self.by[self.cutter + '_tcp'], -1))
+            tcp0 = tcp_M[:, 3]                                # kinematic tcp: the offset cancels
+            target = tcp0 + (front - 0.001 * direction) - tip
+            res = self._tool_solve(self.cutter, target, direction, lat)
+            if res is None or not res['converged'] or not self.tool_command(self.cutter, res['q'], 10):
+                self.event_log.append(dict(tick=self.tick, event='vision_align', refused=True,
+                                           err_lat_m=err_lat, err_along_m=err_along,
+                                           moved=False, fix_age=fix_age,
+                                           detail=None if res is None else dict(
+                                               pos_err_m=res['pos_err_m'], axis_err_rad=res['axis_err_rad'],
+                                               yaw_axis_err_rad=res['yaw_axis_err_rad'], at_limit=res['at_limit'])))
+                return None
+            tcp1 = np.array(self.sim.getObjectPosition(self.by[self.cutter + '_tcp'], -1))
+            self.advanced += float(np.dot(tcp1 - tcp0, self.v))
+            moved = True
+        else:
+            # shaft: only the along correction is commandable; fix/tip_est supply the gap.
+            gap = float((front - tip) @ direction)
+            if gap > 0.0025:                                  # tip more than 2.5 mm short of the front
+                yaw, pitch, ins = self.target_of(self.cutter)
+                correction = gap - 0.001
+                if not self.command(self.cutter, yaw, pitch, ins + correction, 10):
+                    return None
+                self.advanced += correction
+                moved = True
+        self.event_log.append(dict(tick=self.tick, event='vision_align', refused=False,
+                                   err_lat_m=err_lat, err_along_m=err_along,
+                                   moved=moved, fix_age=fix_age))
+        return err_lat if self.align_mode != 'tool_pose' else e
+
     def advance_scissors(self, d):
         if self.align_mode == 'tool_pose':
             # Advance along the jaw (pointing) axis, holding the current orientation —
@@ -898,6 +1116,8 @@ class SimWorld:
             if grip is None or not math.isfinite(grip):
                 return False
             if grip != 0.0:
+                if self.vision:
+                    return False        # the sheet exists after placement: never close to retreat
                 tissue = self.truth.tissue_stats()
                 if not isinstance(tissue, dict) or tissue.get('exists') is not False:
                     return False
@@ -918,6 +1138,8 @@ class SimWorld:
         if grip is None or not math.isfinite(grip):
             return False
         if grip != 0.0:
+            if self.vision:
+                return False            # the sheet exists after placement: never close to retreat
             # Missing tissue status is not evidence that an additional closure is safe.
             tissue = self.truth.tissue_stats()
             if not isinstance(tissue, dict) or tissue.get('exists') is not False:
@@ -933,6 +1155,7 @@ class SimWorld:
     CAMERA_POSES = [(3.0, 0.0), (-3.0, 0.0), (0.0, 3.0), (0.0, -3.0), (4.5, 3.0), (-4.5, -3.0)]
 
     def adjust_camera(self):
+        self._invalidate_fix()
         if self.camera_moves >= len(self.CAMERA_POSES):
             return False
         yaw, pitch = self.CAMERA_POSES[self.camera_moves]
@@ -955,10 +1178,18 @@ class SimWorld:
         e = self.events
         if not e:
             return
+        self._in_event = True
+        try:
+            self._inject_events(e)
+        finally:
+            self._in_event = False
+
+    def _inject_events(self, e):
         occlude, until = e.get('occlude'), e.get('occlude_until_camera')
         if self.occluder is None and (until == self.tick or (occlude is not None and self.tick == occlude[0])):
             R, t = self.camera()
-            p = self.cut_front()
+            with self.truth.purpose('event_injection'):       # harness read, not a control input
+                p = self.cut_front()
             ray = unit(p - t)
             near = until is not None
             dist, radius = (0.015, 0.0025) if near else (0.06, 0.004)

@@ -28,6 +28,7 @@ class S(enum.Enum):
     ALIGN = '切割对准'
     CUT = '切割执行'
     OCCLUDED = '遮挡暂停'
+    CLEAR_VIEW = '让开观察'
     RETRACT_ADJUST = '牵拉调整'
     CAMERA_ADJUST = '相机调整'
     RELOCALIZE = '重新定位'
@@ -40,7 +41,7 @@ TERMINAL = {S.DONE, S.FAILED}
 NEEDS_VIEW = {S.GRASP, S.EXPOSE, S.ALIGN, S.CUT}
 NEEDS_GRASP = {S.EXPOSE, S.ALIGN, S.CUT}
 NEEDS_TENSION = {S.ALIGN, S.CUT}
-RECOVERY = {S.OCCLUDED, S.RETRACT_ADJUST, S.CAMERA_ADJUST, S.RELOCALIZE, S.RESUME}
+RECOVERY = {S.OCCLUDED, S.CLEAR_VIEW, S.RETRACT_ADJUST, S.CAMERA_ADJUST, S.RELOCALIZE, S.RESUME}
 
 
 @dataclass
@@ -54,6 +55,8 @@ class Observation:
     cut_length_m: float
     faults: List[str] = field(default_factory=list)
     max_strain: float = 0.0                   # largest single constraint strain (corners, cut ends)
+    cut_progress_m: Optional[float] = None    # vision mode: remembered front-fix progress
+    tissue_visible: Optional[bool] = None     # vision mode: tissue plane valid this tick
 
 
 @dataclass
@@ -71,7 +74,8 @@ class CutTaskFSM:
         self.state, self.return_to, self.reason = S.INIT, None, ''
         self.target = None
         self.tick_count, self.ticks_in_state = 0, 0
-        self.attempts = {S.CAMERA_ADJUST: 0, S.RETRACT_ADJUST: 0, S.RELOCALIZE: 0}
+        self.vision = cfg['cut'].get('control_source', 'truth') == 'vision'
+        self.attempts = {S.CAMERA_ADJUST: 0, S.RETRACT_ADJUST: 0, S.RELOCALIZE: 0, S.CLEAR_VIEW: 0}
         self.log, self.visited, self.transitions = [], {S.INIT}, set()
         self.handover = None
 
@@ -82,7 +86,7 @@ class CutTaskFSM:
             self.return_to = S.ALIGN if old == S.CUT else old
         if new == S.RELOCALIZE and old not in RECOVERY:
             self.return_to = S.EXPOSE                         # re-tension after a new grasp
-        if new in (S.OCCLUDED, S.FAILED, S.RETRACT_ADJUST, S.RELOCALIZE, S.CAMERA_ADJUST):
+        if new in (S.OCCLUDED, S.FAILED, S.RETRACT_ADJUST, S.RELOCALIZE, S.CAMERA_ADJUST, S.CLEAR_VIEW):
             self.w.hold()
         self.log.append(dict(tick=self.tick_count, frm=old.name, to=new.name, label=new.value, reason=reason,
                              obs=None if obs is None else _summary(obs)))
@@ -145,7 +149,10 @@ class CutTaskFSM:
             self.go(S.FAILED, f'cut exceeds allowed length ({obs.cut_length_m * 1000:.2f} mm)', obs)
             return True
         if s in NEEDS_VIEW and not self.visible(obs):
-            self.go(S.OCCLUDED, 'cut site or scissors not visible', obs)
+            if self.vision and obs.scissors_visible and obs.tissue_visible:
+                self.go(S.CLEAR_VIEW, 'front unknown; clearing the view', obs)
+            else:
+                self.go(S.OCCLUDED, 'cut site or scissors not visible', obs)
             return True
         if s in NEEDS_GRASP and not self.grasps_ok(obs):
             lost = [a for a in self.retractors if obs.grasped.get(a, 0) < self.cfg['grasp']['min_nodes']]
@@ -207,31 +214,43 @@ class CutTaskFSM:
         elif not self.centred(obs):
             self.go(S.CAMERA_ADJUST, 'cut site off-centre', obs)
 
+    def _progress(self, obs):
+        """Cut progress for control: the front fix in vision mode, truth cut length otherwise."""
+        return obs.cut_progress_m if self.vision else obs.cut_length_m
+
+    def _complete(self, obs):
+        if not self.w.retract_scissors():
+            return self.go(S.FAILED, 'scissors retraction refused', obs)
+        # Retraction can fail indirectly (e.g. tissue damage during simulation steps).
+        # The withdrawn tip need not remain in view; only the terminal safety checks apply.
+        final = self.w.observe()
+        issues = completion_issues(final, self.cfg)
+        if issues:
+            return self.go(S.FAILED, '; '.join(issues), final)
+        return self.go(S.DONE, f'cut length {final.cut_length_m * 1000:.1f} mm reached; scissors retracted', final)
+
     def on_align(self, obs):
+        if self.vision:
+            progress = self._progress(obs)
+            if progress is not None and progress >= self.cfg['cut']['length_m']:
+                return self._complete(obs)          # done before any jaw opening
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
-        err = self.w.align_scissors(self.target.cut_start, obs.cut_length_m)
+        err = self.w.align_scissors(self.target.cut_start, self._progress(obs))
         if err is not None and err <= self.cfg['cut']['align_tolerance_m']:
             return self.go(S.CUT, f'blades aligned ({err * 1000:.2f} mm)', obs)
         if self.ticks_in_state >= self.cfg['budgets']['align_ticks']:
             self.go(S.FAILED, f'alignment not reached ({err})', obs)
 
     def on_cut(self, obs):
-        if obs.cut_length_m >= self.cfg['cut']['length_m']:
-            if not self.w.retract_scissors():
-                return self.go(S.FAILED, 'scissors retraction refused', obs)
-            # Retraction can fail indirectly (e.g. tissue damage during simulation steps).
-            # The withdrawn tip need not remain in view; only the terminal safety checks apply.
-            final = self.w.observe()
-            issues = completion_issues(final, self.cfg)
-            if issues:
-                return self.go(S.FAILED, '; '.join(issues), final)
-            return self.go(S.DONE, f'cut length {final.cut_length_m * 1000:.1f} mm reached; scissors retracted', final)
+        progress = self._progress(obs)
+        if progress is not None and progress >= self.cfg['cut']['length_m']:
+            return self._complete(obs)
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
         # Bound the commanded advance, not the physical cut: blade extent and the tissue grid
         # can still cause overshoot, which is checked separately by the supervisor.
-        step = min(self.cfg['cut']['advance_m'], self.cfg['cut']['length_m'] - obs.cut_length_m)
+        step = min(self.cfg['cut']['advance_m'], self.cfg['cut']['length_m'] - progress)
         if not self.w.advance_scissors(step):
             return self.go(S.FAILED, 'scissors advance refused (limits or collision)', obs)
         # Advancing is not instantaneous. Recheck ALL interlocks on the fresh observation,
@@ -248,6 +267,30 @@ class CutTaskFSM:
             return self.go(S.RESUME, 'view restored', obs)
         if self.ticks_in_state >= self.cfg['view']['occlusion_wait_ticks']:
             self.go(S.CAMERA_ADJUST, 'occlusion persists', obs)
+
+    def on_clear_view(self, obs):
+        """Front unknown with scissors and tissue still seen: clear-and-look.
+
+        Attempt 1 backs the cutter off along its jaw axis, attempt 2 withdraws it fully
+        when the jaws are closed (else a second back-off), attempt 3 only looks."""
+        if self.visible(obs):
+            self.attempts[S.CLEAR_VIEW] = 0
+            return self.go(S.RESUME, 'view restored', obs)
+        if not obs.scissors_visible:
+            return self.go(S.OCCLUDED, 'scissors lost while clearing the view', obs)
+        self.attempts[S.CLEAR_VIEW] += 1
+        if self.attempts[S.CLEAR_VIEW] > self.cfg['budgets']['clear_view_attempts']:
+            return self.go(S.FAILED, 'clear-and-look exhausted', obs)
+        back = self.cfg['cut'].get('clear_back_m', 0.003)
+        attempt = self.attempts[S.CLEAR_VIEW]
+        if attempt == 1:
+            ok = self.w.clear_view(back)
+        elif attempt == 2:
+            ok = self.w.retract_scissors() if self.w.jaws_closed() else self.w.clear_view(back)
+        else:
+            ok = True                                       # look only
+        if not ok:
+            self.go(S.FAILED, 'clear-and-look action refused', obs)
 
     def on_camera_adjust(self, obs):
         if self.visible(obs) and self.centred(obs) and self.ticks_in_state > 1:
@@ -353,9 +396,14 @@ class CutTaskFSM:
 
 
 def _summary(o):
-    return dict(cut_site_visible=o.cut_site_visible, scissors_visible=o.scissors_visible, cut_site_offset=o.cut_site_offset,
-                grasped=o.grasped, tension=round(o.tension, 4), max_strain=round(o.max_strain, 4), torn=o.torn, cut_length_m=round(o.cut_length_m, 5),
-                faults=o.faults)
+    d = dict(cut_site_visible=o.cut_site_visible, scissors_visible=o.scissors_visible, cut_site_offset=o.cut_site_offset,
+             grasped=o.grasped, tension=round(o.tension, 4), max_strain=round(o.max_strain, 4), torn=o.torn, cut_length_m=round(o.cut_length_m, 5),
+             faults=o.faults)
+    if o.cut_progress_m is not None:
+        d['cut_progress_m'] = round(o.cut_progress_m, 5)
+    if o.tissue_visible is not None:
+        d['tissue_visible'] = o.tissue_visible
+    return d
 
 
 def completion_issues(obs, cfg):
