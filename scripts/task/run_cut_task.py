@@ -114,6 +114,7 @@ def main():
     args = p.parse_args()
     run_id = uuid.uuid4().hex
     name = args.name or f'sim_{args.mode}_{args.scenario}'
+    args.report_name = name                          # recorded in the perception frame-dump meta.json
     report = dict(run_id=run_id, success=False, mode=args.mode, scenario=args.scenario,
                   error=None, cleanup_error=None, errors=[], acceptance_issues=[], controller_sha256=None)
     client = sim = world = fsm = None

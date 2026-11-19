@@ -27,7 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'vision'))
 from cut_fsm import Observation, Target  # noqa: E402
 from ground_truth import GroundTruth  # noqa: E402
-from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
+from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, REPO, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
+from simtools import sha256 as file_sha256, write_json  # noqa: E402
 from visibility import depth_visible  # noqa: E402
 
 import cut_perception  # noqa: E402
@@ -49,6 +50,7 @@ class SimWorld:
         from simtools import refresh_controller
 
         self.client, self.sim, self.cfg, self.mode = client, sim, cfg, mode
+        self.args = args
         roles = cfg.get('roles', {})
         self.primary, self.assist = roles.get('retract_primary', 'psm1'), roles.get('retract_assist', 'psm3')
         self.cutter, self.view = roles.get('cut', 'psm2'), roles.get('view', 'ecm')
@@ -65,6 +67,7 @@ class SimWorld:
         # Scene-keyed config: config/scenes/<scene_stem>/ overrides the global instrument config
         # for scenes built with their own port/anatomy data; existing scenes fall back unchanged.
         scene = getattr(args, 'scene', INSTRUMENT_SCENE)
+        self.scene_file = Path(scene)
         self.scene_cfg_dir = ENDO_CONFIG.parent / 'scenes' / Path(scene).stem
         rcm_file = self.scene_cfg_dir / 'rcm_config.json'
         if not rcm_file.exists():
@@ -131,6 +134,14 @@ class SimWorld:
         self._perc_estimator = None
         self._marker_tcp_len = None
         self.markers = []
+        # M5a frame dump: shadow mode only, repo-relative perception.dump_dir. Per-tick npz plus
+        # one meta.json; every read is logging-only (sheet reads go through GroundTruth and raise
+        # truth_reads, which the report shows together with the dump_dir in cfg['perception']).
+        self._dump_dir = None
+        self._dump_meta_written = False
+        if self.perc_mode == 'shadow' and self.perc_cfg.get('dump_dir'):
+            self._dump_dir = REPO / self.perc_cfg['dump_dir']
+            self._dump_dir.mkdir(parents=True, exist_ok=True)
         if self.perc_cfg.get('markers', True):
             self._create_markers()
 
@@ -369,6 +380,76 @@ class SimWorld:
                 errors['axis_err_rad'] = float(math.acos(float(np.clip(
                     np.asarray(scis['axis']) @ np.asarray(truth['shaft_axis']), -1, 1))))
         self.perc_log.append(dict(tick=self.tick, estimate=est, truth=truth, errors=errors))
+        if self._dump_dir is not None:
+            self._dump_frame()
+
+    def _dump_meta(self):
+        """Static run metadata for the frame dump; written once (first dumped tick)."""
+        rcm = self.arm_cfg[self.cutter]['rcm_world']
+        return dict(W=self.W, H=self.H, f=self.f, far=self.far,
+                    camera=dict(self.endo['camera']),
+                    cutter=self.cutter, rcm_world=list(rcm),
+                    marker_tcp_len=self._marker_tcp_len,
+                    marker_radius=cut_perception.MARKER_RADIUS,
+                    marker_offsets=[list(cut_perception.MARKER_DISTAL_OFF),
+                                    list(cut_perception.MARKER_PROX_OFF)],
+                    marker_colours=[list(cut_perception.MARKER_DISTAL_RGB),
+                                    list(cut_perception.MARKER_PROX_RGB)],
+                    tissue_rgb=list(cut_perception.TISSUE_RGB),
+                    tool_axis_col=self.TOOL_AXIS_COL, tool_yaw_col=self.TOOL_YAW_COL,
+                    NU=NU, NV=NV, spacing_m=H, pretension=self.pretension,
+                    scene=str(self.scene_file),
+                    scene_sha256=file_sha256(self.scene_file) if self.scene_file.exists() else None,
+                    scenario=getattr(self.args, 'scenario', None),
+                    run_name=getattr(self.args, 'report_name', None),
+                    estimator='cut_perception.CutPerception',
+                    estimator_args=dict(W=self.W, H=self.H, f=self.f, far=self.far,
+                                        rcm_world=list(rcm), tcp_len=self._marker_tcp_len),
+                    perception_cfg=dict(self.perc_cfg))
+
+    def _dump_frame(self):
+        """Per-tick npz of raw estimator inputs and full truth for offline estimator work.
+
+        rgb/depth are exactly what the estimator could see (depth BEFORE any injected noise);
+        every cutter/sheet value is a true sim quantity. None of it feeds control.
+        """
+        if not self._dump_meta_written:
+            write_json(self._dump_dir / 'meta.json', self._dump_meta())
+            self._dump_meta_written = True
+        cam_R, cam_t = self.camera()
+
+        def mat4(h):
+            M = np.eye(4)
+            M[:3] = matrix_to_np(self.sim.getObjectMatrix(h, -1))
+            return M
+
+        out = dict(rgb=np.asarray(self.image),                          # uint8 (H,W,3)
+                   depth=np.asarray(self.depth, dtype=np.float32),      # raw (H,W), pre-noise
+                   cam_R=cam_R, cam_t=cam_t, tick=np.int64(self.tick),
+                   tcp_M=mat4(self.by[f'{self.cutter}_tcp']),
+                   yaw_M=(mat4(self.by[f'{self.cutter}_dvrk_yaw_frame'])
+                          if f'{self.cutter}_dvrk_yaw_frame' in self.by else np.full((4, 4), np.nan)),
+                   marker_pos=(np.array([self.sim.getObjectPosition(m, -1) for m in self.markers],
+                                        dtype=float) if self.markers else np.zeros((0, 3))))
+        try:
+            out['grip'] = np.float64(
+                self.call('getRCMStats')[self.index[self.cutter] - 1].get('grip', np.nan))
+        except Exception:
+            out['grip'] = np.float64(np.nan)
+        if self.sheet_origin is not None:
+            arms = sorted(self.grasped_points)
+            out.update(nodes=self.truth.nodes(),
+                       cut_length=np.float64(self.cut_length()),
+                       cut_front=np.asarray(self.cut_front()),
+                       tension=np.float64(self.cut_line_tension()),
+                       sheet_v=np.asarray(self.v), sheet_u=np.asarray(self.u),
+                       sheet_origin=np.asarray(self.sheet_origin),
+                       tissue_alive=np.array(self.call('tissueConstraints'),
+                                             dtype=np.int64).reshape(-1, 3),
+                       grasped_arms=np.asarray(arms),
+                       grasped_pts=(np.array([self.grasped_points[a] for a in arms], dtype=float)
+                                    if arms else np.zeros((0, 3))))
+        np.savez_compressed(self._dump_dir / f'tick_{self.tick:03d}.npz', **out)
 
     # Ground-truth sensing reads; the implementations live in GroundTruth (scripts/task/ground_truth.py)
     # and count themselves for the report's truth_reads.
