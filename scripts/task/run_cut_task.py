@@ -108,9 +108,12 @@ def main():
                    help='record per-tick tension, cut length and a tissue-node hash in the report')
     p.add_argument('--align-mode', choices=['shaft', 'tool_pose'], default=None,
                    help='override cut.align_mode for this run (default: config value)')
+    p.add_argument('--perception', default=None,
+                   help='JSON object merged into cfg["perception"] (mode/markers/depth_noise_m/camera_pose_error/seed)')
+    p.add_argument('--name', default=None, help='report name override (default sim_<mode>_<scenario>)')
     args = p.parse_args()
     run_id = uuid.uuid4().hex
-    name = f'sim_{args.mode}_{args.scenario}'
+    name = args.name or f'sim_{args.mode}_{args.scenario}'
     report = dict(run_id=run_id, success=False, mode=args.mode, scenario=args.scenario,
                   error=None, cleanup_error=None, errors=[], acceptance_issues=[], controller_sha256=None)
     client = sim = world = fsm = None
@@ -129,6 +132,8 @@ def main():
         cfg = json.loads((REPO / 'config' / 'task' / 'cut_task.json').read_text(encoding='utf-8'))
         if args.align_mode:
             cfg['cut']['align_mode'] = args.align_mode
+        if args.perception:
+            cfg.setdefault('perception', {}).update(json.loads(args.perception))
         report['config'] = cfg
         stage = 'source provenance'
         scene = args.scene.resolve()
@@ -198,7 +203,8 @@ def main():
             instrumentation = dict(refused_candidates=world.refused_failures,
                                    event_log=world.event_log,
                                    truth_reads=world.truth.reads,
-                                   timing=world.timing_summary())
+                                   timing=world.timing_summary(),
+                                   perception=getattr(world, 'perc_log', []))
             # A duck-typed world without instrumentation contributes nothing rather than failing the report.
             if all(isinstance(v, (dict, list)) for v in instrumentation.values()):
                 report.update(instrumentation)

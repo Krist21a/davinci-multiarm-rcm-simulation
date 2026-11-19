@@ -1,0 +1,687 @@
+{
+  "run_id": "90b37a4a58a44dc29f4a6ee34d781654",
+  "started_at": "2026-11-18T20:53:18.753507+00:00",
+  "finished_at": "2026-11-18T21:10:01.663505+00:00",
+  "source_sha256": {
+    "scripts/vision/cut_perception.py": "1f6125b70ef97ae7",
+    "scripts/vision/run_perception_eval.py": "a16d62eea1126085",
+    "scripts/task/sim_world.py": "5ff4b8a7ae6472ea",
+    "scripts/task/run_cut_task.py": "d13bd97501c966a1",
+    "config/task/cut_task.json": "1fc0f7efeeb08e45"
+  },
+  "results": [
+    {
+      "kind": "scenario",
+      "scenario": "nominal",
+      "name": "perc_eval_nominal",
+      "success": true,
+      "state": "DONE",
+      "stats": {
+        "ticks": 17,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 16,
+            "median": 0.024626673200880873,
+            "p95": 0.04472454381872865,
+            "max": 0.04472454381872865
+          },
+          "tip_pos_err_m": {
+            "n": 16,
+            "median": 0.0017829530844193353,
+            "p95": 0.0019116294273074763,
+            "max": 0.0019116294273074763
+          },
+          "axis_err_rad": {
+            "n": 16,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 16,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 16,
+          "tip_valid_wrong": 0
+        },
+        "tension_proxy_correlation": -0.4773856586459763
+      }
+    },
+    {
+      "kind": "scenario",
+      "scenario": "occlusion_transient",
+      "name": "perc_eval_occlusion_transient",
+      "success": true,
+      "state": "DONE",
+      "stats": {
+        "ticks": 22,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 21,
+            "median": 0.024746397391555756,
+            "p95": 0.04472454381872865,
+            "max": 0.04472454381872865
+          },
+          "tip_pos_err_m": {
+            "n": 21,
+            "median": 0.0017819975817764512,
+            "p95": 0.0018806744551674091,
+            "max": 0.0019116294273074763
+          },
+          "axis_err_rad": {
+            "n": 21,
+            "median": 0.01824846645375089,
+            "p95": 0.021341359169021072,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 21,
+            "median": 0.4237226597166513,
+            "p95": 0.48209605883598927,
+            "max": 0.48209605883598927
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 21,
+          "tip_valid_wrong": 0
+        },
+        "tension_proxy_correlation": -0.19340142729325077
+      }
+    },
+    {
+      "kind": "scenario",
+      "scenario": "slip_regrasp",
+      "name": "perc_eval_slip_regrasp",
+      "success": true,
+      "state": "DONE",
+      "stats": {
+        "ticks": 22,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 21,
+            "median": 0.024389433477849488,
+            "p95": 0.02721207437256913,
+            "max": 0.04433311296123157
+          },
+          "tip_pos_err_m": {
+            "n": 21,
+            "median": 0.0018386372041573461,
+            "p95": 0.0019116294273074763,
+            "max": 0.0020725781848865573
+          },
+          "axis_err_rad": {
+            "n": 21,
+            "median": 0.01888736680866019,
+            "p95": 0.022210411105625414,
+            "max": 0.023913475033441142
+          },
+          "direction_err_rad": {
+            "n": 21,
+            "median": 0.42429193884981853,
+            "p95": 0.425740842759008,
+            "max": 0.42886023849765686
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 21,
+          "tip_valid_wrong": 1
+        },
+        "tension_proxy_correlation": -0.37681349693096966
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "depth_noise_m",
+      "key": "depth_noise_m",
+      "value": 0.0,
+      "runs": 1,
+      "success": true,
+      "stats": {
+        "ticks": 17,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 16,
+            "median": 0.024626673200880873,
+            "p95": 0.04472454381872865,
+            "max": 0.04472454381872865
+          },
+          "tip_pos_err_m": {
+            "n": 16,
+            "median": 0.0017829530844193353,
+            "p95": 0.0019116294273074763,
+            "max": 0.0019116294273074763
+          },
+          "axis_err_rad": {
+            "n": 16,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 16,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 16,
+          "tip_valid_wrong": 0
+        },
+        "tension_proxy_correlation": -0.4773856586459763
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "depth_noise_m",
+      "key": "depth_noise_m",
+      "value": 0.0005,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.022710928017133473,
+            "p95": 0.02621109487978286,
+            "max": 0.027169160465341558
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.0019449312445419817,
+            "p95": 0.003009524012459981,
+            "max": 0.0038824452210244114
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.019429670841222105,
+            "p95": 0.04104897797267916,
+            "max": 0.04954299749340552
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.4243811919721992,
+            "p95": 0.4285032370598271,
+            "max": 0.42873860316216983
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 20
+        },
+        "tension_proxy_correlation": -0.12680862295176135
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "depth_noise_m",
+      "key": "depth_noise_m",
+      "value": 0.001,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.023963554119515982,
+            "p95": 0.026903355132238377,
+            "max": 0.027357384576110515
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.002360074466007342,
+            "p95": 0.0037960303056986454,
+            "max": 0.00495895289209932
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.02322429478079696,
+            "p95": 0.05362258695697521,
+            "max": 0.06062370674473227
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.4265948574797773,
+            "p95": 0.431899929754632,
+            "max": 0.43236971766595683
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 36
+        },
+        "tension_proxy_correlation": -0.13923239169024934
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "depth_noise_m",
+      "key": "depth_noise_m",
+      "value": 0.002,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.024423414196369307,
+            "p95": 0.027154764620725382,
+            "max": 0.027603395460021916
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.00284662342972689,
+            "p95": 0.015427466306080306,
+            "max": 0.01556800982457072
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.04157808281309442,
+            "p95": 0.14246134507919606,
+            "max": 0.15439167187195843
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.43256948353990465,
+            "p95": 0.43845535684850123,
+            "max": 0.4401859328369061
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 33
+        },
+        "tension_proxy_correlation": -0.32312236813759737
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "trans_m",
+      "key": "camera_pose_error.trans_m",
+      "value": 0.0,
+      "runs": 1,
+      "success": true,
+      "stats": {
+        "ticks": 17,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 16,
+            "median": 0.024626673200880873,
+            "p95": 0.04472454381872865,
+            "max": 0.04472454381872865
+          },
+          "tip_pos_err_m": {
+            "n": 16,
+            "median": 0.0017829530844193353,
+            "p95": 0.0019116294273074763,
+            "max": 0.0019116294273074763
+          },
+          "axis_err_rad": {
+            "n": 16,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 16,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 16,
+          "tip_valid_wrong": 0
+        },
+        "tension_proxy_correlation": -0.4773856586459763
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "trans_m",
+      "key": "camera_pose_error.trans_m",
+      "value": 0.001,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.02470963648242075,
+            "p95": 0.044525671922464954,
+            "max": 0.045616662109519944
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.001933617635663665,
+            "p95": 0.00275987473077418,
+            "max": 0.0028412716216745
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 24
+        },
+        "tension_proxy_correlation": -0.4773856586459762
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "trans_m",
+      "key": "camera_pose_error.trans_m",
+      "value": 0.002,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.024795674169516477,
+            "p95": 0.04434846221122668,
+            "max": 0.0465131691484771
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.0024679605671831576,
+            "p95": 0.003740621004374698,
+            "max": 0.0037982888469387755
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 32
+        },
+        "tension_proxy_correlation": -0.4773856586459762
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "rot_deg",
+      "key": "camera_pose_error.rot_deg",
+      "value": 0.0,
+      "runs": 1,
+      "success": true,
+      "stats": {
+        "ticks": 17,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 16,
+            "median": 0.024626673200880873,
+            "p95": 0.04472454381872865,
+            "max": 0.04472454381872865
+          },
+          "tip_pos_err_m": {
+            "n": 16,
+            "median": 0.0017829530844193353,
+            "p95": 0.0019116294273074763,
+            "max": 0.0019116294273074763
+          },
+          "axis_err_rad": {
+            "n": 16,
+            "median": 0.01824846645375089,
+            "p95": 0.022210411105625414,
+            "max": 0.022210411105625414
+          },
+          "direction_err_rad": {
+            "n": 16,
+            "median": 0.4237177677526133,
+            "p95": 0.4288631053859624,
+            "max": 0.4288631053859624
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 16,
+          "tip_valid_wrong": 0
+        },
+        "tension_proxy_correlation": -0.4773856586459763
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "rot_deg",
+      "key": "camera_pose_error.rot_deg",
+      "value": 1.0,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.02403855926641179,
+            "p95": 0.04581905710776442,
+            "max": 0.04688496696566271
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.0021453652483082886,
+            "p95": 0.003723932608781638,
+            "max": 0.004004051097905835
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.020853900568531963,
+            "p95": 0.034515286589531784,
+            "max": 0.03834238368036321
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.4259419126490938,
+            "p95": 0.4403459136737772,
+            "max": 0.4434405928367368
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 27
+        },
+        "tension_proxy_correlation": -0.4773856586459762
+      }
+    },
+    {
+      "kind": "sweep",
+      "factor": "rot_deg",
+      "key": "camera_pose_error.rot_deg",
+      "value": 2.0,
+      "runs": 3,
+      "success": true,
+      "stats": {
+        "ticks": 51,
+        "valid_rates": {
+          "tissue_valid": 1.0,
+          "cut_valid": 1.0,
+          "front_valid": 1.0,
+          "scissors_valid": 1.0,
+          "tension_valid": 1.0
+        },
+        "errors": {
+          "front_pos_err_m": {
+            "n": 48,
+            "median": 0.024093211635280085,
+            "p95": 0.04700673493455123,
+            "max": 0.049060890677557284
+          },
+          "tip_pos_err_m": {
+            "n": 48,
+            "median": 0.003188605747632453,
+            "p95": 0.005796376995064727,
+            "max": 0.0062416136074100355
+          },
+          "axis_err_rad": {
+            "n": 48,
+            "median": 0.030224840732345576,
+            "p95": 0.05124956527110324,
+            "max": 0.05561720145451189
+          },
+          "direction_err_rad": {
+            "n": 48,
+            "median": 0.42966259732312595,
+            "p95": 0.4569801535963979,
+            "max": 0.4580953002063955
+          },
+          "front_uv_err_px": {
+            "n": 0
+          }
+        },
+        "valid_but_wrong": {
+          "front_valid_wrong": 48,
+          "tip_valid_wrong": 44
+        },
+        "tension_proxy_correlation": -0.4773856586459762
+      }
+    }
+  ]
+}

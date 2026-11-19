@@ -24,11 +24,13 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'build'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'vision'))
 from cut_fsm import Observation, Target  # noqa: E402
 from ground_truth import GroundTruth  # noqa: E402
 from simtools import ENDO_CONFIG, INSTRUMENT_SCENE, aliases, load_scene, matrix_to_np, read_json  # noqa: E402
 from visibility import depth_visible  # noqa: E402
 
+import cut_perception  # noqa: E402
 import tool_pose  # noqa: E402
 import workspace  # noqa: E402
 from workspace import H, NU, NV, PRETENSION  # noqa: E402
@@ -102,6 +104,17 @@ class SimWorld:
             if n in self.by:
                 sim.setObjectInt32Param(self.by[n], sim.objintparam_visibility_layer, 0)
         self.start()
+        # M4 shadow perception: staged markers + a logging-only estimator. The estimate reads only
+        # the already-acquired image/depth and is appended to the report; it never feeds control.
+        self.perc_cfg = cfg.get('perception') or {}
+        self.perc_mode = self.perc_cfg.get('mode', 'off')
+        self.perc_rng = np.random.default_rng(self.perc_cfg.get('seed', 0))
+        self.perc_log = []
+        self._perc_estimator = None
+        self._marker_tcp_len = None
+        self.markers = []
+        if self.perc_cfg.get('markers', True):
+            self._create_markers()
 
     # -- helpers ----------------------------------------------------------------------------------------------
     def _time(self, name, fn, *a):
@@ -276,6 +289,69 @@ class SimWorld:
         visible = depth_visible(self.depth, uv, pc[2], tol=tol, window=window, min_clear=min_clear)
         return visible, float(offset)
 
+    # -- M4: shadow perception (logged next to truth, never used for control) ----------------------
+    def _create_markers(self):
+        """Two small colour-marker spheres on the cutter's yaw housing, staged copy only.
+
+        Pure cyan/yellow are not in the scene palette; the spheres are static, non-respondable and
+        sit proud of the housing where the endoscope can see them without lying between the camera
+        and the cut front (the markers on/off trace check verifies the depth gates do not change).
+        """
+        yaw_h = self.by.get(f'{self.cutter}_dvrk_yaw_frame')
+        if yaw_h is None:
+            return
+        yaw = matrix_to_np(self.sim.getObjectMatrix(yaw_h, -1))
+        tcp = np.array(self.sim.getObjectPosition(self.by[f'{self.cutter}_tcp'], -1))
+        # Yaw-frame y is the shaft axis (frame() maps col1 to 'distal'); the TCP distance
+        # along it calibrates the tip offset.
+        self._marker_tcp_len = float(np.dot(tcp - yaw[:, 3], yaw[:, 1]))
+        for color, off in ((cut_perception.MARKER_DISTAL_RGB, cut_perception.MARKER_DISTAL_OFF),
+                           (cut_perception.MARKER_PROX_RGB, cut_perception.MARKER_PROX_OFF)):
+            h = self.sim.createPrimitiveShape(self.sim.primitiveshape_spheroid,
+                                              [2 * cut_perception.MARKER_RADIUS] * 3, 0)
+            self.sim.setShapeColor(h, None, self.sim.colorcomponent_ambient_diffuse, list(color))
+            # Emissive so the mask colour is lighting-independent (pure cyan/yellow pixels).
+            self.sim.setShapeColor(h, None, self.sim.colorcomponent_emission, list(color))
+            self.sim.setObjectInt32Param(h, self.sim.shapeintparam_static, 1)
+            self.sim.setObjectInt32Param(h, self.sim.shapeintparam_respondable, 0)
+            self.sim.setObjectParent(h, yaw_h, True)
+            self.sim.setObjectPosition(h, yaw_h, list(off))
+            self.markers.append(h)
+
+    def _perception_tick(self):
+        if self._perc_estimator is None:
+            rcm = np.array(self.arm_cfg[self.cutter]['rcm_world'], dtype=float)
+            self._perc_estimator = cut_perception.CutPerception(
+                self.W, self.H, self.f, self.far, rcm, tcp_len=self._marker_tcp_len)
+        rng = self.perc_rng
+        R_true, t_true = self.camera()
+        e = self.perc_cfg.get('camera_pose_error') or {}
+        R_est = cut_perception.rotvec(unit(rng.normal(size=3)) * math.radians(e.get('rot_deg', 0.0))) @ R_true
+        t_est = t_true + unit(rng.normal(size=3)) * e.get('trans_m', 0.0)
+        noise = self.perc_cfg.get('depth_noise_m', 0.0)
+        depth = self.depth if noise <= 0 else self.depth + rng.normal(0.0, noise, self.depth.shape)
+        est = self._perc_estimator.estimate(np.asarray(self.image, dtype=float), depth,
+                                            R_est, t_est, post_grasp=bool(self.grasped_points))
+        truth, errors = None, {}
+        if self.sheet_origin is not None:
+            tcp = self.truth.tcp(self.cutter)
+            truth = dict(cut_front=self.cut_front(),
+                         direction=(self.v.tolist() if getattr(self, 'v', None) is not None else None),
+                         tcp=tcp.tolist(), shaft_axis=unit(tcp - self._perc_estimator.rcm_world).tolist(),
+                         tension=self.cut_line_tension())
+            cut, scis = est.get('cut') or {}, est.get('scissors') or {}
+            if cut.get('front_valid'):
+                errors['front_pos_err_m'] = float(np.linalg.norm(
+                    np.asarray(cut['front']) - np.asarray(truth['cut_front'])))
+            if cut.get('valid') and truth['direction'] is not None:
+                errors['direction_err_rad'] = float(math.acos(float(np.clip(
+                    np.asarray(cut['direction']) @ np.asarray(truth['direction']), -1, 1))))
+            if scis.get('valid'):
+                errors['tip_pos_err_m'] = float(np.linalg.norm(np.asarray(scis['tip']) - tcp))
+                errors['axis_err_rad'] = float(math.acos(float(np.clip(
+                    np.asarray(scis['axis']) @ np.asarray(truth['shaft_axis']), -1, 1))))
+        self.perc_log.append(dict(tick=self.tick, estimate=est, truth=truth, errors=errors))
+
     # Ground-truth sensing reads; the implementations live in GroundTruth (scripts/task/ground_truth.py)
     # and count themselves for the report's truth_reads.
     def cut_front(self):
@@ -322,6 +398,14 @@ class SimWorld:
         self.tick += 1
         self._events()
         self.render()
+        if self.perc_mode == 'shadow':
+            try:
+                self._perception_tick()
+            except Exception as exc:
+                import traceback
+                self.event_log.append(dict(tick=self.tick, event='perception_error',
+                                           error=f'{type(exc).__name__}: {exc}',
+                                           trace=traceback.format_exc(limit=6)))
         if self.sheet_origin is None:
             cut_vis, offset = False, None
         else:
