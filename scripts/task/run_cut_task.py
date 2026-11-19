@@ -167,7 +167,8 @@ def main():
                 nodes_sha = hashlib.sha256(np.asarray(world.call('tissueNodes'), dtype=float)
                                            .tobytes()).hexdigest()[:16]
                 trace.append(dict(tick=world.tick, tension=obs.tension, cut_length_m=obs.cut_length_m,
-                                  nodes_sha256=nodes_sha))
+                                  nodes_sha256=nodes_sha,
+                                  protected_mm=getattr(world, 'last_protected', None)))
                 return obs
             world.observe = traced_observe
             report['trace'] = trace
@@ -204,7 +205,11 @@ def main():
                                    event_log=world.event_log,
                                    truth_reads=world.truth.reads,
                                    timing=world.timing_summary(),
-                                   perception=getattr(world, 'perc_log', []))
+                                   perception=getattr(world, 'perc_log', []),
+                                   # Model distances in the synthetic scene, NOT clinical
+                                   # safety distances.
+                                   protected_min_mm=world.protected_min()
+                                   if hasattr(world, 'protected_min') else {})
             # A duck-typed world without instrumentation contributes nothing rather than failing the report.
             if all(isinstance(v, (dict, list)) for v in instrumentation.values()):
                 report.update(instrumentation)

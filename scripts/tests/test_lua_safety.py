@@ -332,6 +332,29 @@ class LuaSafetyTests(unittest.TestCase):
             assert(arms[2].failures==1);assert(arms[2].collisionBlocks==0)
         """)
 
+    def test_tissue_explicit_nodes_follow_geometry(self):
+        self.lua("""
+            -- Curved node geometry (the prostate-proxy ROI path): the 3x2 grid is bent around a
+            -- cylinder of radius r, so the i-chord differs from the flat `spacing` pitch.
+            local r=0.01
+            local nodes={}
+            for j=0,1 do for i=0,2 do
+                local a=(i-1)*0.3
+                nodes[j*3+i+1]={r*math.sin(a),j*0.001,r*(1-math.cos(a))}
+            end end
+            tissueCreate{nu=3,nv=2,nodes=nodes,spacing=0.001,pretension=0.1,anchor_sides=false,
+                         iterations=0,damping=0}
+            eq(#T.x,6)
+            eq(T.x[1][1],nodes[1][1]);eq(T.x[6][3],nodes[6][3])
+            local p0,p1=T.x[1],T.x[2]
+            local chord=math.sqrt((p1[1]-p0[1])^2+(p1[2]-p0[2])^2+(p1[3]-p0[3])^2)
+            assert(math.abs(chord-2*r*math.sin(0.15))<1e-12)
+            assert(chord>0.001, 'curved chord must differ from the flat pitch to discriminate')
+            assert(math.abs(T.springs[1].rest-chord*0.9)<1e-12,
+                   'rest must follow the supplied geometry incl. pretension')
+            assert(T.pinned[4]~=nil and T.pinned[1]==nil,'far-row anchoring unchanged')
+        """)
+
 
 if __name__ == '__main__':
     unittest.main()

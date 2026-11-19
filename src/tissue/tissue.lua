@@ -81,7 +81,10 @@ function tissueCreate(spec)
     local function id(i,j) return j*nu+i+1 end
     for j=0,nv-1 do for i=0,nu-1 do
         local k=id(i,j)
-        local p=vadd(spec.origin,vadd(vmul(spec.u,(i-(nu-1)/2)*h),vmul(spec.v,j*h)))
+        -- Optional explicit node geometry (e.g. the curved prostate-proxy ROI): rest lengths
+        -- below already come from T.x, so they follow the supplied surface. h stays the
+        -- nominal pitch for the anchor/grasp logic; the flat path is unchanged.
+        local p=spec.nodes and v3(spec.nodes[k]) or vadd(spec.origin,vadd(vmul(spec.u,(i-(nu-1)/2)*h),vmul(spec.v,j*h)))
         T.x[k]=p;T.prev[k]=v3(p)
         -- Side anchors start at row spec.anchor_from_row (default 1): a pinned corner on the free near edge
         -- concentrates the pre-tension in one constraint (it tore at 53 % strain before any cut in the first

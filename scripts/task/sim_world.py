@@ -62,8 +62,24 @@ class SimWorld:
         self.ever_grasped = set()
         self.event_log = []
         self.timing = {}
-        rcm_file = ENDO_CONFIG.parent / 'instruments' / 'rcm_config.json'      # written with the scene by install
-        self.rcm = read_json(rcm_file if rcm_file.exists() else ENDO_CONFIG / 'rcm_config.json')
+        # Scene-keyed config: config/scenes/<scene_stem>/ overrides the global instrument config
+        # for scenes built with their own port/anatomy data; existing scenes fall back unchanged.
+        scene = getattr(args, 'scene', INSTRUMENT_SCENE)
+        self.scene_cfg_dir = ENDO_CONFIG.parent / 'scenes' / Path(scene).stem
+        rcm_file = self.scene_cfg_dir / 'rcm_config.json'
+        if not rcm_file.exists():
+            self.scene_cfg_dir = None
+            rcm_file = ENDO_CONFIG.parent / 'instruments' / 'rcm_config.json'   # written by install
+            if not rcm_file.exists():
+                rcm_file = ENDO_CONFIG / 'rcm_config.json'
+        self.rcm = read_json(rcm_file)
+        self.roi_proxy = None
+        self.anatomy_transform = None
+        if self.scene_cfg_dir is not None:
+            for key, fname in (('roi_proxy', 'roi_proxy.json'), ('anatomy_transform', 'anatomy_transform.json')):
+                p = self.scene_cfg_dir / fname
+                if p.exists():
+                    setattr(self, key, read_json(p))
         self.task = read_json(ENDO_CONFIG / 'task.json')
         self.endo = read_json(ENDO_CONFIG / 'endoscope.json')
         self.index = {a['arm']: i for i, a in enumerate(self.rcm, 1)}
@@ -110,6 +126,8 @@ class SimWorld:
         self.perc_mode = self.perc_cfg.get('mode', 'off')
         self.perc_rng = np.random.default_rng(self.perc_cfg.get('seed', 0))
         self.perc_log = []
+        self.protected_log = []
+        self.last_protected = {}
         self._perc_estimator = None
         self._marker_tcp_len = None
         self.markers = []
@@ -385,13 +403,82 @@ class SimWorld:
         self.steps(1)
 
     def place_sheet(self):
-        f = self.frame(self.cutter)
-        L = workspace.layout(f['pivot'], f['x'], f['axis'], f['tcp'])
-        self.v, self.u, self.sheet_origin, self.grasp_points = L['v'], L['u'], L['origin'], L['grasp_points']
-        self.call('tissueCreate', dict(origin=self.sheet_origin.tolist(), u=self.u.tolist(), v=self.v.tolist(), nu=NU, nv=NV,
-                                       spacing=H, pretension=self.pretension, anchor_sides=self.mode == 'cut_only',
-                                       anchor_from_row=3, grasp_radius=GRASP_RADIUS_M))
+        if self.roi_proxy is not None:
+            # Synthetic proxy ROI (M3b): curved sheet on the +2 mm prostate offset surface.
+            # Same grid and anchoring as the flat sheet; explicit nodes bypass workspace.layout.
+            rp = self.roi_proxy
+            nodes = np.asarray(rp['nodes_m'], float).reshape(NV, NU, 3)
+            self.v, self.u = np.asarray(rp['v'], float), np.asarray(rp['u'], float)
+            self.sheet_origin = nodes[0, (NU - 1) // 2]
+            self.grasp_points = {k: np.asarray(g, float) for k, g in rp['grasp_m'].items()}
+            self.call('tissueCreate', dict(nodes=nodes.reshape(-1, 3).tolist(), nu=NU, nv=NV,
+                                           spacing=H, pretension=self.pretension,
+                                           anchor_sides=self.mode == 'cut_only',
+                                           anchor_from_row=3, grasp_radius=GRASP_RADIUS_M))
+        else:
+            f = self.frame(self.cutter)
+            L = workspace.layout(f['pivot'], f['x'], f['axis'], f['tcp'])
+            self.v, self.u, self.sheet_origin, self.grasp_points = \
+                L['v'], L['u'], L['origin'], L['grasp_points']
+            self.call('tissueCreate', dict(origin=self.sheet_origin.tolist(), u=self.u.tolist(), v=self.v.tolist(),
+                                           nu=NU, nv=NV, spacing=H, pretension=self.pretension,
+                                           anchor_sides=self.mode == 'cut_only',
+                                           anchor_from_row=3, grasp_radius=GRASP_RADIUS_M))
         self.steps(30)
+
+    # Protected-structure monitor (M3b): KD-trees of the rigid anatomy meshes in world
+    # coordinates, built once. Per tick, the minimum distance from every instrument TCP and
+    # sampled wrist->TCP distal segment to each structure. MODEL DISTANCES ONLY -- these are
+    # mesh-vertex distances in the synthetic scene, not clinical safety distances. The values
+    # are logged for the report and never influence control.
+    PROTECTED = ('Patient_Bladder', 'Patient_Rectum', 'Patient_Prostate',
+                 'Patient_LeftUreter', 'Patient_RightUreter',
+                 'Patient_LeftHipBone', 'Patient_RightHipBone', 'Patient_Sacrum')
+
+    def _protected_trees(self):
+        if getattr(self, '_ptrees', None) is not None:
+            return self._ptrees
+        from scipy.spatial import cKDTree
+        self._ptrees = {}
+        for name in self.PROTECTED:
+            if name not in self.by:
+                continue
+            V = np.asarray(self.sim.getShapeMesh(self.by[name])[0], float).reshape(-1, 3)
+            M = matrix_to_np(self.sim.getObjectMatrix(self.by[name], -1))
+            self._ptrees[name] = cKDTree(V @ M[:, :3].T + M[:, 3])
+        return self._ptrees
+
+    def _protected_tick(self):
+        try:
+            trees = self._protected_trees()
+            if not trees:
+                return
+            pts = []
+            for a in self.rcm:
+                arm = a['arm']
+                if f'{arm}_joint9' in self.by and f'{arm}_tcp' in self.by:
+                    wrist = np.asarray(self.sim.getObjectPosition(self.by[arm + '_joint9'], -1))
+                    tcp = np.asarray(self.sim.getObjectPosition(self.by[arm + '_tcp'], -1))
+                    pts += [wrist + t * (tcp - wrist) for t in np.linspace(0, 1, 6)]
+                elif a['shaft_frame'] in self.by:
+                    pts.append(np.asarray(self.sim.getObjectPosition(self.by[a['shaft_frame']], -1)))
+            P = np.asarray(pts)
+            self.last_protected = {n.split('_', 1)[1].lower(): float(t.query(P)[0].min())
+                                   for n, t in trees.items()}
+            self.protected_log.append(dict(tick=self.tick, **self.last_protected))
+        except Exception as exc:
+            self.event_log.append(dict(tick=self.tick, event='protected_monitor_error',
+                                       error=f'{type(exc).__name__}: {exc}'))
+            self._ptrees = {}
+
+    def protected_min(self):
+        """Per-structure minimum over the run (model distances, not clinical safety)."""
+        out = {}
+        for row in self.protected_log:
+            for k, v in row.items():
+                if k != 'tick':
+                    out[k] = min(v, out.get(k, v))
+        return out
 
     # -- World interface --------------------------------------------------------------------------------------
     def observe(self):
@@ -411,6 +498,7 @@ class SimWorld:
         else:
             cut_vis, offset = self.point_visible(self.cut_front())
         tip_vis, _ = self.point_visible(self.truth.tcp(self.cutter))
+        self._protected_tick()
         st = self.truth.tissue_stats()
         rs = self.call('getRCMStats')
         # A refused candidate increments the controller failure counter even though it rolled back; only
