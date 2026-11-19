@@ -178,9 +178,10 @@ def metrics(rows, wrong):
     return m
 
 
-def check(gate, results):
+def check(gate, results, dev_datasets):
     if gate['dataset'] == 'all':
-        vals = [results[ds]['none']['metrics'].get(gate['metric']) for ds in results if 'none' in results[ds]]
+        vals = [results[ds]['none']['metrics'].get(gate['metric']) for ds in dev_datasets
+                if 'none' in results.get(ds, {})]
         val = None if not vals or any(v is None for v in vals) else (sum(vals) if gate['op'] == '==' else max(vals))
     else:
         val = (results.get(gate['dataset'], {}).get(gate['degradation'], {}).get('metrics') or {}).get(gate['metric'])
@@ -198,10 +199,16 @@ def main():
     ap.add_argument('--degradations', nargs='*')
     ap.add_argument('--label', default='')
     ap.add_argument('--keep-rows', action='store_true', help='store per-tick records in the report')
+    ap.add_argument('--holdout', action='store_true',
+                    help='also replay the held-out datasets (only once the estimator is frozen)')
     a = ap.parse_args()
     protocol = json.loads(GATES.read_text(encoding='utf-8'))
     wrong = protocol['wrong_threshold_m']
-    datasets = a.datasets or protocol['datasets']
+    datasets = list(a.datasets or protocol['datasets'])
+    if a.holdout:
+        datasets += [d for d in protocol.get('holdout_datasets', []) if d not in datasets]
+    elif any(d in protocol.get('holdout_datasets', []) for d in datasets):
+        ap.error('held-out datasets need --holdout')
     degs = a.degradations or list(protocol['degradations'])
     results, sources = {}, {}
     for ds in datasets:
@@ -229,7 +236,10 @@ def main():
                   f"dir {m['direction_live_err_median_rad']} | rel vbw {m['relative_vbw_rate']}")
     gates = []
     for g in protocol['gates']:
-        val, status = check(g, results)
+        if g.get('holdout') and not a.holdout:
+            gates.append(dict(g, measured=None, status='NOT_RUN'))
+            continue
+        val, status = check(g, results, protocol['datasets'])
         gates.append(dict(g, measured=val, status=status))
         print(f"{g['id']:32s} {status:22s} measured={val} {g['op']} {g['value']}")
     src = ['scripts/vision/cut_perception.py', 'scripts/vision/replay_perception.py', 'config/perception/m5a_gates.json']
@@ -237,7 +247,8 @@ def main():
                   protocol=protocol, protocol_sha256=hashlib.sha256(GATES.read_bytes()).hexdigest(),
                   source_sha256={s: hashlib.sha256((ROOT / s).read_bytes()).hexdigest()[:16] for s in src},
                   datasets=sources, results=results, gates=gates,
-                  all_gates_passed=all(g['status'] == 'PASSED' for g in gates))
+                  holdout_evaluated=a.holdout,
+                  all_gates_passed=all(g['status'] == 'PASSED' for g in gates if g['status'] != 'NOT_RUN'))
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(report, indent=1), encoding='utf-8')
     print('report:', a.out, 'all gates passed:', report['all_gates_passed'])

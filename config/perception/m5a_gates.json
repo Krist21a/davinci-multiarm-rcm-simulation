@@ -1,6 +1,6 @@
 {
   "_note": "M5a perception acceptance protocol, pre-registered 2026-11-19 BEFORE the revised estimator is evaluated. Evaluated by scripts/vision/replay_perception.py on recorded shadow-mode frames (validation/perception/frames/<scenario>/). Simulation benchmark only; model quantities, not clinical accuracy. Thresholds must not be loosened after seeing results; a failed gate is reported as failed.",
-  "protocol_version": 1,
+  "protocol_version": 2,
   "wrong_threshold_m": 0.002,
   "definitions": {
     "tip_truth": "tcp_M[:3,3] of the cutter tcp (true sim pose)",
@@ -15,38 +15,441 @@
     "pre_sheet_false_positive": "tick with no sheet in the scene but cut.valid or cut.front_valid true"
   },
   "gates": [
-    {"id": "G1_tip_bias", "dataset": "nominal", "degradation": "none", "metric": "tip_err_median_m", "op": "<", "value": 0.0005},
-    {"id": "G2_tip_vbw", "dataset": "nominal", "degradation": "none", "metric": "tip_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G3_front_vbw", "dataset": "nominal", "degradation": "none", "metric": "front_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G4a_tip_availability", "dataset": "nominal", "degradation": "none", "metric": "tip_availability", "op": ">=", "value": 0.9},
-    {"id": "G4b_front_availability", "dataset": "nominal", "degradation": "none", "metric": "front_availability", "op": ">=", "value": 0.8,
-     "basis": "lower than tip: the blades can legitimately hide the slit apex in the image while the coarse truth gate (21 px window, 35 % clear) still calls the point visible"},
-    {"id": "G5_direction", "dataset": "nominal", "degradation": "none", "metric": "direction_live_err_median_rad", "op": "<", "value": 0.0873,
-     "basis": "5 deg"},
-    {"id": "G6_pre_sheet_fp", "dataset": "all", "degradation": "none", "metric": "pre_sheet_false_positives", "op": "==", "value": 0},
-    {"id": "G7a_occluded_front_not_wrong", "dataset": "occlusion_transient", "degradation": "none", "metric": "front_vbw_on_occluded", "op": "==", "value": 0},
-    {"id": "G7b_occluded_tip_not_wrong", "dataset": "occlusion_transient", "degradation": "none", "metric": "tip_vbw_on_occluded", "op": "==", "value": 0},
-    {"id": "G8a_front_vbw_slip", "dataset": "slip_regrasp", "degradation": "none", "metric": "front_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G8b_tip_vbw_slip", "dataset": "slip_regrasp", "degradation": "none", "metric": "tip_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G8c_front_vbw_relax", "dataset": "relax", "degradation": "none", "metric": "front_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G8d_tip_vbw_relax", "dataset": "relax", "degradation": "none", "metric": "tip_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G9a_depth_noise_front", "dataset": "nominal", "degradation": "depth_noise_m=0.001", "metric": "front_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G9b_depth_noise_tip", "dataset": "nominal", "degradation": "depth_noise_m=0.001", "metric": "tip_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G9c_pose_trans_relative", "dataset": "nominal", "degradation": "trans_m=0.001", "metric": "relative_vbw_rate", "op": "<", "value": 0.05},
-    {"id": "G9d_pose_rot_relative", "dataset": "nominal", "degradation": "rot_deg=1.0", "metric": "relative_vbw_rate", "op": "<", "value": 0.05}
+    {
+      "id": "G1_tip_bias",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "tip_err_median_m",
+      "op": "<",
+      "value": 0.0005
+    },
+    {
+      "id": "G2_tip_vbw",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G3_front_vbw",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G4a_tip_availability",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "tip_availability",
+      "op": ">=",
+      "value": 0.9
+    },
+    {
+      "id": "G4b_front_availability",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "front_availability",
+      "op": ">=",
+      "value": 0.8,
+      "basis": "lower than tip: the blades can legitimately hide the slit apex in the image while the coarse truth gate (21 px window, 35 % clear) still calls the point visible"
+    },
+    {
+      "id": "G5_direction",
+      "dataset": "nominal",
+      "degradation": "none",
+      "metric": "direction_live_err_median_rad",
+      "op": "<",
+      "value": 0.0873,
+      "basis": "5 deg"
+    },
+    {
+      "id": "G6_pre_sheet_fp",
+      "dataset": "all",
+      "degradation": "none",
+      "metric": "pre_sheet_false_positives",
+      "op": "==",
+      "value": 0
+    },
+    {
+      "id": "G7a_occluded_front_not_wrong",
+      "dataset": "occlusion_transient",
+      "degradation": "none",
+      "metric": "front_vbw_on_occluded",
+      "op": "==",
+      "value": 0
+    },
+    {
+      "id": "G7b_occluded_tip_not_wrong",
+      "dataset": "occlusion_transient",
+      "degradation": "none",
+      "metric": "tip_vbw_on_occluded",
+      "op": "==",
+      "value": 0
+    },
+    {
+      "id": "G8a_front_vbw_slip",
+      "dataset": "slip_regrasp",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G8b_tip_vbw_slip",
+      "dataset": "slip_regrasp",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G8c_front_vbw_relax",
+      "dataset": "relax",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G8d_tip_vbw_relax",
+      "dataset": "relax",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G9a_depth_noise_front",
+      "dataset": "nominal",
+      "degradation": "depth_noise_m=0.001",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G9b_depth_noise_tip",
+      "dataset": "nominal",
+      "degradation": "depth_noise_m=0.001",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G9c_pose_trans_relative",
+      "dataset": "nominal",
+      "degradation": "trans_m=0.001",
+      "metric": "relative_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "G9d_pose_rot_relative",
+      "dataset": "nominal",
+      "degradation": "rot_deg=1.0",
+      "metric": "relative_vbw_rate",
+      "op": "<",
+      "value": 0.05
+    },
+    {
+      "id": "H_occlusion_persistent_front_vbw",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_tip_vbw",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_occluded_front_not_wrong",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "front_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_occluded_tip_not_wrong",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "tip_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_pre_sheet_fp",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "pre_sheet_false_positives",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_tip_availability",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "tip_availability",
+      "op": ">=",
+      "value": 0.9,
+      "holdout": true
+    },
+    {
+      "id": "H_occlusion_persistent_front_availability",
+      "dataset": "holdout_occlusion_persistent",
+      "degradation": "none",
+      "metric": "front_availability",
+      "op": ">=",
+      "value": 0.8,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_front_vbw",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_tip_vbw",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_occluded_front_not_wrong",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "front_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_occluded_tip_not_wrong",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "tip_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_pre_sheet_fp",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "pre_sheet_false_positives",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_tip_availability",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "tip_availability",
+      "op": ">=",
+      "value": 0.9,
+      "holdout": true
+    },
+    {
+      "id": "H_nominal_shaft_front_availability",
+      "dataset": "holdout_nominal_shaft",
+      "degradation": "none",
+      "metric": "front_availability",
+      "op": ">=",
+      "value": 0.8,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_front_vbw",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "front_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_tip_vbw",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "tip_vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_occluded_front_not_wrong",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "front_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_occluded_tip_not_wrong",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "tip_vbw_on_occluded",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_pre_sheet_fp",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "pre_sheet_false_positives",
+      "op": "==",
+      "value": 0,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_tip_availability",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "tip_availability",
+      "op": ">=",
+      "value": 0.9,
+      "holdout": true
+    },
+    {
+      "id": "H_relax_large_front_availability",
+      "dataset": "holdout_relax_large",
+      "degradation": "none",
+      "metric": "front_availability",
+      "op": ">=",
+      "value": 0.8,
+      "holdout": true
+    }
   ],
   "degradations": {
-    "none": {"depth_noise_m": 0.0, "trans_m": 0.0, "rot_deg": 0.0, "seeds": [1]},
-    "depth_noise_m=0.0005": {"depth_noise_m": 0.0005, "trans_m": 0.0, "rot_deg": 0.0, "seeds": [1, 2, 3]},
-    "depth_noise_m=0.001": {"depth_noise_m": 0.001, "trans_m": 0.0, "rot_deg": 0.0, "seeds": [1, 2, 3]},
-    "depth_noise_m=0.002": {"depth_noise_m": 0.002, "trans_m": 0.0, "rot_deg": 0.0, "seeds": [1, 2, 3], "report_only": true},
-    "trans_m=0.001": {"depth_noise_m": 0.0, "trans_m": 0.001, "rot_deg": 0.0, "seeds": [1, 2, 3]},
-    "trans_m=0.002": {"depth_noise_m": 0.0, "trans_m": 0.002, "rot_deg": 0.0, "seeds": [1, 2, 3], "report_only": true},
-    "rot_deg=1.0": {"depth_noise_m": 0.0, "trans_m": 0.0, "rot_deg": 1.0, "seeds": [1, 2, 3]},
-    "rot_deg=2.0": {"depth_noise_m": 0.0, "trans_m": 0.0, "rot_deg": 2.0, "seeds": [1, 2, 3], "report_only": true}
+    "none": {
+      "depth_noise_m": 0.0,
+      "trans_m": 0.0,
+      "rot_deg": 0.0,
+      "seeds": [
+        1
+      ]
+    },
+    "depth_noise_m=0.0005": {
+      "depth_noise_m": 0.0005,
+      "trans_m": 0.0,
+      "rot_deg": 0.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ]
+    },
+    "depth_noise_m=0.001": {
+      "depth_noise_m": 0.001,
+      "trans_m": 0.0,
+      "rot_deg": 0.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ]
+    },
+    "depth_noise_m=0.002": {
+      "depth_noise_m": 0.002,
+      "trans_m": 0.0,
+      "rot_deg": 0.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ],
+      "report_only": true
+    },
+    "trans_m=0.001": {
+      "depth_noise_m": 0.0,
+      "trans_m": 0.001,
+      "rot_deg": 0.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ]
+    },
+    "trans_m=0.002": {
+      "depth_noise_m": 0.0,
+      "trans_m": 0.002,
+      "rot_deg": 0.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ],
+      "report_only": true
+    },
+    "rot_deg=1.0": {
+      "depth_noise_m": 0.0,
+      "trans_m": 0.0,
+      "rot_deg": 1.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ]
+    },
+    "rot_deg=2.0": {
+      "depth_noise_m": 0.0,
+      "trans_m": 0.0,
+      "rot_deg": 2.0,
+      "seeds": [
+        1,
+        2,
+        3
+      ],
+      "report_only": true
+    }
   },
-  "datasets": ["nominal", "occlusion_transient", "slip_regrasp", "relax", "handover_tension"],
-  "report_only_datasets": ["handover_tension"],
+  "datasets": [
+    "nominal",
+    "occlusion_transient",
+    "slip_regrasp",
+    "relax",
+    "handover_tension"
+  ],
+  "report_only_datasets": [
+    "handover_tension"
+  ],
   "pooling": "Seeds of one degradation are pooled tick-wise before computing rates/medians. A gate whose denominator is 0 is FAILED (no evidence), not passed.",
-  "closed_loop_precondition": "M5b may close the loop only if every gate passes, or the user explicitly accepts a named failing gate."
+  "closed_loop_precondition": "M5b may close the loop only if every gate passes, or the user explicitly accepts a named failing gate.",
+  "_changelog": [
+    "v1 2026-11-19: initial gates; M4 baseline scored (validation/perception/m5a_eval_m4_baseline.json).",
+    "v2 2026-11-19, before ANY revised-estimator evaluation: added held-out datasets (different camera pose via CAMERA_ADJUST, shaft alignment = different wrist poses, large relax deformation). The estimator is developed on `datasets` only; holdout frames are not inspected or replayed until the estimator is frozen. v1 gates unchanged."
+  ],
+  "holdout_datasets": [
+    "holdout_occlusion_persistent",
+    "holdout_nominal_shaft",
+    "holdout_relax_large"
+  ],
+  "holdout_capture": {
+    "holdout_occlusion_persistent": "--scenario occlusion_persistent (tool_pose)",
+    "holdout_nominal_shaft": "--scenario nominal --align-mode shaft",
+    "holdout_relax_large": "--scenario relax_large (tool_pose)"
+  }
 }
