@@ -1,0 +1,140 @@
+{
+  "_note": "M5b closed-loop visual servo protocol for the cutter arm, pre-registered 2026-11-20 BEFORE any vision-control code exists or any vision-mode run. Simulation benchmark on the non-anatomical tissue sheet of scenes/davinci_si_articulated_verified.ttt; not clinical evidence. Criteria must not be loosened after seeing results; failures are reported as failures.",
+  "protocol_version": 1,
+  "precondition": "config/perception/m5a_acceptance.json (user accepted the eight M5a front-availability gate failures, condition: observe-before-act). Any estimator change voids it.",
+  "scope": {
+    "vision_controlled": [
+      "cut-site visibility / centring offset",
+      "scissors visibility",
+      "cutter alignment target (position + jaw axis + opening axis)",
+      "advance step size",
+      "stop decision (cut progress)",
+      "clear-and-look recovery trigger"
+    ],
+    "proprioception_allowed": "the robot's own joint state / forward kinematics (getObjectMatrix of the cutter tcp, frame(), getRCMStats, ECM camera pose). Not GroundTruth. The alignment move is RELATIVE: tcp_fk + (front_fix - 1 mm * dir_est) - tip_est, so a kinematic offset cancels.",
+    "truth_allowed_until_M6": "cut_line_tension (tension band, incl. the low-threshold switch after cut start), tissue_stats.grasped (instrument-side grasp signal)",
+    "truth_safety_monitor_only": "tissue_stats torn/max_strain, GroundTruth cut_length for the overcut supervisor and completion_issues (terminal acceptance). Reported separately; never a control input of the cutter.",
+    "out_of_scope_still_truth": "retractor grasp planning in localize() (cut_front visibility gate + node grasp points) and retract() held check; labelled 'retractor_planning'."
+  },
+  "design": {
+    "front_fix": "last valid front estimate (world) with its direction, sheet normal and progress; replaced by every fresh valid estimate; invalidated by any scissors closure, any retractor command (retract/grasp/release/takeover), any camera move, or age > vision.fix_max_age_ticks. Uncommanded injected disturbances (relax/slip) do NOT invalidate it: the controller cannot know of them.",
+    "observation": "vision mode: cut_site_visible = front fix valid; cut_site_offset = projection of the fix; scissors_visible = scissors estimate valid this tick; cut_progress_m = fix progress; tissue_visible = tissue plane valid this tick.",
+    "clear_view": "vision mode, any NEEDS_VIEW state: cut site unknown but scissors and tissue visible -> CLEAR_VIEW (all arms hold). Attempt 1: back off cut.clear_back_m along the jaw axis, jaws unchanged. Attempt 2: full cutter withdrawal if the jaws are closed, else a second back-off. Attempt 3: look only. Front known -> RESUME (attempt counter reset). More than budgets.clear_view_attempts consecutive attempts -> FAILED. Scissors not visible -> OCCLUDED (existing path).",
+    "align": "tool_pose: target from the fix and this tick's tip estimate; combined error = max(lateral distance of the fix from the estimated jaw line, |along gap - 1 mm|); move only if > cut.align_tolerance_m and return the pre-move error, so the next ALIGN tick verifies with a fresh tip estimate.",
+    "stop": "vision mode checks completion at ALIGN entry and at CUT entry on cut_progress_m >= cut.length_m, before any jaw opening.",
+    "strict_truth_boundary": "vision mode: GroundTruth raises on any read not inside a declared purpose (safety_monitor, grasp_signal_and_safety_monitor, tension_until_m6, retractor_planning, scoring)."
+  },
+  "new_parameters_set_before_runs": {
+    "cut.control_source": "truth (default) | vision",
+    "cut.clear_back_m": 0.003,
+    "vision.fix_max_age_ticks": 6,
+    "budgets.clear_view_attempts": 3,
+    "perception.camera_pose_error.mode": "per_tick (default, M5a semantics) | fixed (drawn once per run: a calibration bias)"
+  },
+  "unchanged": "all tension thresholds, align_tolerance_m 1.5 mm, advance_m 3 mm, length_m 9 mm, max_overcut_m 1 mm, every existing budget, collision envelopes and joint limits.",
+  "runs": [
+    {
+      "id": "V_nominal",
+      "args": "--mode full --scenario nominal --align-mode tool_pose --control-source vision --trace"
+    },
+    {
+      "id": "V_occlusion_transient",
+      "args": "--mode full --scenario occlusion_transient --align-mode tool_pose --control-source vision"
+    },
+    {
+      "id": "V_slip_regrasp",
+      "args": "--mode full --scenario slip_regrasp --align-mode tool_pose --control-source vision"
+    },
+    {
+      "id": "V_relax",
+      "args": "--mode full --scenario relax --align-mode tool_pose --control-source vision"
+    },
+    {
+      "id": "V_noise_depth_0p5",
+      "args": "nominal vision, perception depth_noise_m 0.0005, seed 1"
+    },
+    {
+      "id": "V_noise_depth_1p0",
+      "args": "nominal vision, perception depth_noise_m 0.001, seed 1"
+    },
+    {
+      "id": "V_cam_trans_1mm_fixed",
+      "args": "nominal vision, camera_pose_error trans_m 0.001 mode fixed, seed 1"
+    },
+    {
+      "id": "V_cam_rot_1deg_fixed",
+      "args": "nominal vision, camera_pose_error rot_deg 1.0 mode fixed, seed 1"
+    },
+    {
+      "id": "V_cam_trans_1mm_per_tick",
+      "args": "nominal vision, camera_pose_error trans_m 0.001 mode per_tick, seed 1",
+      "report_only": true
+    },
+    {
+      "id": "V_relax_large",
+      "args": "--scenario relax_large vision",
+      "report_only": true,
+      "expected": "FAILED (retraction budget), as in truth mode"
+    },
+    {
+      "id": "T_nominal_identity",
+      "args": "truth mode, same args as validation/task/m5a_trace_check.json",
+      "purpose": "control_source=truth must stay trace-identical to the reference"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "B0_truth_identity",
+      "run": "T_nominal_identity",
+      "check": "full per-tick trace identical to validation/task/m5a_trace_check.json"
+    },
+    {
+      "id": "B1_zero_control_truth_reads",
+      "run": "every V_* run",
+      "check": "no untagged GroundTruth read (strict mode never raised) and truth_reads_by_purpose has no untagged entry"
+    },
+    {
+      "id": "B2_done",
+      "run": "V_nominal, V_occlusion_transient, V_slip_regrasp, V_relax",
+      "check": "final DONE"
+    },
+    {
+      "id": "B3_cut_length",
+      "run": "every V_* run that ends DONE",
+      "check": "truth cut length in [length_m, length_m + max_overcut_m] = [9, 10] mm"
+    },
+    {
+      "id": "B4_no_tear",
+      "run": "every V_* run",
+      "check": "torn == 0"
+    },
+    {
+      "id": "B5_safe_outcome",
+      "run": "every V_* run",
+      "check": "DONE satisfying B3/B4, or FAILED by a fail-closed path (budget / refusal) with no overcut beyond max_overcut_m and no tear; never an overcut or tear"
+    },
+    {
+      "id": "B6_observe_before_act",
+      "run": "every V_* run",
+      "check": "every scissors closure is preceded, on the same tick, by a valid front fix of age <= fix_max_age_ticks and a valid scissors estimate"
+    },
+    {
+      "id": "B7_closure_alignment",
+      "run": "V_nominal and V_noise_* and V_cam_*_fixed (pooled)",
+      "check": "median truth lateral distance of the true cut front from the true jaw line at closure < align_tolerance_m (1.5 mm); scoring-only truth"
+    },
+    {
+      "id": "B8_noise_done_rate",
+      "run": "V_noise_depth_0p5, V_noise_depth_1p0, V_cam_trans_1mm_fixed, V_cam_rot_1deg_fixed",
+      "check": "report DONE count of 4; gate: >= 3 of 4 DONE, and all 4 satisfy B5"
+    }
+  ],
+  "reported_metrics": [
+    "ticks to DONE vs truth-mode reference",
+    "closed-loop fresh-front availability in ALIGN/CUT",
+    "CLEAR_VIEW entries and which attempt restored the view",
+    "front-fix age at each closure",
+    "truth cut length, overcut, max_strain",
+    "truth_reads_by_purpose"
+  ]
+}
