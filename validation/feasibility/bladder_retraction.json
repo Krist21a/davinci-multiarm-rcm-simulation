@@ -7152,5 +7152,2365 @@
     "abdominal-wall penetration measured vs the 30 mm inner shell dome (open surface; verts outside its footprint do not count)",
     "exploratory geometric feasibility only; no clinical claim"
   ],
-  "seconds": 144.0
+  "seconds": 144.0,
+  "protocol_v2": {
+    "reason": "v1 lacked tool-tool and motion-robustness criteria; its trio was found unrealisable in M3b (corridors 0.65-1.96 mm apart)",
+    "tool_sep_m": 0.012,
+    "inside_skip_m": 0.02,
+    "contact_zone_m": 0.012,
+    "ecm_sep_m": 0.014,
+    "motion_deg": 2.0,
+    "trio_rules": "v1 spacing/side/meeting rules PLUS tool-tool corridor, wrist separation, distal-vs-shaft and ECM-corridor checks, PLUS +-2 deg motion robustness with re-solved bend within theta_max(a)",
+    "score": "min over all checks of (clearance_m - required_m) and the three polylines anatomy margins",
+    "selection": "smallest magnitude 25..60 mm with >=1 admissible trio, then max score; targets scanned in v1 priority order (min-role desc, lateral tie-break)"
+  },
+  "v2": {
+    "table": [
+      {
+        "magnitude_mm": 25,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              9,
+              2,
+              4
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": -0.006193949930341138,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              0,
+              12,
+              11
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": null,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              0,
+              9,
+              1
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": null,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 30,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              17,
+              5,
+              6
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.01839559586651072,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              0,
+              27,
+              22
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": null,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              0,
+              3,
+              2
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": null,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              1,
+              18,
+              7
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": -0.005982868008168177,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 35,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              33,
+              20,
+              13
+            ],
+            "corridor_feasible": 4,
+            "motion_fail": 4,
+            "best_corridor_slack_m": 0.021186994551014474,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              4,
+              22,
+              15
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": -0.0018053995616926517,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              14,
+              43,
+              44
+            ],
+            "corridor_feasible": 20,
+            "motion_fail": 20,
+            "best_corridor_slack_m": 0.019624659427768042,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              1,
+              4,
+              2
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.032621851749916456,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              3,
+              30,
+              9
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": -0.0011569829768914661,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              5,
+              28,
+              20
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": -0.0019496176040331385,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              17,
+              15,
+              8
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.0014844379292116485,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 40,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              52,
+              34,
+              32
+            ],
+            "corridor_feasible": 28,
+            "motion_fail": 28,
+            "best_corridor_slack_m": 0.022200964419432184,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              11,
+              28,
+              24
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.0037875134252224156,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              25,
+              57,
+              68
+            ],
+            "corridor_feasible": 18,
+            "motion_fail": 18,
+            "best_corridor_slack_m": 0.01859178725552434,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              2,
+              4,
+              3
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.03311809382219731,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              14,
+              32,
+              26
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.007891554820898851,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              16,
+              32,
+              28
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.010895024447067591,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              24,
+              17,
+              14
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.002148634002231996,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 45,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              80,
+              49,
+              58
+            ],
+            "corridor_feasible": 3,
+            "motion_fail": 3,
+            "best_corridor_slack_m": 0.022200964419432184,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              16,
+              30,
+              36
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.016588267164934813,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              43,
+              63,
+              98
+            ],
+            "corridor_feasible": 139,
+            "motion_fail": 139,
+            "best_corridor_slack_m": 0.019641733171140274,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              4,
+              4,
+              3
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.03369822768559423,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              19,
+              38,
+              52
+            ],
+            "corridor_feasible": 2,
+            "motion_fail": 2,
+            "best_corridor_slack_m": 0.014958219951165592,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              19,
+              38,
+              49
+            ],
+            "corridor_feasible": 57,
+            "motion_fail": 57,
+            "best_corridor_slack_m": 0.018462633398907167,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              42,
+              24,
+              28
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.016516199444515416,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 50,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              95,
+              60,
+              87
+            ],
+            "corridor_feasible": 430,
+            "motion_fail": 430,
+            "best_corridor_slack_m": 0.021904805880757636,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              22,
+              38,
+              59
+            ],
+            "corridor_feasible": 139,
+            "motion_fail": 139,
+            "best_corridor_slack_m": 0.016588267164934813,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              72,
+              73,
+              129
+            ],
+            "corridor_feasible": 469,
+            "motion_fail": 469,
+            "best_corridor_slack_m": 0.02379581558882107,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              7,
+              4,
+              4
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.03405729793057058,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              24,
+              40,
+              74
+            ],
+            "corridor_feasible": 2,
+            "motion_fail": 2,
+            "best_corridor_slack_m": 0.014958219951165592,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              27,
+              46,
+              78
+            ],
+            "corridor_feasible": 136,
+            "motion_fail": 136,
+            "best_corridor_slack_m": 0.016479839937841283,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              56,
+              36,
+              38
+            ],
+            "corridor_feasible": 3,
+            "motion_fail": 3,
+            "best_corridor_slack_m": 0.016660528287950654,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 55,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              97,
+              68,
+              106
+            ],
+            "corridor_feasible": 593,
+            "motion_fail": 593,
+            "best_corridor_slack_m": 0.02187201356608721,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              37,
+              42,
+              74
+            ],
+            "corridor_feasible": 272,
+            "motion_fail": 272,
+            "best_corridor_slack_m": 0.016588267164934813,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              90,
+              76,
+              135
+            ],
+            "corridor_feasible": 480,
+            "motion_fail": 480,
+            "best_corridor_slack_m": 0.021128981981100452,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              8,
+              5,
+              5
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.03405729793057058,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              36,
+              45,
+              92
+            ],
+            "corridor_feasible": 22,
+            "motion_fail": 22,
+            "best_corridor_slack_m": 0.016949737117879844,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              43,
+              49,
+              96
+            ],
+            "corridor_feasible": 300,
+            "motion_fail": 300,
+            "best_corridor_slack_m": 0.01869050975018223,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              61,
+              44,
+              46
+            ],
+            "corridor_feasible": 2,
+            "motion_fail": 2,
+            "best_corridor_slack_m": 0.013850947967178954,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 60,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "attempted": [
+          {
+            "target": 0,
+            "sizes": [
+              97,
+              77,
+              115
+            ],
+            "corridor_feasible": 925,
+            "motion_fail": 925,
+            "best_corridor_slack_m": 0.022255265168698486,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 1,
+            "sizes": [
+              48,
+              47,
+              81
+            ],
+            "corridor_feasible": 283,
+            "motion_fail": 283,
+            "best_corridor_slack_m": 0.016724235920275898,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 2,
+            "sizes": [
+              97,
+              78,
+              139
+            ],
+            "corridor_feasible": 670,
+            "motion_fail": 670,
+            "best_corridor_slack_m": 0.021034200310041478,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 4,
+            "sizes": [
+              9,
+              5,
+              5
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.03405729793057058,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 5,
+            "sizes": [
+              44,
+              45,
+              101
+            ],
+            "corridor_feasible": 8,
+            "motion_fail": 8,
+            "best_corridor_slack_m": 0.014958219951165592,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 6,
+            "sizes": [
+              53,
+              49,
+              100
+            ],
+            "corridor_feasible": 196,
+            "motion_fail": 196,
+            "best_corridor_slack_m": 0.01706294948815185,
+            "admissible": 0,
+            "best_score_m": null
+          },
+          {
+            "target": 7,
+            "sizes": [
+              63,
+              52,
+              54
+            ],
+            "corridor_feasible": 0,
+            "motion_fail": 0,
+            "best_corridor_slack_m": 0.013850947967178954,
+            "admissible": 0,
+            "best_score_m": null
+          }
+        ]
+      }
+    ],
+    "selected_magnitude_mm": null,
+    "seconds": 210.9,
+    "search": "exhaustive (all v2 constraints unary or pairwise; trio max via slack matrices, motion-gated in descending score order)",
+    "source_sha256": {
+      "scripts/analysis/bladder_retraction_v2.py": "b8f3b84317b999f02594dfc7e20d4bd475269a30c54903220592a9c26b0dac30"
+    }
+  },
+  "port_plan_v2": null,
+  "protocol_v3": {
+    "reason": "v1/v2 sent all three tools to one tip point and used a generic +-2 deg pivot; the task puts retractor tips on the two grasp points and moves the scissors along the cut, so the required motion is the task envelope",
+    "envelopes": {
+      "cut": "cut_start + k*v + l*u, k=-1..11 mm (9 mm cut + 1 mm overcut + 1 mm), l in {-1.5,0,1.5} mm",
+      "retractors": "grasp nodes n[NV//2,1]/n[NV//2,NU-2] + s*(outward u), s=-1.5..+3.0 mm step 0.5"
+    },
+    "qualification": "port qualifies iff every envelope sample has a clear polyline (bend<=theta_max(a), arc 60-220 mm, 6 mm radius, original exclusions); clearance-maximising W per sample",
+    "trio_rules": "v1 spacing/ECM/meeting at nominal samples (cut at +5 mm v, retractors at grasp nodes); v2 tool-tool clearances at nominal AND envelope extremes (cut both v-ends x all laterals x max pull); PSM-vs-ECM 14 mm idem",
+    "score": "min over all evaluated checks of (clearance - required), including each port worst envelope anatomy margin and worst ECM-corridor slack",
+    "selection": "smallest magnitude 25..60 mm with >=1 admissible trio, then max score, tie -> target nearest lateral mid-gland"
+  },
+  "v3": {
+    "table": [
+      {
+        "magnitude_mm": 25,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  2,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  2
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  3,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  4,
+                  0,
+                  8
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 30,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  3,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  2
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  4
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  9,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  8,
+                  0,
+                  11
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  6
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  1,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  1,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  2,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  8
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  2
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  7,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 35,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  6,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  3
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  1,
+                  0,
+                  18
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  2,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  23,
+                  0,
+                  2
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  11,
+                  0,
+                  21
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  21
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  3,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  2,
+                  0,
+                  1
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  6,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  3,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  15
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  10
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  3,
+                  13,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 40,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  8,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  3
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  8,
+                  0,
+                  37
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  18,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  40,
+                  0,
+                  7
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  14,
+                  0,
+                  41
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  36
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  19,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  2,
+                  0,
+                  11
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  23,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  16,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  39
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  33
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  15,
+                  20,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 45,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  12,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  4
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  20,
+                  0,
+                  66
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  32,
+                  0,
+                  6
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  64,
+                  0,
+                  11
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  19,
+                  0,
+                  72
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  61
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  40,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  4,
+                  0,
+                  26
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  35,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  34,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  65
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  55
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  28,
+                  24,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 50,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  21,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  6
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  36,
+                  0,
+                  106
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  54,
+                  0,
+                  25
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  96,
+                  0,
+                  20
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  31,
+                  0,
+                  111
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  111
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  60,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  8,
+                  0,
+                  65
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  68,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  51,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  103
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  97
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  51,
+                  28,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 55,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  30,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  7
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  59,
+                  0,
+                  122
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  77,
+                  0,
+                  64
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  107,
+                  0,
+                  27
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  33,
+                  0,
+                  150
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  140
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  86,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  11,
+                  0,
+                  94
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  90,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  69,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  120
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  118
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  71,
+                  35,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "magnitude_mm": 60,
+        "admissible_targets": [],
+        "best_score_m": null,
+        "per_target": [
+          {
+            "target": 4,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  33,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  8
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 2,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  77,
+                  0,
+                  126
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  86,
+                  0,
+                  94
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 0,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  107,
+                  0,
+                  35
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  36,
+                  0,
+                  158
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 5,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  147
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  94,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 7,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  13,
+                  0,
+                  119
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  94,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 1,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  85,
+                  0,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  0,
+                  0,
+                  121
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          },
+          {
+            "target": 6,
+            "best_score_m": null,
+            "attempted": [
+              {
+                "sizes": [
+                  0,
+                  0,
+                  121
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": 1.0
+              },
+              {
+                "sizes": [
+                  85,
+                  40,
+                  0
+                ],
+                "corridor_feasible": 0,
+                "motion_v2_pass": 0,
+                "best_score_m": null,
+                "v_side": -1.0
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "selected_magnitude_mm": null,
+    "seconds": 878.9,
+    "source_sha256": {
+      "scripts/analysis/bladder_retraction_v3.py": "6b4269c3fbda0af7fdb57b94b69e233f98939ef00f2e956c97bc9f68ebbc6b06"
+    }
+  },
+  "port_plan_v3": null
 }
