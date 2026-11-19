@@ -1,62 +1,94 @@
-"""Shadow-mode perception for the tissue-cutting task (M4).
+"""Shadow-mode perception for the tissue-cutting task (M4/M5a).
 
-Pure numpy: no simulator imports, so the same code runs live inside SimWorld.observe() and
-offline in unit tests. The estimator consumes the ALREADY-ACQUIRED endoscope RGB and depth
-plus an assumed camera pose (which may carry a seeded calibration error) and returns an
-estimate for every field together with a validity flag and a reason. Nothing here is ever
-used for control.
+Pure numpy + scipy.ndimage: no simulator imports, so the same code runs live inside
+SimWorld.observe() and offline in unit tests / replay_perception.py. The estimator
+consumes the ALREADY-ACQUIRED endoscope RGB and depth plus an assumed camera pose
+(which may carry a seeded calibration error) and returns an estimate for every field
+together with a validity flag and a reason. Nothing here is ever used for control.
 
-Reused math: the pinhole back-projection, the colour mask, the sphere-radius lift of a
-partially seen ball and the rotvec perturbation mirror scripts/vision/visual_servo_task.py
-(Endoscope.grab/locate/mask). That class is coupled to the live sim object, so importing it
-in a numpy-only module is impractical; the formulas are duplicated here deliberately.
+Fail closed: an uncertain field is invalid with a reason, never a confident wrong value.
 
 Scene model
 -----------
-* Tissue: flat-coloured sheet (TISSUE_RGB, same constant as sim_world.py / tissue.lua).
-  Points are back-projected and a plane is fitted (centroid, normal, two principal in-plane
-  axes). "Near edge" is the sheet end whose image midpoint is closest to the projected
-  scissors markers — the side the instrument enters from (documented, deterministic).
-* Cut: before any slit is visible, the cut start is the midpoint of the near edge and the
-  direction is the in-plane principal axis that best matches the marker-derived approach
-  direction (projected onto the sheet plane). Once a slit exists it is found as non-tissue
-  pixels enclosed by the closed tissue mask (morphological fill-holes), restricted to a
-  band around the nominal cut line; its 3-D geometry is taken on the fitted PLANE (slit
-  pixels have no valid tissue depth — the depth buffer shows whatever is behind the gap).
-* Scissors: two marker spheres (cyan distal, yellow proximal) parented to the cutter yaw
-  frame at MARKER_DISTAL_OFF / MARKER_PROX_OFF, sharing the same lateral direction so the
-  line through them is parallel to the shaft axis. The shaft axis line itself is recovered
-  with the RCM point as a robot-calibration prior (config geometry, not tissue truth): the
-  lateral offset direction is the marker-to-axis rejection at the distal marker. The TCP is
-  then distal_marker + along_axis*(L_tcp - distal_z) - r_lat*latdir.
-* Tension proxy: robust in-plane tissue width (p95 - p5 of the coordinate across the cut
-  line) inside a middle band along the cut direction, normalised by the first width seen
-  after the grasp frame (post_grasp flag supplied by the caller). Also the slit opening
-  width measured next to the front.
+* Tissue: chromatic sheet mask (B > G + 5 and R > B + 30 on 0..255 pixels — pink stands
+  out against the orange/brown anatomy that flooded the M4 RGB distance mask) filtered
+  by a connected-component size floor, then a robust plane fit (iterative residual
+  gating) on the masked depth points.
+* Scissors: three marker spheres (cyan distal, yellow proximal, magenta lateral) parented
+  to the cutter yaw frame at MARKER_*_OFF. A Kabsch fit of the yaw-frame offsets to the
+  recovered sphere centres gives the full yaw pose (the third, non-collinear marker fixes
+  roll); the TCP and jaw axis come from the instrument calibration tcp_local /
+  jaw_axis_local. Fit RMS must be under FIT_RMS_MAX_M or the field is invalid.
+* Cut geometry is measured in the sheet plane's coordinates. The long in-plane axis is
+  the sheet width; the cut-direction prior is the in-plane perpendicular, pointing from
+  the near (free) long edge — the edge closer to the estimated tip at the first tick the
+  tip is valid. The choice is remembered. Pre-cut, the front is the near-edge midpoint
+  (valid only with tissue evidence there). Once cut, the slit is the run of non-sheet,
+  behind-plane pixels inside the sheet outline, in a lateral band around the cut line,
+  connected to the near edge; the front is the slit apex. The apex must be followed by
+  visible intact tissue — if whatever lies ahead is covered by something in front of the
+  plane, or not seen, front_valid is False. A slit run >= SLIT_UPDATE_M refits the cut
+  line position and direction from the slit itself (within 20 deg of the prior).
+* Tension proxy: robust in-plane tissue width (p95 - p5 across the cut direction) inside
+  a middle band, normalised by the first width seen after the grasp frame.
 
 Marker constants are measured on scenes/davinci_si_articulated_verified.ttt; see
-SimWorld._create_markers for the staged creation.
+SimWorld._create_markers for the staged creation. tcp_local / jaw_axis_local are the
+yaw-frame coordinates of the TCP position and the jaw pointing axis (rigid: verified
+constant to <1e-15 m on the nominal dump).
 """
+import math
+
 import numpy as np
 
 TISSUE_RGB = (0.86, 0.42, 0.48)          # sim_world.TISSUE_RGB / tissue.lua sheet colour
 MARKER_DISTAL_RGB = (0.0, 1.0, 1.0)      # pure cyan — not present in the scene palette
 MARKER_PROX_RGB = (1.0, 1.0, 0.0)        # pure yellow — not present in the scene palette
+MARKER_THIRD_RGB = (1.0, 0.0, 1.0)       # pure magenta — not present in the scene palette
 MARKER_RADIUS = 0.0012                   # sphere radius, metres
 
 # Yaw-frame offsets: local +y is the SHAFT axis (toward the TCP), x/z are lateral.
 # Verified on the articulated scene: SimWorld.frame() maps yaw col1 -> 'distal' (shaft),
 # col2 -> the jaw/hinge axis. The -z lateral faces the endoscope in the home/cutting poses
-# (probed: x-offsets sit behind the housing silhouette, -z slivers stay visible), so both
-# markers ride 5 mm off-axis along -z, proud of the housing.
+# (probed: x-offsets sit behind the housing silhouette, -z slivers stay visible), so all
+# markers ride 5 mm off-axis along -z, proud of the housing. The third marker breaks the
+# marker line's collinearity so a Kabsch fit recovers yaw-frame roll (M5a).
 MARKER_DISTAL_OFF = (0.0, -0.012, -0.005)  # 12 mm behind the TCP along the shaft
 MARKER_PROX_OFF = (0.0, -0.024, -0.005)    # 12 mm further up the housing
+MARKER_THIRD_OFF = (0.004, -0.018, -0.005)   # lateral, mid-housing: min 66 px over all nominal ticks
+                                           # (probe: -x side hides behind the housing silhouette)
+MARKER_OFFS = (MARKER_DISTAL_OFF, MARKER_PROX_OFF, MARKER_THIRD_OFF)
+MARKER_COLOURS = (MARKER_DISTAL_RGB, MARKER_PROX_RGB, MARKER_THIRD_RGB)
 
-MIN_TISSUE_PX = 30
+MIN_TISSUE_PX = 80                       # masked tissue pixels to accept a sheet at all
+                                         # (~1000 px uncovered; occluder scraps pass a lower floor)
+MIN_SHEET_COMP_PX = 25                   # connected-component floor on the chromatic mask
 MIN_MARKER_PX = 6
 MIN_SLIT_PX = 8
-SLIT_BAND_M = 0.003                       # lateral band around the nominal cut line
-WIDTH_BAND = 1.0 / 3.0                    # middle third of the cut-direction extent
+GAP_BAND_M = 0.0015                      # lateral band around the cut line for the gap scan
+GAP_BIN_M = 0.0005                       # along-line bin size of the gap scan
+GAP_DEPTH_M = 0.0005                     # depth behind the plane that reads as 'through the slit'
+SLIT_MIN_LEN_M = 0.001                   # contiguous run that counts as a slit at all
+SLIT_UPDATE_M = 0.003                    # run length that may refit the cut line/direction
+RUN_GAP_BINS = 2                         # empty bins tolerated inside a slit run (1 mm)
+DWELL_TOL_M = 0.0015                     # tip this still between ticks => dwell = engaged snip
+TIP_LEAD_M = 0.0025                      # an unengaged on-sheet tip this far ahead of the
+                                         # best front evidence means the estimate is a
+                                         # stale lower bound only -> fail closed
+LAT_SMOOTH = 0.6                         # low-pass on the remembered cut-line lateral:
+                                         # the crack line is persistent, the Kabsch tip
+                                         # lateral jitters ~mm under depth noise
+TIP_ONSHEET_H_M = 0.0025                 # |tip height above the plane| for 'tip is on the sheet'
+TIP_EDGE_PAD_M = 0.002                   # tip this far outside the strip extent is off-sheet
+PLANE_GATE_M = 0.00075                   # iterative plane-fit residual gate
+NEAR_EVIDENCE_M = 0.0015                 # tissue-evidence radius around the pre-cut front
+MIN_NEAR_PX = 2                          # sheet pixels inside it for a valid pre-cut front
+AHEAD_WINDOW_M = 0.002                   # look-ahead of the slit apex for intact tissue
+MIN_AHEAD_PX = 4                         # sheet pixels required in that look-ahead
+COVER_DEPTH_M = 0.002                    # depth this much in front of the plane occludes
+FIT_RMS_MAX_M = 0.0003                   # marker Kabsch RMS gate
+DIR_UPDATE_RAD = np.radians(20.0)        # slit refit must stay this close to the prior
+WIDTH_BAND = 1.0 / 3.0                   # middle third of the cut-direction extent
 
 
 def unit(v):
@@ -78,6 +110,20 @@ def rotvec(v):
 
 def _mask(rgb, color, tol=60.0):
     return np.linalg.norm(rgb - 255.0 * np.asarray(color), axis=2) < tol
+
+
+def _sheet_mask(rgb):
+    """Chromatic tissue mask: the sheet's pink (R>>B>G) against orange/brown anatomy."""
+    from scipy import ndimage          # lazy: module import must stay light
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    m = (b > g + 5.0) & (r > b + 30.0)
+    lab, n = ndimage.label(m)
+    if n == 0:
+        return m
+    sizes = np.bincount(lab.ravel())
+    keep = np.zeros(n + 1, bool)
+    keep[1:] = sizes[1:] >= MIN_SHEET_COMP_PX
+    return keep[lab]
 
 
 def _back_project(u, v, z, W, H, f):
@@ -119,35 +165,89 @@ def _plane_fit(pts):
     return c, Vt                       # rows: e1, e2 (in-plane principal), e3 (normal)
 
 
+def _plane_fit_robust(pts, gate=PLANE_GATE_M, iters=3):
+    """Iterative residual gating: blades/glare on the mask edge must not tilt the plane."""
+    keep = np.ones(len(pts), bool)
+    c, Vt = _plane_fit(pts)
+    for _ in range(iters):
+        c, Vt = _plane_fit(pts[keep])
+        d = np.abs((pts - c) @ Vt[2])
+        new = d < gate
+        if new.sum() < MIN_TISSUE_PX or new.sum() == keep.sum():
+            break
+        keep = new
+    c, Vt = _plane_fit(pts[keep])
+    return c, Vt, keep
+
+
+def _kabsch(offsets, centres):
+    """Rigid transform mapping yaw-frame `offsets` onto camera-frame `centres`.
+
+    Returns (R, t, rms). Both inputs are (k,3) with the same correspondence order.
+    """
+    Oc, Cc = offsets - offsets.mean(0), centres - centres.mean(0)
+    U, _, Vt = np.linalg.svd(Oc.T @ Cc)
+    R = Vt.T @ U.T
+    if np.linalg.det(R) < 0:
+        Vt[-1] *= -1
+        R = Vt.T @ U.T
+    t = centres.mean(0) - R @ offsets.mean(0)
+    rms = float(np.sqrt(((centres - (offsets @ R.T + t)) ** 2).sum(1).mean()))
+    return R, t, rms
+
+
 class CutPerception:
-    """One estimator instance per run; the only state is the post-grasp reference width w0."""
+    """One estimator instance per run; state: post-grasp width w0, remembered cut prior."""
 
     def __init__(self, W, H, f, far, rcm_world, marker_radius=MARKER_RADIUS,
-                 marker_offsets=(MARKER_DISTAL_OFF, MARKER_PROX_OFF), tcp_len=None):
+                 marker_offsets=MARKER_OFFS, marker_colours=MARKER_COLOURS,
+                 tcp_local=None, jaw_axis_local=None, tcp_len=None):
         self.W, self.H, self.f, self.far = W, H, f, far
         self.rcm_world = np.asarray(rcm_world, dtype=float)
         self.marker_radius = marker_radius
-        self.off_d, self.off_p = (np.asarray(o, dtype=float) for o in marker_offsets)
-        self.tcp_len = tcp_len           # yaw-frame origin -> TCP distance along the axis
+        self.marker_offsets = np.asarray(marker_offsets, dtype=float)
+        self.marker_colours = [tuple(c) for c in marker_colours]
+        self.tcp_local = None if tcp_local is None else np.asarray(tcp_local, dtype=float)
+        self.jaw_axis_local = (None if jaw_axis_local is None
+                               else unit(np.asarray(jaw_axis_local, dtype=float)))
         self.w0 = None                   # first post-grasp tissue width
-        self._cut_dir = None             # remembered pre-cut direction sign
+        self._cut_dir = None             # remembered near->far cut direction (camera frame)
+        self._cut_lat = None             # remembered cut-line lateral position
+        self._front_d = None             # remembered front offset from the near edge (m):
+                                         # the crack is permanent and only grows
+        self._front_lat = None           # remembered front lateral offset (plane coords)
+        self._front_ext = None           # sheet along-extent when the front was updated
+        self._prev_tip_s = None          # previous tick's tip along-position (dwell test)
+        self._tip_hist = []              # last valid tip along-positions for the dwell test
+
+    @classmethod
+    def from_meta(cls, meta):
+        """Build from a frame-dump meta.json dict (SimWorld._dump_meta)."""
+        a = meta.get('estimator_args', meta)
+        return cls(a['W'], a['H'], a['f'], a['far'],
+                   np.asarray(a['rcm_world'], dtype=float),
+                   marker_radius=a.get('marker_radius', MARKER_RADIUS),
+                   marker_offsets=a.get('marker_offsets', MARKER_OFFS),
+                   marker_colours=a.get('marker_colours', MARKER_COLOURS),
+                   tcp_local=a.get('tcp_local'), jaw_axis_local=a.get('jaw_axis_local'),
+                   tcp_len=a.get('tcp_len'))
 
     # -- field estimators -------------------------------------------------------------------------------------
     def _tissue(self, rgb, depth):
-        m = _mask(rgb, TISSUE_RGB) & np.isfinite(depth) & (depth < self.far * 0.999)
+        m = _sheet_mask(rgb) & np.isfinite(depth) & (depth < self.far * 0.999)
         if int(m.sum()) < MIN_TISSUE_PX:
-            return dict(valid=False, reason=f'tissue pixels {int(m.sum())} < {MIN_TISSUE_PX}'), m, None
+            return dict(valid=False, reason=f'tissue pixels {int(m.sum())} < {MIN_TISSUE_PX}'), m, None, None
         pts, _, _ = _masked_points(m, depth, self.W, self.H, self.f, self.far)
         if pts is None or len(pts) < MIN_TISSUE_PX:
-            return dict(valid=False, reason='no finite-depth tissue points'), m, None
+            return dict(valid=False, reason='no finite-depth tissue points'), m, None, None
         sub = pts[:: max(1, len(pts) // 4000)]
-        c, Vt = _plane_fit(sub)
+        c, Vt, _ = _plane_fit_robust(sub)
         normal = Vt[2]
         # The camera sits at the origin; the sheet normal should face it.
         if normal @ c > 0:
             normal = -normal
         return dict(valid=True, reason='', centroid=c.tolist(), normal=normal.tolist(),
-                    e1=Vt[0].tolist(), e2=Vt[1].tolist(), n_points=int(len(pts))), m, (c, Vt)
+                    e1=Vt[0].tolist(), e2=Vt[1].tolist(), n_points=int(len(pts))), m, (c, Vt), pts
 
     def _marker(self, rgb, depth, color):
         m = _mask(rgb, color)
@@ -161,147 +261,252 @@ class CutPerception:
             return None, None, 'marker depth outliers'
         return _sphere_centre(pts[keep], self.marker_radius), (float(u.mean()), float(v.mean())), ''
 
-    def _scissors(self, rgb, depth, rcm_cam):
-        md, uvd, errd = self._marker(rgb, depth, MARKER_DISTAL_RGB)
-        mp, uvp, errp = self._marker(rgb, depth, MARKER_PROX_RGB)
-        if md is None:
-            return dict(valid=False, reason='distal marker missing: ' + errd), None
-        occluded = mp is None
-        if not occluded:
-            axis = unit(md - mp)         # marker line is parallel to the shaft axis
-        else:
-            # Proximal marker occluded (housing silhouette): the shaft always passes
-            # through the known RCM port, so the marker->RCM line still gives a degraded
-            # axis for the approach guess — but the scissors field is INVALID per spec.
-            axis = unit(md - rcm_cam)
-        lat = md - rcm_cam               # distal marker position relative to the RCM point
-        latdir = unit(lat - (lat @ axis) * axis)
-        # off[1] is the along-shaft component; (off[0], off[2]) is the lateral offset.
-        r_lat = float(np.hypot(self.off_d[0], self.off_d[2]))
-        if self.tcp_len is None:
-            tip = md                     # no length calibration: distal marker is the best tip proxy
-            reason = 'tip at marker (tcp_len unknown)'
-        else:
-            tip = md + (self.tcp_len - self.off_d[1]) * axis - r_lat * latdir
-            reason = ''
-        return dict(valid=not occluded,
-                    reason=('proximal marker missing: ' + errp) if occluded else reason,
-                    tip=tip.tolist(), axis=axis.tolist(),
-                    distal_uv=list(uvd) if uvd else None,
-                    proximal_uv=list(uvp) if uvp else None,
-                    axis_src='markers' if not occluded else 'rcm'), \
-            dict(distal_uv=uvd, axis=axis)
+    def _scissors(self, rgb, depth):
+        """Yaw pose from a Kabsch fit of the three marker offsets to the sphere centres."""
+        names = ('distal', 'proximal', 'third')
+        centres, uvs, missing = [], [], []
+        for name, col in zip(names, self.marker_colours):
+            c, uv, err = self._marker(rgb, depth, col)
+            if c is None:
+                missing.append(f'{name} marker missing: {err}')
+            centres.append(c)
+            uvs.append(uv)
+        if missing:
+            return dict(valid=False, reason='; '.join(missing),
+                        distal_uv=list(uvs[0]) if uvs[0] else None,
+                        proximal_uv=list(uvs[1]) if uvs[1] else None,
+                        third_uv=list(uvs[2]) if uvs[2] else None), None
+        R, t, rms = _kabsch(self.marker_offsets, np.stack(centres))
+        base = dict(distal_uv=list(uvs[0]), proximal_uv=list(uvs[1]), third_uv=list(uvs[2]),
+                    fit_rms_m=rms)
+        if rms > FIT_RMS_MAX_M:
+            return dict(valid=False, reason=f'marker fit rms {rms * 1000:.2f} mm > '
+                                            f'{FIT_RMS_MAX_M * 1000:.2f} mm', **base), None
+        if self.tcp_local is None:
+            return dict(valid=False, reason='tcp_local calibration missing', **base), None
+        tip = R @ self.tcp_local + t
+        jaw = None if self.jaw_axis_local is None else unit(R @ self.jaw_axis_local)
+        axis = R[:, 1]                       # yaw-frame +y is the shaft axis
+        est = dict(valid=True, reason='', tip=tip.tolist(), axis=axis.tolist(),
+                   tip_uv=list(self._project(tip)), **base)
+        if jaw is not None:
+            est['jaw_axis'] = jaw.tolist()
+        info = dict(tip=tip, axis=axis, tip_uv=est['tip_uv'])
+        return est, info
 
-    def _cut(self, tissue, mask, plane, scis, depth):
-        """Cut start / front / direction.
+    def _gap_scan(self, mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far):
+        """Slit-gap scan: behind-plane pixels inside the cut-line band.
 
-        Pre-cut: near-edge midpoint + the in-plane principal axis closest to the marker-derived
-        approach. Post-cut: the slit is the run of non-tissue pixels along the cut line. It enters
-        from the near edge, so it is edge-connected rather than a closed hole — it is found by
-        scanning per-bin non-tissue counts along the line in-plane (2+ pixels in 2+ consecutive
-        bins). Its 3-D geometry is measured on the fitted plane, because slit pixels carry the
-        background's depth, not the sheet's.
+        The slit shows whatever is behind the sheet — far background, invalid depth,
+        or surface > GAP_DEPTH_M below the plane — while foreground pixels (blades,
+        occluders) never count. The run must start at the near edge (the cut enters
+        there), may skip RUN_GAP_BINS empty bins, and stops at the far edge.
+
+        Returns run_end (the apex boundary), run_len, slit_sel, recovery (intact
+        sheet seen past the apex) and reach_far.
+        """
+        edges = np.arange(s_near - 0.001, s_far + 0.002, GAP_BIN_M)
+        band = (np.abs(sb_px - line_lat) < GAP_BAND_M) & (sa_px >= edges[0]) & (sa_px < edges[-1])
+        behind = (~mask & band & ((depth > pz + GAP_DEPTH_M) | ~np.isfinite(depth) |
+                                  (depth >= self.far * 0.999)))
+        idx = np.clip(np.digitize(sa_px[band], edges) - 1, 0, len(edges) - 2)
+        occ = np.bincount(idx, weights=behind[band].astype(float), minlength=len(edges) - 1) >= 2
+        # Edge guard: the first ~1 mm past s_near is the edge transition — background
+        # pixels there are the sheet boundary, not slit. The run must start inside the
+        # sheet but still within ~2.5 mm of the edge (the cut enters at the edge).
+        b_start = int(np.clip(np.digitize(s_near + 0.001, edges) - 1, 0, len(edges) - 2))
+        first = np.flatnonzero(occ[b_start:])
+        if len(first) == 0 or edges[b_start + int(first[0])] > s_near + 0.0025:
+            return dict(run_end=None, run_len=0.0, slit_sel=np.zeros(mask.shape, bool),
+                        recovery=False, reach_far=False)
+        lo = b_start + int(first[0])
+        end_b, gap_b = lo, 0
+        for b in range(lo + 1, len(edges) - 1):
+            if occ[b]:
+                end_b, gap_b = b, 0
+            else:
+                gap_b += 1
+                if gap_b > RUN_GAP_BINS:
+                    break
+        run_end = float(edges[min(end_b + 1, len(edges) - 1)])
+        reach_far = run_end >= s_far - 0.001
+        slit_sel = behind & (sa_px >= edges[lo]) & (sa_px < run_end)
+        # Fail closed: visible intact sheet must follow the apex; a far-edge run or an
+        # ahead window that is unseen / covered by foreground proves nothing.
+        ahead = band & (sa_px >= run_end) & (sa_px < run_end + AHEAD_WINDOW_M + 0.0005)
+        seen = ahead & np.isfinite(depth) & (depth < self.far * 0.999)
+        covered = int((seen & (depth < pz - COVER_DEPTH_M)).sum())
+        sheet_ahead = int((ahead & mask).sum())
+        recovery = (not reach_far and not (int(ahead.sum()) > 0 and
+                                           covered > 0.5 * int(seen.sum())) and
+                    sheet_ahead >= MIN_AHEAD_PX)
+        return dict(run_end=run_end, run_len=run_end - float(edges[lo]),
+                    slit_sel=slit_sel, recovery=recovery, reach_far=reach_far)
+
+    def _cut(self, tissue, mask, plane, pts, scis, depth):
+        """Cut start / front / direction in the fitted sheet plane.
+
+        The sheet is a strip: Vt[0] spans its WIDTH (the lateral axis), Vt[1] its length
+        (the cut-direction candidate). The near edge is the strip end closer to the
+        estimated tip on the first tick the tip is valid; the choice is remembered.
         """
         if not tissue['valid']:
             return dict(valid=False, front_valid=False, reason='no tissue plane'), None
         c, Vt = plane
-        e1, e2, normal = Vt[0], Vt[1], Vt[2]
-        pts, _, _ = _masked_points(mask, depth, self.W, self.H, self.f, self.far)
-        if scis is not None:
-            approach = scis['axis'] - (scis['axis'] @ normal) * normal
-            cand = max((e1, e2, -e1, -e2), key=lambda a: a @ unit(approach))
-        elif self._cut_dir is not None:
-            cand = np.asarray(self._cut_dir)
-        else:
-            return dict(valid=False, front_valid=False,
-                        reason='no scissors markers to pick the near side'), None
-        lat = unit(np.cross(normal, cand))
-        s_dir = (pts - c) @ cand
-        s_lat = (pts - c) @ lat
-        lo, hi = np.percentile(s_dir, [2, 98])
-        ends = (np.abs(s_dir - lo) < 0.002, np.abs(s_dir - hi) < 0.002)
-        if not (ends[0].any() and ends[1].any()):
-            return dict(valid=False, front_valid=False, reason='degenerate sheet extent'), None
-        if scis is not None:
-            # Near edge = the end whose image midpoint is closest to the distal marker pixel.
-            uv_proj = []
-            for end in ends:
-                p = c + np.median(s_dir[end]) * cand + np.median(s_lat[end]) * lat
-                uv_proj.append(self._project(p))
-            d_uv = scis['distal_uv']
-            near_i = int(np.argmin([np.hypot(uv[0] - d_uv[0], uv[1] - d_uv[1]) for uv in uv_proj]))
-        else:
-            near_i = 0 if np.median(s_dir[ends[0]]) < np.median(s_dir[ends[1]]) else 1
-        direction = cand if near_i == 0 else -cand   # runs from the near edge to the far edge
-        near_pts = ends[near_i]
-        line_lat = float(np.median(s_lat[near_pts]))
-        start = c + np.median(s_dir[near_pts]) * cand + line_lat * lat
+        lat_ax, len_ax, normal = Vt[0], Vt[1], Vt[2]
 
-        # Plane coordinates of every pixel's ray∩plane (slit pixels have background depth).
-        sa, sb, pz = self._plane_coords(c, normal, direction, lat)
-        band = np.abs(sb - line_lat) < SLIT_BAND_M
-        # A slit shows whatever is BEHIND the sheet (background/far depth); instrument and
-        # marker pixels are non-tissue too but sit in front of the plane and must not count.
-        behind = ~mask & ((depth > pz + 0.002) | ~np.isfinite(depth) | (depth >= self.far * 0.999))
-        # Non-tissue-behind pixel count per bin along the line; the slit is the contiguous
-        # non-empty run starting at the near edge (1-bin gaps tolerated), capped at the far edge.
-        edges = np.arange(lo - 0.004, hi + 0.004, 0.0005)
-        sel = band & (sa >= edges[0]) & (sa < edges[-1])
-        idx = np.clip(np.digitize(sa[sel], edges) - 1, 0, len(edges) - 2)
-        non = np.bincount(idx, weights=behind[sel].astype(float), minlength=len(edges) - 1)
-        # Any in-band non-tissue-behind pixel inside the sheet interior is real slit gap;
-        # confirmation comes from the run length and total pixel count, not a per-bin minimum.
-        slit_bin = non >= 1
-        s_near = np.median(s_dir[near_pts])
-        b0 = int(np.clip(np.digitize(s_near, edges) - 1, 0, len(slit_bin) - 1))
-        b_hi = int(np.clip(np.digitize(hi, edges), b0 + 1, len(slit_bin)))
-        end_b, gap, started = b0, 0, False
-        for b in range(b0, b_hi):
-            if slit_bin[b]:
-                started, gap, end_b = True, 0, b
-            elif started:
-                gap += 1
-                if gap >= 2:
-                    break
-        slit_len = (edges[min(end_b + 1, len(edges) - 1)] - s_near) if (started and end_b > b0) else 0.0
-        slit_sel = sel & behind & (sa >= s_near - 0.001) & (sa < edges[min(end_b + 1, len(edges) - 1)])
-        meta = dict(lat=lat, s_lat=line_lat)
-        # A run that reaches (or nearly reaches) the far edge is a gap/torn-off region, not a
-        # slit with a measurable front — the sheet's far half tilts out of the tissue colour
-        # under retraction, so the gap fans to the boundary. Invalid beats wrong here.
-        run_end = edges[min(end_b + 1, len(edges) - 1)]
-        if slit_len > 0.001 and run_end >= hi - 0.004:
-            self._cut_dir = direction
-            return dict(valid=True, reason='gap run reaches the far edge: front not measurable',
-                        front_valid=False, direction=direction.tolist(), start=start.tolist(),
-                        mode='slit', slit_opening_m=0.0, slit_px=int(slit_sel.sum())), meta
-        if slit_len > 0.001 and int(slit_sel.sum()) >= MIN_SLIT_PX:
-            hs_dir = sa[slit_sel]
-            hs_lat = sb[slit_sel]
-            # The slit itself is the cut line: its 2-D principal axis is more faithful than
-            # the approach guess once cutting has started (the sheet deforms under tension).
-            if len(hs_dir) >= 6:
-                q = np.stack([hs_dir - hs_dir.mean(), hs_lat - hs_lat.mean()], axis=1)
-                _, _, Vq = np.linalg.svd(q, full_matrices=False)
-                slit_dir = unit(Vq[0, 0] * direction + Vq[0, 1] * lat)
-                if slit_dir @ direction > 0.3:
-                    direction = slit_dir
-                    sa, sb, pz = self._plane_coords(c, normal, direction, lat)
-                    hs_dir = sa[slit_sel]
-                    hs_lat = sb[slit_sel]
-            order = np.argsort(hs_dir)
-            far = order[-max(3, len(order) // 10):]
-            front = c + float(np.median(hs_dir[far])) * direction + float(np.median(hs_lat[far])) * lat
-            slit_open = float(np.percentile(hs_lat[far], 95) - np.percentile(hs_lat[far], 5))
-            self._cut_dir = direction
-            return dict(valid=True, reason='', front_valid=True, front=front.tolist(),
-                        direction=direction.tolist(), start=start.tolist(), mode='slit',
-                        slit_opening_m=slit_open, slit_px=int(slit_sel.sum())), meta
-        self._cut_dir = direction
-        # Pre-cut: the front is the cut start.
-        return dict(valid=True, reason='', front_valid=True, front=start.tolist(),
-                    direction=direction.tolist(), start=start.tolist(), mode='pre_cut',
-                    slit_opening_m=0.0, slit_px=0), meta
+        if self._cut_dir is None:
+            if scis is None or scis.get('tip') is None:
+                return dict(valid=False, front_valid=False,
+                            reason='no valid tip to pick the near edge'), None
+            s_len = (pts - c) @ len_ax
+            lo, hi = np.percentile(s_len, [2, 98])
+            tip_uv = scis['tip_uv']
+            ends = (np.abs(s_len - lo) < 0.002, np.abs(s_len - hi) < 0.002)
+            if not (ends[0].any() and ends[1].any()):
+                return dict(valid=False, front_valid=False,
+                            reason='degenerate sheet extent'), None
+            s_w = (pts - c) @ lat_ax
+            d_uv = []
+            for end in ends:
+                p = c + np.median(s_len[end]) * len_ax + np.median(s_w[end]) * lat_ax
+                d_uv.append(np.hypot(*(np.asarray(self._project(p)) - np.asarray(tip_uv))))
+            self._cut_dir = len_ax if int(np.argmin(d_uv)) == 0 else -len_ax
+
+        direction = self._cut_dir                 # points from the near edge to the far edge
+        sa = (pts - c) @ direction
+        sb = (pts - c) @ lat_ax
+        s_near, s_far = np.percentile(sa, [2, 98])
+        line_lat = float(np.median(sb)) if self._cut_lat is None else self._cut_lat
+        start_sa = float(np.percentile(sa, 1))
+        start = c + start_sa * direction + line_lat * lat_ax
+
+        sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
+        res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
+
+        # A long enough slit defines the cut line itself: refit direction, clamped to
+        # the prior. The lateral anchor comes from the engaged tip only — slit pixels
+        # are too noisy laterally.
+        if res['run_len'] >= SLIT_UPDATE_M and int(res['slit_sel'].sum()) >= 6:
+            hs_dir, hs_lat = sa_px[res['slit_sel']], sb_px[res['slit_sel']]
+            q = np.stack([hs_dir - hs_dir.mean(), hs_lat - hs_lat.mean()], axis=1)
+            _, _, Vq = np.linalg.svd(q, full_matrices=False)
+            slit_dir = unit(Vq[0, 0] * direction + Vq[0, 1] * lat_ax)
+            if slit_dir @ direction < 0:
+                slit_dir = -slit_dir
+            if math.acos(float(np.clip(slit_dir @ direction, -1, 1))) <= DIR_UPDATE_RAD:
+                direction = slit_dir
+                self._cut_dir = direction
+                sa = (pts - c) @ direction
+                sb = (pts - c) @ lat_ax
+                s_near, s_far = np.percentile(sa, [2, 98])
+                start_sa = float(np.percentile(sa, 1))
+                start = c + start_sa * direction + line_lat * lat_ax
+                sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
+                res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
+
+        cut = dict(valid=True, reason='', direction=direction.tolist(), start=start.tolist())
+        meta = dict(lat=lat_ax, line_lat=line_lat)
+
+        # Scissors-tip engagement: the blades dwell about two ticks at each cut position,
+        # so a dwelling tip that is on the sheet sits at the crack tip — the most precise
+        # front measurement there is. A tip that is still moving, parked off-sheet, or
+        # invisible contributes nothing.
+        tip_s = None
+        tip_lat = None
+        engaged = False
+        if scis is not None and scis.get('tip') is not None:
+            tip = np.asarray(scis['tip'])
+            tip_s = float((tip - c) @ direction)
+            tip_lat = float((tip - c) @ lat_ax)
+            tip_h = float((tip - c) @ normal)
+            w_lo, w_hi = np.percentile(sb, [1, 99])
+            on_sheet = (abs(tip_h) < TIP_ONSHEET_H_M and
+                        w_lo - TIP_EDGE_PAD_M < tip_lat < w_hi + TIP_EDGE_PAD_M and
+                        s_near - TIP_EDGE_PAD_M < tip_s < s_far + TIP_EDGE_PAD_M)
+            # Engaged: the blades are at the crack — either the tip sits inside/at the
+            # measured slit, or it dwells (~2 ticks per cut position) while on the sheet.
+            in_gap = res['run_end'] is not None and tip_s <= res['run_end'] + 0.0005
+            dwell = any(abs(tip_s - h) <= DWELL_TOL_M for h in self._tip_hist)
+            engaged = on_sheet and (in_gap or dwell)
+            self._tip_hist.append(tip_s)
+            self._tip_hist = self._tip_hist[-2:]
+            self._prev_tip_s = tip_s
+            if engaged:
+                if self._cut_lat is None:
+                    self._cut_lat = tip_lat
+                else:
+                    self._cut_lat = LAT_SMOOTH * self._cut_lat + \
+                        (1.0 - LAT_SMOOTH) * tip_lat
+                line_lat = self._cut_lat
+        else:
+            self._tip_hist = []
+            self._prev_tip_s = None
+
+        # Candidate fronts: the crack only grows, so fuse the supported sources with a
+        # max — the slit apex (a lower bound), the engaged tip (the cutting point), and
+        # the remembered material-relative front (dropped if the sheet extent changed
+        # since — a repositioned view cannot re-anchor the offset).
+        slit_ok = res['run_len'] >= SLIT_MIN_LEN_M and res['recovery']
+        slit_lat = float(np.median(sb_px[res['slit_sel']])) if slit_ok and slit_ok and \
+            int(res['slit_sel'].sum()) >= 2 else line_lat
+        cands = []                            # (source, along, lateral)
+        if slit_ok:
+            cands.append(('slit', res['run_end'], slit_lat))
+        if engaged:
+            cands.append(('tip', tip_s, self._cut_lat))
+        extent = s_far - s_near
+        if self._front_d is not None and \
+                (self._front_ext is None or abs(extent - self._front_ext) < 0.003):
+            cands.append(('memory', s_near + self._front_d,
+                          self._front_lat if self._front_lat is not None else line_lat))
+
+        # Confident evidence advances the remembered front (cracks are permanent).
+        if engaged:
+            self._front_d = tip_s - s_near if self._front_d is None \
+                else max(self._front_d, tip_s - s_near)
+            self._front_lat, self._front_ext = self._cut_lat, extent
+        elif slit_ok:
+            self._front_d = res['run_end'] - s_near if self._front_d is None \
+                else max(self._front_d, res['run_end'] - s_near)
+            self._front_lat, self._front_ext = slit_lat, extent
+
+        slit_px_n = int(res['slit_sel'].sum())
+        if not cands:
+            if res['run_end'] is not None and res['run_len'] >= SLIT_MIN_LEN_M:
+                return dict(cut, front_valid=False, mode='slit', slit_px=slit_px_n,
+                            reason='slit apex not provable: reaches the far edge or the '
+                                   'look-ahead is unseen/foreground-covered'), meta
+            # Pre-cut: the front is the near-edge midpoint, gated on tissue evidence.
+            evidence = ((sa_px - start_sa) ** 2 +
+                        (sb_px - line_lat) ** 2 < NEAR_EVIDENCE_M ** 2) & mask
+            if int(evidence.sum()) < MIN_NEAR_PX:
+                return dict(cut, front_valid=False,
+                            reason=f'no tissue evidence at the near edge ({int(evidence.sum())} px)'), meta
+            return self._front_out(cut, start_sa, line_lat, c, direction, lat_ax,
+                                   mode='pre_cut', slit_open=0.0, slit_px=slit_px_n), meta
+
+        src, front_s, front_lat = max(cands, key=lambda kv: kv[1])
+        if not engaged and tip_s is not None and on_sheet and \
+                tip_s - front_s > TIP_LEAD_M:
+            return dict(cut, front_valid=False, mode=src, slit_px=slit_px_n,
+                        reason='tip advancing beyond the provable front: '
+                               'estimate is a stale lower bound'), meta
+        front_s = min(max(front_s, s_near), s_far - 0.0005)
+        hs_lat = sb_px[res['slit_sel'] & (sa_px > front_s - 0.0015)]
+        slit_open = float(np.percentile(hs_lat, 95) - np.percentile(hs_lat, 5)) \
+            if len(hs_lat) >= 2 else 0.0
+        return self._front_out(cut, front_s, front_lat, c, direction, lat_ax,
+                               mode=src, slit_open=slit_open, slit_px=slit_px_n), meta
+
+    def _front_out(self, cut, s_apex, s_lat, c, direction, lat_ax, mode, slit_open, slit_px):
+        front_cam = c + s_apex * direction + s_lat * lat_ax
+        uv = self._project(front_cam)
+        offset = max(abs(uv[0] - self.W / 2) / (self.W / 2), abs(uv[1] - self.H / 2) / (self.H / 2))
+        cut.update(front_valid=True, front=front_cam.tolist(), front_uv=list(uv),
+                   cut_site_offset=float(offset), mode=mode,
+                   slit_opening_m=float(slit_open), slit_px=int(slit_px))
+        return cut
 
     def _tension(self, tissue, mask, plane, cut_meta, depth, post_grasp, slit_opening):
         if not tissue['valid'] or cut_meta is None:
@@ -336,16 +541,16 @@ class CutPerception:
         rgb = np.asarray(rgb, dtype=float)
         depth = np.asarray(depth, dtype=float)
         out = dict(tissue={}, scissors={}, cut={}, tension_proxy={})
-        rcm_cam = R_est.T @ (self.rcm_world - t_est)
-        tissue, mask, plane = self._tissue(rgb, depth)
-        scis_est, scis = self._scissors(rgb, depth, rcm_cam)
-        cut, cut_meta = self._cut(tissue, mask, plane, scis, depth)
+        tissue, mask, plane, pts = self._tissue(rgb, depth)
+        scis_est, scis = self._scissors(rgb, depth)
+        cut, cut_meta = self._cut(tissue, mask, plane, pts, scis, depth)
         slit_open = cut.get('slit_opening_m', 0.0) if cut else 0.0
         tension = self._tension(tissue, mask, plane, cut_meta, depth, post_grasp, slit_open)
 
         def world(d):
             d = dict(d)
-            for k in ('centroid', 'normal', 'e1', 'e2', 'tip', 'axis', 'front', 'direction', 'start'):
+            for k in ('centroid', 'normal', 'e1', 'e2', 'tip', 'axis', 'jaw_axis',
+                      'front', 'direction', 'start'):
                 if k in d and d[k] is not None:
                     v = np.asarray(d[k])
                     d[k] = (R_est @ v + t_est if v.shape == (3,) and k in

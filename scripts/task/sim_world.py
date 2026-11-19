@@ -139,6 +139,7 @@ class SimWorld:
         # truth_reads, which the report shows together with the dump_dir in cfg['perception']).
         self._dump_dir = None
         self._dump_meta_written = False
+        self._perc_meta = None
         if self.perc_mode == 'shadow' and self.perc_cfg.get('dump_dir'):
             self._dump_dir = REPO / self.perc_cfg['dump_dir']
             self._dump_dir.mkdir(parents=True, exist_ok=True)
@@ -330,12 +331,22 @@ class SimWorld:
         if yaw_h is None:
             return
         yaw = matrix_to_np(self.sim.getObjectMatrix(yaw_h, -1))
-        tcp = np.array(self.sim.getObjectPosition(self.by[f'{self.cutter}_tcp'], -1))
+        tcp_M = matrix_to_np(self.sim.getObjectMatrix(self.by[f'{self.cutter}_tcp'], -1))
+        tcp = tcp_M[:, 3]
+        # Instrument calibration on the rigid yaw->tcp chain (verified constant to <1e-15 m):
+        # the TCP position and jaw pointing axis in yaw-frame coordinates. The third marker is
+        # non-collinear so a Kabsch fit of the three marker offsets recovers the full yaw pose.
+        self._tcp_local = yaw[:, :3].T @ (tcp - yaw[:, 3])
+        self._jaw_axis_local = yaw[:, :3].T @ tcp_M[:, self.TOOL_AXIS_COL]
         # Yaw-frame y is the shaft axis (frame() maps col1 to 'distal'); the TCP distance
         # along it calibrates the tip offset.
-        self._marker_tcp_len = float(np.dot(tcp - yaw[:, 3], yaw[:, 1]))
+        self._marker_tcp_len = float(self._tcp_local[1])
+        third_off = tuple(self.perc_cfg.get('marker3_off', cut_perception.MARKER_THIRD_OFF))
+        self._marker_offsets_used = [list(cut_perception.MARKER_DISTAL_OFF),
+                                   list(cut_perception.MARKER_PROX_OFF), list(third_off)]
         for color, off in ((cut_perception.MARKER_DISTAL_RGB, cut_perception.MARKER_DISTAL_OFF),
-                           (cut_perception.MARKER_PROX_RGB, cut_perception.MARKER_PROX_OFF)):
+                           (cut_perception.MARKER_PROX_RGB, cut_perception.MARKER_PROX_OFF),
+                           (cut_perception.MARKER_THIRD_RGB, third_off)):
             h = self.sim.createPrimitiveShape(self.sim.primitiveshape_spheroid,
                                               [2 * cut_perception.MARKER_RADIUS] * 3, 0)
             self.sim.setShapeColor(h, None, self.sim.colorcomponent_ambient_diffuse, list(color))
@@ -349,9 +360,11 @@ class SimWorld:
 
     def _perception_tick(self):
         if self._perc_estimator is None:
-            rcm = np.array(self.arm_cfg[self.cutter]['rcm_world'], dtype=float)
-            self._perc_estimator = cut_perception.CutPerception(
-                self.W, self.H, self.f, self.far, rcm, tcp_len=self._marker_tcp_len)
+            # Live and offline are identical: the estimator is built from the same meta
+            # dict the frame dump writes (CutPerception.from_meta).
+            if self._perc_meta is None:
+                self._perc_meta = self._dump_meta()
+            self._perc_estimator = cut_perception.CutPerception.from_meta(self._perc_meta)
         rng = self.perc_rng
         R_true, t_true = self.camera()
         e = self.perc_cfg.get('camera_pose_error') or {}
@@ -361,24 +374,32 @@ class SimWorld:
         depth = self.depth if noise <= 0 else self.depth + rng.normal(0.0, noise, self.depth.shape)
         est = self._perc_estimator.estimate(np.asarray(self.image, dtype=float), depth,
                                             R_est, t_est, post_grasp=bool(self.grasped_points))
+        # Scoring only (m5a_gates.json definitions): tip vs the tcp pose, jaw_axis vs the
+        # tcp matrix' tool-axis column, front vs GroundTruth.cut_front, direction vs the
+        # live centre line m[j0+3]-m[j0], j0 = min(round(cut_length/H), NV-4).
         truth, errors = None, {}
+        tcp_M = matrix_to_np(self.sim.getObjectMatrix(self.by[f'{self.cutter}_tcp'], -1))
+        tcp, jaw_true = tcp_M[:, 3], unit(tcp_M[:, self.TOOL_AXIS_COL])
+        scis = est.get('scissors') or {}
+        if scis.get('valid'):
+            errors['tip_pos_err_m'] = float(np.linalg.norm(np.asarray(scis['tip']) - tcp))
+            if scis.get('jaw_axis') is not None:
+                errors['jaw_axis_err_rad'] = float(math.acos(float(np.clip(
+                    unit(np.asarray(scis['jaw_axis'])) @ jaw_true, -1, 1))))
         if self.sheet_origin is not None:
-            tcp = self.truth.tcp(self.cutter)
-            truth = dict(cut_front=self.cut_front(),
-                         direction=(self.v.tolist() if getattr(self, 'v', None) is not None else None),
-                         tcp=tcp.tolist(), shaft_axis=unit(tcp - self._perc_estimator.rcm_world).tolist(),
+            n = self.truth.nodes()
+            m = 0.5 * (n[:, NU // 2 - 1] + n[:, NU // 2])
+            j0 = min(int(round(self.cut_length() / H)), NV - 4)
+            truth = dict(cut_front=self.cut_front(), direction=unit(m[j0 + 3] - m[j0]).tolist(),
+                         tcp=tcp.tolist(), jaw_axis=jaw_true.tolist(),
                          tension=self.cut_line_tension())
-            cut, scis = est.get('cut') or {}, est.get('scissors') or {}
-            if cut.get('front_valid'):
+            cut = est.get('cut') or {}
+            if cut.get('front_valid') and cut.get('front') is not None:
                 errors['front_pos_err_m'] = float(np.linalg.norm(
                     np.asarray(cut['front']) - np.asarray(truth['cut_front'])))
-            if cut.get('valid') and truth['direction'] is not None:
+            if cut.get('valid') and cut.get('direction') is not None:
                 errors['direction_err_rad'] = float(math.acos(float(np.clip(
                     np.asarray(cut['direction']) @ np.asarray(truth['direction']), -1, 1))))
-            if scis.get('valid'):
-                errors['tip_pos_err_m'] = float(np.linalg.norm(np.asarray(scis['tip']) - tcp))
-                errors['axis_err_rad'] = float(math.acos(float(np.clip(
-                    np.asarray(scis['axis']) @ np.asarray(truth['shaft_axis']), -1, 1))))
         self.perc_log.append(dict(tick=self.tick, estimate=est, truth=truth, errors=errors))
         if self._dump_dir is not None:
             self._dump_frame()
@@ -390,11 +411,16 @@ class SimWorld:
                     camera=dict(self.endo['camera']),
                     cutter=self.cutter, rcm_world=list(rcm),
                     marker_tcp_len=self._marker_tcp_len,
+                    tcp_local=getattr(self, '_tcp_local', None),
+                    jaw_axis_local=getattr(self, '_jaw_axis_local', None),
                     marker_radius=cut_perception.MARKER_RADIUS,
-                    marker_offsets=[list(cut_perception.MARKER_DISTAL_OFF),
-                                    list(cut_perception.MARKER_PROX_OFF)],
+                    marker_offsets=(getattr(self, '_marker_offsets_used', None) or
+                                    [list(cut_perception.MARKER_DISTAL_OFF),
+                                     list(cut_perception.MARKER_PROX_OFF),
+                                     list(cut_perception.MARKER_THIRD_OFF)]),
                     marker_colours=[list(cut_perception.MARKER_DISTAL_RGB),
-                                    list(cut_perception.MARKER_PROX_RGB)],
+                                    list(cut_perception.MARKER_PROX_RGB),
+                                    list(cut_perception.MARKER_THIRD_RGB)],
                     tissue_rgb=list(cut_perception.TISSUE_RGB),
                     tool_axis_col=self.TOOL_AXIS_COL, tool_yaw_col=self.TOOL_YAW_COL,
                     NU=NU, NV=NV, spacing_m=H, pretension=self.pretension,
@@ -404,7 +430,17 @@ class SimWorld:
                     run_name=getattr(self.args, 'report_name', None),
                     estimator='cut_perception.CutPerception',
                     estimator_args=dict(W=self.W, H=self.H, f=self.f, far=self.far,
-                                        rcm_world=list(rcm), tcp_len=self._marker_tcp_len),
+                                        rcm_world=list(rcm), marker_radius=cut_perception.MARKER_RADIUS,
+                                        marker_offsets=(getattr(self, '_marker_offsets_used', None) or
+                                                        [list(cut_perception.MARKER_DISTAL_OFF),
+                                                         list(cut_perception.MARKER_PROX_OFF),
+                                                         list(cut_perception.MARKER_THIRD_OFF)]),
+                                        marker_colours=[list(cut_perception.MARKER_DISTAL_RGB),
+                                                        list(cut_perception.MARKER_PROX_RGB),
+                                                        list(cut_perception.MARKER_THIRD_RGB)],
+                                        tcp_local=getattr(self, '_tcp_local', None),
+                                        jaw_axis_local=getattr(self, '_jaw_axis_local', None),
+                                        tcp_len=self._marker_tcp_len),
                     perception_cfg=dict(self.perc_cfg))
 
     def _dump_frame(self):
@@ -414,7 +450,9 @@ class SimWorld:
         every cutter/sheet value is a true sim quantity. None of it feeds control.
         """
         if not self._dump_meta_written:
-            write_json(self._dump_dir / 'meta.json', self._dump_meta())
+            if self._perc_meta is None:
+                self._perc_meta = self._dump_meta()
+            write_json(self._dump_dir / 'meta.json', self._perc_meta)
             self._dump_meta_written = True
         cam_R, cam_t = self.camera()
 

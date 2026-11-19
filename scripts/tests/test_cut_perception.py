@@ -1,8 +1,10 @@
 """Offline tests for scripts/vision/cut_perception.py on synthetic pinhole renders.
 
-The renderer draws the tissue rectangle, an optional slit and the two marker spheres with
-the same camera model the estimator assumes (x = -(u - W/2) z/f, forward z). Camera = world
-(R = I, t = 0), so estimated quantities compare directly to the constructed truth.
+The renderer draws the tissue strip (wider across the cut than along it, like the real
+24 mm x 14 mm sheet), an optional slit and the three marker spheres placed from a known
+yaw pose with the same camera model the estimator assumes (x = -(u - W/2) z/f, forward
+z). Camera = world (R = I, t = 0), so estimated quantities compare to the constructed
+truth directly. tcp_local / jaw_axis_local use the real articulated-scene calibration.
 """
 import sys
 import unittest
@@ -22,34 +24,36 @@ NORMAL = np.array([0.10, -0.05, -1.0])
 NORMAL = NORMAL / np.linalg.norm(NORMAL)
 E_V = np.array([1.0, 0.30, 0.0])
 E_V = E_V - (E_V @ NORMAL) * NORMAL
-E_V = E_V / np.linalg.norm(E_V)                # cut direction, in-plane
-E_U = np.cross(NORMAL, E_V)                    # across the cut, in-plane
-L_V, L_U = 0.030, 0.023                        # sheet extents along / across the cut
+E_V = E_V / np.linalg.norm(E_V)                # cut direction, in-plane (strip length)
+E_U = np.cross(NORMAL, E_V)                    # across the cut, in-plane (strip WIDTH)
+L_V, L_U = 0.012, 0.024                        # along / across the cut (width is the long axis)
 
-# The shaft approaches along the sheet (in-plane component ~e_v) so the approach-matched
-# principal axis is the cut direction. Markers sit on the housing near the wrist, in view.
-AXIS = np.array([0.40, 0.15, 0.90])
-AXIS = AXIS / np.linalg.norm(AXIS)
-TCP = np.array([0.002, 0.000, 0.095])
-LAT = np.array([0.2, 1.0, 0.0])
-LAT = LAT - (LAT @ AXIS) * AXIS
-LAT = LAT / np.linalg.norm(LAT)
-YAW = TCP - 0.025 * AXIS
-RCM = TCP - 0.080 * AXIS
-TCP_LEN = 0.025
-# Yaw-frame offsets in the estimator's convention: (x_lat, y_shaft_toward_tcp, z_lat).
-OFF_D = np.array([0.0, -0.018, 0.005])
-OFF_P = np.array([0.0, -0.033, 0.005])
-M_D = YAW + OFF_D[1] * AXIS + OFF_D[2] * LAT
-M_P = YAW + OFF_P[1] * AXIS + OFF_P[2] * LAT
+# Yaw pose: the shaft +y axis aims from the housing toward a point just past the near
+# edge, so the near edge is the strip end closest to the tip — as in the real scene.
+TCP_LOCAL = np.array([0.000042, 0.013052, 0.001585])   # measured: rigid in the yaw frame
+JAW_LOCAL = cp.unit(np.array([0.05, -0.02, -1.0]))
+YAW_Y = cp.unit(np.array([0.15, 0.85, -0.50]))         # shaft axis, yaw-frame +y
+YAW_X = cp.unit(np.cross(YAW_Y, np.array([0.0, 0.0, 1.0])))
+YAW_Z = np.cross(YAW_X, YAW_Y)
+R_YAW = np.stack([YAW_X, YAW_Y, YAW_Z], axis=1)
+TIP_TRUE = P0 + 0.001 * E_V + 0.003 * NORMAL           # tip ~3 mm above the near edge
+T_YAW = TIP_TRUE - R_YAW @ TCP_LOCAL
+JAW_TRUE = cp.unit(R_YAW @ JAW_LOCAL)
+M_D = R_YAW @ np.asarray(cp.MARKER_DISTAL_OFF) + T_YAW
+M_P = R_YAW @ np.asarray(cp.MARKER_PROX_OFF) + T_YAW
+M_T = R_YAW @ np.asarray(cp.MARKER_THIRD_OFF) + T_YAW
 MR = cp.MARKER_RADIUS
+RCM = T_YAW - 0.080 * YAW_Y
 
-SLIT_U0, SLIT_W = 0.0015, 0.0018               # cut line lateral offset, slit width
-FRONT_SV = 0.010
+SLIT_U0, SLIT_W = 0.0, 0.0025                  # slit on the cut line (the band the
+                                               # estimator scans), wide enough to give
+                                               # >=2 behind-plane px per 0.5 mm bin
+FRONT_SV = 0.007
 FRONT_TRUE = P0 + FRONT_SV * E_V + SLIT_U0 * E_U
 
 
-def render(slit_sv=None, markers=('d', 'p'), nan_frac=0.0, tissue=True):
+def render(slit_sv=None, markers=('d', 'p', 't'), nan_frac=0.0, tissue=True,
+           occlude_sv=None):
     """Pinhole render -> (rgb float HxWx3, depth HxW). Depth is z along the unnormalised ray."""
     u, v = np.meshgrid(np.arange(W), np.arange(H))
     d = np.stack([-(u - W / 2) / F, -(v - H / 2) / F, np.ones((H, W))], axis=-1)
@@ -67,8 +71,15 @@ def render(slit_sv=None, markers=('d', 'p'), nan_frac=0.0, tissue=True):
         sel = inside & (s < depth)
         depth[sel] = s[sel]
         rgb[sel] = np.array(cp.TISSUE_RGB) * 255
+        if occlude_sv is not None:
+            # Foreground occluder: covers the band ahead of sv in front of the plane.
+            occ = hit & (sv > occlude_sv) & (sv < occlude_sv + 0.004) & (np.abs(su) < 0.004)
+            depth[occ] = s[occ] - 0.010
+            rgb[occ] = (120.0, 120.0, 120.0)
     dn = d / np.linalg.norm(d, axis=-1, keepdims=True)
-    for centre, color, tag in ((M_D, cp.MARKER_DISTAL_RGB, 'd'), (M_P, cp.MARKER_PROX_RGB, 'p')):
+    for centre, color, tag in ((M_D, cp.MARKER_DISTAL_RGB, 'd'),
+                               (M_P, cp.MARKER_PROX_RGB, 'p'),
+                               (M_T, cp.MARKER_THIRD_RGB, 't')):
         if tag not in markers:
             continue
         oc = centre
@@ -86,8 +97,16 @@ def render(slit_sv=None, markers=('d', 'p'), nan_frac=0.0, tissue=True):
 
 
 def estimator():
-    return cp.CutPerception(W, H, F, FAR, RCM, tcp_len=TCP_LEN,
-                            marker_offsets=(OFF_D, OFF_P))
+    return cp.CutPerception(W, H, F, FAR, RCM,
+                            marker_offsets=cp.MARKER_OFFS, marker_colours=cp.MARKER_COLOURS,
+                            tcp_local=TCP_LOCAL, jaw_axis_local=JAW_LOCAL)
+
+
+def meta_dict():
+    return dict(estimator_args=dict(W=W, H=H, f=F, far=FAR, rcm_world=RCM.tolist(),
+                                    marker_radius=MR, marker_offsets=[list(o) for o in cp.MARKER_OFFS],
+                                    marker_colours=[list(c) for c in cp.MARKER_COLOURS],
+                                    tcp_local=TCP_LOCAL.tolist(), jaw_axis_local=JAW_LOCAL.tolist()))
 
 
 def angle(a, b):
@@ -96,28 +115,56 @@ def angle(a, b):
 
 
 class GeometryTests(unittest.TestCase):
-    def test_pre_cut_start_direction_and_tip(self):
+    def test_kabsch_recovers_tip_and_jaw_with_lateral_offset(self):
+        """3 non-collinear markers: full yaw pose, TCP off-axis to <1e-6 m."""
+        rgb, depth = render()
+        est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
+        scis = est['scissors']
+        self.assertTrue(scis['valid'], scis)
+        self.assertLess(scis['fit_rms_m'], cp.FIT_RMS_MAX_M)
+        self.assertLess(np.linalg.norm(np.array(scis['tip']) - TIP_TRUE), 1e-6)
+        self.assertLess(angle(scis['jaw_axis'], JAW_TRUE), 0.01)
+        self.assertLess(angle(scis['axis'], YAW_Y), 0.01)
+
+    def test_from_meta_matches_constructor(self):
+        rgb, depth = render()
+        a = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
+        b = cp.CutPerception.from_meta(meta_dict()).estimate(rgb, depth, np.eye(3), np.zeros(3))
+        self.assertEqual(a['scissors']['valid'], b['scissors']['valid'])
+        np.testing.assert_allclose(a['scissors']['tip'], b['scissors']['tip'], atol=1e-12)
+        self.assertEqual(a['cut']['front_valid'], b['cut']['front_valid'])
+
+    def test_pre_cut_start_direction_and_front(self):
         rgb, depth = render()
         est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3), post_grasp=True)
-        cut, scis = est['cut'], est['scissors']
+        cut = est['cut']
         self.assertTrue(est['tissue']['valid'], est['tissue'])
         self.assertTrue(cut['valid'], cut)
+        self.assertTrue(cut['front_valid'], cut)
         self.assertEqual(cut['mode'], 'pre_cut')
         self.assertLess(np.linalg.norm(np.array(cut['start']) - P0), 1.5e-3)
         self.assertLess(angle(cut['direction'], E_V), 3.0)
-        self.assertLess(np.linalg.norm(np.array(cut['front']) - P0), 1.5e-3)   # front = start pre-cut
-        self.assertTrue(scis['valid'], scis)
-        self.assertLess(np.linalg.norm(np.array(scis['tip']) - TCP), 0.6e-3)
-        self.assertLess(angle(scis['axis'], AXIS), 2.0)
+        self.assertLess(np.linalg.norm(np.array(cut['front']) - P0), 1.5e-3)
+        self.assertIn('front_uv', cut)
+        self.assertIn('cut_site_offset', cut)
 
-    def test_slit_front_and_direction(self):
+    def test_slit_front_is_the_apex(self):
         rgb, depth = render(slit_sv=FRONT_SV)
         est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
         cut = est['cut']
         self.assertTrue(cut['valid'], cut)
+        self.assertTrue(cut['front_valid'], cut)
         self.assertEqual(cut['mode'], 'slit')
         self.assertLess(np.linalg.norm(np.array(cut['front']) - FRONT_TRUE), 1.5e-3)
         self.assertLess(angle(cut['direction'], E_V), 3.0)
+
+    def test_occluded_apex_fails_closed(self):
+        """Foreground covering the band past the slit -> front_valid False, not wrong."""
+        rgb, depth = render(slit_sv=FRONT_SV + 0.002, occlude_sv=FRONT_SV)
+        est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
+        cut = est['cut']
+        self.assertFalse(cut['front_valid'], cut)
+        self.assertNotEqual(cut.get('reason'), '')
 
     def test_depth_noise_increases_tip_error(self):
         errs = []
@@ -129,26 +176,27 @@ class GeometryTests(unittest.TestCase):
                     depth = depth + np.random.default_rng(seed).normal(0, sigma, depth.shape)
                 est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
                 if est['scissors']['valid']:
-                    run.append(np.linalg.norm(np.array(est['scissors']['tip']) - TCP))
-            errs.append(np.mean(run))
+                    run.append(np.linalg.norm(np.array(est['scissors']['tip']) - TIP_TRUE))
+            errs.append(np.mean(run) if run else np.inf)
         self.assertLessEqual(errs[0], errs[1])
         self.assertLessEqual(errs[1], errs[2])
-        self.assertLess(errs[0], 0.6e-3)
+        self.assertLess(errs[0], 1e-5)
 
 
 class ValidityTests(unittest.TestCase):
-    def test_missing_marker_is_invalid_not_exception(self):
-        rgb, depth = render(markers=('p',))
+    def test_fewer_than_three_markers_invalid(self):
+        rgb, depth = render(markers=('d', 'p'))
         est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
         self.assertFalse(est['scissors']['valid'])
-        self.assertIn('distal', est['scissors']['reason'])
-        self.assertFalse(est['cut']['valid'])           # no marker -> cannot pick the near side
+        self.assertIn('third', est['scissors']['reason'])
+        self.assertFalse(est['cut']['valid'])           # no tip -> cannot pick the near edge
 
-    def test_no_tissue_is_invalid_not_exception(self):
+    def test_no_sheet_is_invalid(self):
         rgb, depth = render(tissue=False)
         est = estimator().estimate(rgb, depth, np.eye(3), np.zeros(3))
         self.assertFalse(est['tissue']['valid'])
         self.assertFalse(est['cut']['valid'])
+        self.assertFalse(est['cut']['front_valid'])
 
     def test_nan_depth_handled(self):
         rgb, depth = render(nan_frac=0.4)
