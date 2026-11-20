@@ -1,4 +1,4 @@
-# 达芬奇式多臂手术机器人仿真：前列腺邻近组织切割的多臂协同视觉伺服
+# 达芬奇式多臂手术机器人仿真：多臂协同视觉伺服切割（研究仿真）
 
 > **2026-11-17 修复版入口**：`scenes/davinci_si_articulated_verified.ttt` 增加独立腕部 yaw，区分 RCM 杆轴摆角与末端 roll/pitch/yaw/grip；包含本轮 P0 修复。原 `davinci_si_instruments.ttt` 和下文历史演示保留，不代表修复版自动验收。修复、测试与模型边界见 `docs/SI_KINEMATICS_AND_SAFETY_zh.md`；P1–P4 阶段门槛见 `docs/DEVELOPMENT_ROADMAP_zh.md`。
 
@@ -14,6 +14,36 @@
 | ECM | 视野保持 | 30° 斜视内窥镜（640×480，水平视角 70°） |
 
 > 这是研究用的运动学仿真，不是临床系统。关节限位、穿刺点规则、组织模型都是探索性的仿真设定，没有和真机或临床数据标定过。
+
+---
+
+## 当前目标与进度（2026-11-20）
+
+**目标**：在现有场景 `scenes/davinci_si_articulated_verified.ttt` 上做一个可复现、有安全防护、由视觉驱动的多臂切割基准：三条 PSM（PSM1 主牵拉、PSM2 切割、PSM3 辅助牵拉）加 ECM。路线是 M5 视觉闭环切割，M6 多臂协同（按视觉张力代理牵拉、内窥镜视野跟随），M7 多种子配对评估。组织是放在剪刀前的非解剖测试片。**本项目结果不能描述为前列腺邻近、筋膜切割、保护神经血管束或有临床意义。**
+
+**规则**：判据先写死再评估；不放宽阈值、碰撞包络、关节限位和预算；失败如实报告；`config/task/fascia_benchmark.json` 的 gate 状态只由用户签署。
+
+| 里程碑 | 状态 | 关键数字 / 文件 |
+|---|---|---|
+| M1/M2 基础加固、6 自由度器械位姿控制 | 完成 | 默认 `cut.align_mode = tool_pose` |
+| M3 解剖定位 | **阻塞**（用户已接受不可行） | `docs/DEVELOPMENT_ROADMAP_zh.md` |
+| 复核现有场景 nominal | 通过（`8e54b6e`） | DONE，切口 10.0 mm，轨迹可复现 |
+| M5a 感知修正 v3 | 报错门槛全过；8 项前沿可用率未过，用户已点名接受（`8ec3193`） | 刀尖误差中位 0.31 mm；前沿"有效但错"率 0；可用率 0.22–0.72（门槛 ≥ 0.8） |
+| M5b v1 切割臂视觉闭环 | B2、B8 未过；按条文 B5 也未过（`e1d5835`） | 4 个场景完成 0/4，噪声 1/4；控制路径零真值读取；零撕裂零超切 |
+| M5a v4 方向修正 | 代码完成（`f21e865`），开发集已重评，留出集未评 | 方向以首次方向为锚、5° 锥、低通 0.6；开发集报错门槛全过，可用率仍是原 4 项未过 |
+| M5b v1.1 恢复路径修正 | 代码完成（`f21e865`），实跑未做 | 视觉模式下"恢复/遮挡"且看得见剪刀和组织 → 让开观察 |
+| M6 多臂协同 | 未开始 | — |
+| M7 配对评估 | 未开始 | — |
+
+**下一步**：
+1. M5a v4 留出集重评。这是 v3 留出集的第二次使用，结果里要注明。
+2. 用户决定是否接受 v4 的具体未过门槛（v3 的接受不沿用）。
+3. 按 `config/task/m5b_protocol_v1_1.json` 重跑 M5b 的 11 次运行。
+4. 再进入 M6。
+
+预注册文件：`config/perception/m5a_gates.json`、`config/perception/m5a_amendment_v4.json`、`config/task/m5b_protocol.json`、`config/task/m5b_protocol_v1_1.json`。结果：`validation/perception/`、`validation/task/m5b_*`。离线测试 `.venv\Scripts\python.exe scripts\tests\run_regressions.py`（241 项）。
+
+> 下文是更早阶段的功能介绍，保留原样。其中"前列腺"相关的定位目标见 M3：目前不成立。
 
 ---
 

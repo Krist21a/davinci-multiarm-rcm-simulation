@@ -16,12 +16,12 @@ fascia/NVB preservation, or measured tissue force (PBD strain is a model quantit
 
 ## Verification
 
-- Offline suite: `.venv\Scripts\python.exe scripts\tests\run_regressions.py` (212 tests at 1b8cefa;
+- Offline suite: `.venv\Scripts\python.exe scripts\tests\run_regressions.py` (241 tests at f21e865;
   rewrites `validation/safety/regressions.json`). PowerShell may print exit code 1 because of stderr
   wrapping; trust the `OK` / `regressions: True` line.
 - Live task: `scripts/task/run_cut_task.py --mode full --scenario <nominal|occlusion_transient|slip_regrasp|
   slip_handover|relax|relax_large|handover_tension> [--trace] [--align-mode shaft|tool_pose]
-  [--perception '<json>']`. Default scene `scenes/davinci_si_articulated_verified.ttt`.
+  [--perception '<json>'] [--control-source truth|vision] [--initial-view YAW,PITCH]`. Default scene `scenes/davinci_si_articulated_verified.ttt`.
 - Determinism: identical command sequences give identical `nodes_sha256` traces (`--trace`); extra reads
   are side-effect free. Use trace identity to prove "no control change".
 
@@ -32,44 +32,63 @@ fascia/NVB preservation, or measured tissue force (PBD strain is a model quantit
 - Gate statuses in `config/task/fascia_benchmark.json` are signed by the user, never by the agent.
 - Original analyses/reports stay as-is; add new versions alongside.
 
-## Status (2026-11-19)
+## Goal
 
-Done and committed: M1 foundation hardening (refused-vs-fault accounting, config roles, full withdrawal,
-live slip/regrasp/relax injection, GroundTruth read boundary, timing, trace), M2a 6-DOF tool-pose control
-(`toolPoseFK`/`setToolPose`, `scripts/task/tool_pose.py`, default `cut.align_mode = tool_pose`),
-M2b wrist-aware reachability, M4 shadow perception (`scripts/vision/cut_perception.py`,
-`validation/perception/shadow_eval.json`).
+Reproducible, safety-hardened, perception-driven multi-arm cutting benchmark on the existing scene
+`scenes/davinci_si_articulated_verified.ttt`: 3 PSM (psm1 retract primary, psm2 cut, psm3 retract
+assist) + ECM, software RCM, EndoWrist, PBD tissue sheet, task FSM, then vision-driven cutting (M5),
+multi-arm coordination (M6) and a paired evaluation (M7). The tissue is a non-anatomical test sheet.
+
+## Status (2026-11-20)
+
+Done and committed: M1 foundation hardening, M2a 6-DOF tool-pose control (default
+`cut.align_mode = tool_pose`), M2b wrist-aware reachability, M4 shadow perception.
+
+**M3 (anatomical placement) is BLOCKED** (user decision: accepted as infeasible) — see
+`docs/DEVELOPMENT_ROADMAP_zh.md`, "待解决问题：前列腺邻近定位尚不成立". Never describe results as
+prostate-adjacent / fascia / NVB / clinically meaningful. `3a68248` "M3b WIP" (scene-keyed config,
+protected-structure monitor, explicit tissue nodes, proxy scene builder) is inactive on the current
+scene; untracked `validation/anatomy/`, `validation/build/` are stale (abandoned v1 port plan).
+
+Re-verification after M3b WIP: `8e54b6e` — nominal DONE 10.0 mm, trace identical across repeats.
+
+M5a perception (`scripts/vision/cut_perception.py`, offline replay `scripts/vision/replay_perception.py`,
+gates `config/perception/m5a_gates.json` v3, frames in gitignored `validation/perception/frames/`):
+- 3-marker Kabsch tip (median 0.31 mm), chromatic sheet mask, tissue-only cut front (the tip only
+  picks the near edge once; anti-circularity tests prove the front is tip-independent), fail closed.
+- v2 holdout FAILED (occlusion_persistent 38.9 %, relax_large 37.5 % valid-but-wrong) and was burned;
+  v3 (`04ea47f`, `e2e8dad`): every wrongness gate passes incl. 4 fresh holdouts; 8 front-availability
+  gates fail (0.22–0.72 vs >= 0.8). User accepted those 8 for the v3 estimator only
+  (`config/perception/m5a_acceptance.json`, `8ec3193`).
+- v4 (`config/perception/m5a_amendment_v4.json`, pre-registered `448bfcd`, code `f21e865`): direction
+  slit-refit anchored to the first direction, 5 deg cone, low-pass 0.6 (fixes the closed-loop ratchet
+  seen in M5b v1). Dev replay `validation/perception/m5a_eval_dev_v4.json`: all wrongness gates pass,
+  the same 4 dev availability gates fail; holdout v4 replay NOT run yet. v3 acceptance does not carry
+  over: v4 needs a new user decision.
+
+M5b cutter-arm visual servo (`cut.control_source = vision`; protocol `config/task/m5b_protocol.json`):
+- Front fix lifecycle, relative alignment, CLEAR_VIEW recovery, strict purpose-tagged GroundTruth
+  (`ground_truth.py`: untagged read raises `TruthReadInControl`). Tension (until M6) and grasp count are
+  permitted non-visual signals; tear/overcut are safety monitors only.
+- v1 (`e1d5835`, `validation/task/m5b_summary.json`): B0 B1 B3 B4 B6 B7 pass; B2 0/4 DONE and B8 1/4 FAIL;
+  B5 is FAIL under the literal reading (V_noise_depth_0p5 ended by a truth acceptance check, not a
+  budget/refusal). Causes: direction ratchet (0.13 -> 0.95 rad), late-cut front unprovable, RESUME spec gap.
+- v1.1 (`config/task/m5b_protocol_v1_1.json`): vision-mode RESUME/OCCLUDED -> CLEAR_VIEW when scissors and
+  tissue are visible but the front is not (code `f21e865`, 241 regression tests green). Live runs NOT done.
+
+## Next work
+
+1. `replay_perception.py --holdout --out validation/perception/m5a_eval_holdout_v4.json` (2nd use of the
+   v3 holdouts — disclose), report every gate, then ask the user to accept/reject v4 named failures.
+2. M5b v1.1: the 11 runs of `m5b_protocol.json` with output prefix `m5b_v1_1_`,
+   `validation/task/m5b_v1_1_summary.json`, B5 strict reading; v1.1 is a development result (same
+   deterministic scenarios as v1). Known open risk: memory-front error grew to ~2 mm late in V_nominal v1.
+3. M6 — tension-proportional retraction from the visual tension proxy (replace fixed 0.2 mm steps;
+   relax_large may become recoverable — report, don't tune), ECM view following (replace the fixed pose
+   table), arbitration via the guarded controller. Only after M5b is resolved or explicitly accepted.
+4. M7 — multi-seed paired evaluation (fixed vs active view vs adaptive traction vs both); freeze
+   seeds/budgets/success definitions first.
 
 Known live facts: contralateral handover is mechanically impossible in the current port layout
-(psm2/psm3 proximal yaw links collide) — honest FAILED. Recovery from relax_large exhausts the
-4×0.2 mm retraction budget by design.
-
-**M3 (anatomical placement) is BLOCKED** — see `docs/DEVELOPMENT_ROADMAP_zh.md`, section
-"待解决问题：前列腺邻近定位尚不成立". Do not describe results as prostate-adjacent.
-
-Uncommitted / WIP at handoff: see the commit "M3b WIP" (scene-keyed config dir `config/scenes/<stem>/`
-with global fallback, protected-structure distance monitor, `tissueCreate` explicit `nodes`,
-`scripts/build/build_prostate_proxy_scene.py`). Untracked `validation/anatomy/roi_proxy.json` and
-`validation/build/` belong to the abandoned v1 port plan and are stale.
-
-## Next work (user decision: accept anatomical infeasibility, continue on the current scene)
-
-1. Re-verify the old scene live after the M3b WIP changes: nominal `--trace` DONE, same cut/strain as
-   `validation/task/sim_full_nominal_tool_pose.json`; run_regressions green.
-2. M5a — fix perception before any closed loop (shadow mode only):
-   - scissors tip bias ~1.8 mm at zero noise: two markers cannot fix roll; add a third marker or use the
-     jaw/hinge geometry so the tip offset is fully determined; target median < 0.5 mm at zero noise;
-   - slit front valid-but-wrong on ~94% of ticks (retraction crease extends the slit ~15 mm): detect the
-     slit apex (width → 0) and/or depth discontinuity instead of the run end;
-   - direction truth baseline: compare against the live cut direction from nodes, not placement-time v;
-   - pre-register gates before closing the loop, e.g. nominal valid-but-wrong (> 2 mm) rate < 5% for
-     front and tip, and invalid (not wrong) under occlusion.
-3. M5b — closed-loop visual servo: alignment/advance/stop from estimates; control path must not call
-   GroundTruth (add a test that counts truth reads during control = 0; truth only for logging/scoring);
-   fail closed (pause/relocalise/FAILED) on invalid estimates; run nominal, occlusion, slip, noise sweep.
-4. M6 — multi-arm coordination: tension-proportional retraction from the visual tension proxy (replace
-   fixed 0.2 mm steps; may make relax_large recoverable — report, don't tune to pass); ECM view
-   following that keeps cut front and tip centred (replace the fixed pose table); arbitration via the
-   guarded controller.
-5. M7 — multi-seed paired evaluation of fixed view/fixed traction vs active view vs adaptive traction vs
-   both; freeze seeds/budgets/success definitions first.
+(psm2/psm3 proximal yaw links collide) — honest FAILED. relax_large exhausts the 4x0.2 mm retraction
+budget by design.
