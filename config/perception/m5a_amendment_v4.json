@@ -1,0 +1,21 @@
+{
+  "_note": "M5a protocol v4 amendment. Registered BEFORE the v4 estimator change exists and BEFORE any v4 evaluation. Gates, thresholds, datasets, degradations and the wrong threshold of config/perception/m5a_gates.json (protocol_version 3) apply unchanged; this file only records what changed and why.",
+  "protocol_version": 4,
+  "base_protocol": "config/perception/m5a_gates.json (v3, unchanged)",
+  "trigger": "M5b v1 closed-loop runs (e1d5835, validation/task/m5b_summary.json) showed cut-direction drift that the open-loop M5a datasets never exercised: V_nominal / V_occlusion_transient direction error 0.13 -> 0.20 -> 0.38 -> 0.55 -> 0.70 -> 0.95 rad over six consecutive slit refits (each step inside the 20 deg clamp, which is relative to the PREVIOUS refit, so the clamp ratchets); V_noise_depth_0p5 one-tick jump 0.012 -> 0.279 rad followed by valid slit fronts with 2.5-3.3 mm error (valid-but-wrong in closed loop); V_slip_regrasp drift to ~0.33 rad. Throughout, the first (pre-cut, sheet length axis) direction stayed at 0.03-0.06 rad error.",
+  "change": {
+    "file": "scripts/vision/cut_perception.py",
+    "what": "Slit refit of the cut direction is anchored to the FIRST established direction (the near->far sheet length axis chosen on the first tick a tip is valid), not to the previous estimate. A refit candidate is accepted only if within DIR_UPDATE_RAD of the anchor; an accepted candidate is low-passed: dir = unit(DIR_SMOOTH * dir_prev + (1 - DIR_SMOOTH) * slit_dir). Rejected candidates leave the direction unchanged. Because the anchor cone is convex, the low-passed direction can never leave it.",
+    "constants": {
+      "DIR_UPDATE_RAD": "20 deg -> 5 deg (anchor-relative). Rationale: the anchor is already inside the 5 deg direction gate in every inspected run; a slit fit that disagrees with it by more than the gate itself is not trusted. The v1 noise case jumped 16 deg in one tick, which a 20 deg anchor cone would still have admitted.",
+      "DIR_SMOOTH": "0.6 (same value as the existing LAT_SMOOTH low-pass on the cut-line lateral)"
+    },
+    "unchanged": "tissue-only front (tip never supplies or advances the front), fail-closed reasons, slit/lateral logic, all other constants, tip estimator, tension proxy"
+  },
+  "evaluation": {
+    "dev": "replay_perception.py on the v3 development datasets + degradations -> validation/perception/m5a_eval_dev_v4.json",
+    "holdout": "replay_perception.py --holdout -> validation/perception/m5a_eval_holdout_v4.json. Disclosure: the four v3 held-out datasets were evaluated once (e2e8dad, summary numbers only, no per-tick inspection); this is their SECOND use, so they are no longer pristine. The fix was designed from M5b closed-loop logs, not from these frames.",
+    "pass_rule": "unchanged from v3: M5b may close the loop only if every gate passes, or the user explicitly accepts a named failing gate."
+  },
+  "acceptance_status": "config/perception/m5a_acceptance.json (user acceptance of eight named front-availability failures) applies to the v3 estimator (e2e8dad) only. It does not carry over to v4; the v4 result needs a new explicit user decision. Until then M5b v1.1 runs are reported as provisional."
+}
