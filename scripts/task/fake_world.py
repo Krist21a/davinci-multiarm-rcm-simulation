@@ -26,7 +26,6 @@ class FakeWorld:
         # restored by a successful clear_view back-off.
         self.vision = vision
         self.fix_lost = False
-        self.cleared_view = False
         self.tick = 0
         self.retraction = 0.0
         self.base_strain = 0.08 if cut_only else 0.0       # anchors pre-tension the cut-only sheet
@@ -69,10 +68,10 @@ class FakeWorld:
                           torn=1 if self.e.get('tear') is not None and self.tick >= self.e['tear'] else 0,
                           cut_length_m=self.cut, faults=faults)
         if self.vision:
-            # The remembered front is lost while the front is explicitly hidden or a
-            # closure just voided the fix; a back-off (clear_view) restores it.
+            # The remembered front is lost on hidden/front_hidden ticks and after a
+            # closure voids the fix; a back-off (clear_view) restores fix_lost.
             front_known = not hidden and not self.fix_lost and \
-                (self.cleared_view or self.tick not in self.e.get('front_hidden', set()))
+                self.tick not in self.e.get('front_hidden', set())
             obs.cut_site_visible = front_known
             obs.tissue_visible = not hidden
             obs.cut_progress_m = None if not front_known else self.cut + self.e.get('progress_bias_m', 0.0)
@@ -139,7 +138,6 @@ class FakeWorld:
         if self.e.get('clear_view_refused'):
             return False
         if not self.e.get('clear_view_useless'):
-            self.cleared_view = True
             self.fix_lost = False
         return True
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from cut_fsm import S, CutTaskFSM  # noqa: E402
+from cut_fsm import S, CutTaskFSM, Observation  # noqa: E402
 from fake_world import FakeWorld  # noqa: E402
 
 REPO = HERE.parents[1]
@@ -236,6 +236,38 @@ class Scenarios(unittest.TestCase):
         self.assertIn('cut length below target', m.reason)
         # Completion ran at ALIGN entry, before any jaw opening.
         self.assertFalse(any(a[0] == 'open_scissors' for a in w.actions))
+
+    # -- M5b v1.1: RESUME/OCCLUDED with a hidden front also goes to CLEAR_VIEW (vision only) ----
+    def test_vision_resume_after_tension_uses_clear_view(self):
+        # relax during CUT -> RETRACT_ADJUST; the RESUME tick has the front hidden but
+        # scissors+tissue visible -> CLEAR_VIEW -> restored -> RESUME -> ALIGN (v1 went
+        # OCCLUDED -> CAMERA_ADJUST instead).
+        m, w = run('vision_relax_resume_clear', vision=True, relax=14, front_hidden={18})
+        self.assertEqual(m.state, S.DONE)
+        p = self.path(m)
+        i = p.index('RETRACT_ADJUST')
+        self.assertEqual(p[i:i + 4], ['RETRACT_ADJUST', 'RESUME', 'CLEAR_VIEW', 'RESUME'])
+        self.assertNotIn('CAMERA_ADJUST', p)
+
+    def test_vision_occluded_with_front_hidden_goes_clear_view(self):
+        # Occlusion ends but the front stays hidden: scissors+tissue visible -> CLEAR_VIEW.
+        m, w = run('vision_occluded_then_hidden', vision=True, occlude=(10, 11), front_hidden={12})
+        self.assertEqual(m.state, S.DONE)
+        p = self.path(m)
+        i = p.index('OCCLUDED')
+        self.assertEqual(p[i:i + 3], ['OCCLUDED', 'CLEAR_VIEW', 'RESUME'])
+
+    def test_truth_resume_not_visible_stays_occluded(self):
+        # The v1.1 branch is vision-only: truth mode keeps RESUME -> OCCLUDED.
+        w = FakeWorld()
+        m = CutTaskFSM(w, CFG)
+        m.state = S.RESUME
+        m.return_to = S.ALIGN
+        m.on_resume(Observation(cut_site_visible=False, scissors_visible=False,
+                                cut_site_offset=None, grasped={'psm1': 6, 'psm3': 6},
+                                tension=0.08, max_strain=0.08, torn=0,
+                                cut_length_m=0.0, faults=[]))
+        self.assertEqual(m.state, S.OCCLUDED)
 
     @classmethod
     def tearDownClass(cls):

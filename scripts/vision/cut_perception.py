@@ -28,7 +28,8 @@ Scene model
   connected to the near edge; the front is the slit apex. The apex must be followed by
   visible intact tissue — if whatever lies ahead is covered by something in front of the
   plane, or not seen, front_valid is False. A slit run >= SLIT_UPDATE_M refits the cut
-  line position and direction from the slit itself (within 20 deg of the prior).
+  line position and direction from the slit itself (accepted only within DIR_UPDATE_RAD of
+  the first established direction, then low-passed; rejected candidates change nothing).
 * Tension proxy: robust in-plane tissue width (p95 - p5 across the cut direction) inside
   a middle band, normalised by the first width seen after the grasp frame.
 
@@ -81,7 +82,10 @@ AHEAD_WINDOW_M = 0.002                   # look-ahead of the slit apex for intac
 MIN_AHEAD_PX = 4                         # sheet pixels required in that look-ahead
 COVER_DEPTH_M = 0.002                    # depth this much in front of the plane occludes
 FIT_RMS_MAX_M = 0.0003                   # marker Kabsch RMS gate
-DIR_UPDATE_RAD = np.radians(20.0)        # slit refit must stay this close to the prior
+DIR_UPDATE_RAD = np.radians(5.0)         # slit refit must stay this close to the anchor
+                                         # (the first near->far direction); anchor-relative,
+                                         # so a bad refit cannot ratchet (m5a_amendment_v4)
+DIR_SMOOTH = 0.6                         # low-pass on an accepted slit refit, same as LAT_SMOOTH
 WIDTH_BAND = 1.0 / 3.0                   # middle third of the cut-direction extent
 
 
@@ -89,6 +93,18 @@ def unit(v):
     v = np.asarray(v, dtype=float)
     n = np.linalg.norm(v)
     return v / n if n else v
+
+
+def _refit_direction(anchor, prev, slit_dir):
+    """Anchor-cone gated, low-passed slit refit of the cut direction (m5a_amendment_v4).
+
+    None when the candidate disagrees with the first established direction by more than
+    DIR_UPDATE_RAD; otherwise prev low-passed toward it. The cone is convex, so the blend
+    can never leave it."""
+    anchor, prev, slit_dir = unit(anchor), unit(prev), unit(slit_dir)
+    if math.acos(float(np.clip(slit_dir @ anchor, -1, 1))) > DIR_UPDATE_RAD:
+        return None
+    return unit(DIR_SMOOTH * prev + (1.0 - DIR_SMOOTH) * slit_dir)
 
 
 def rotvec(v):
@@ -232,6 +248,7 @@ class CutPerception:
         self.sheet_width_m = sheet_width_m   # known full strip width (truncation check)
         self.w0 = None                   # first post-grasp tissue width
         self._cut_dir = None             # remembered near->far cut direction (camera frame)
+        self._cut_dir0 = None            # the first established direction: refit anchor
         self._cut_lat = None             # remembered cut-line lateral position
         self._slit_seen = False          # a slit was measured at least once: no pre-cut ever again
         self._front_d = None             # remembered front offset from the near edge (m):
@@ -390,6 +407,7 @@ class CutPerception:
                 p = c + np.median(s_len[end]) * len_ax + np.median(s_w[end]) * lat_ax
                 d_uv.append(np.hypot(*(np.asarray(self._project(p)) - np.asarray(tip_uv))))
             self._cut_dir = len_ax if int(np.argmin(d_uv)) == 0 else -len_ax
+            self._cut_dir0 = self._cut_dir          # anchor every later slit refit to this
 
         direction = self._cut_dir                 # points from the near edge to the far edge
         sa = (pts - c) @ direction
@@ -423,10 +441,11 @@ class CutPerception:
             q = np.stack([hs_dir - hs_dir.mean(), hs_lat - hs_lat.mean()], axis=1)
             _, _, Vq = np.linalg.svd(q, full_matrices=False)
             slit_dir = unit(Vq[0, 0] * direction + Vq[0, 1] * lat_ax)
-            if slit_dir @ direction < 0:
+            if slit_dir @ self._cut_dir0 < 0:
                 slit_dir = -slit_dir
-            if math.acos(float(np.clip(slit_dir @ direction, -1, 1))) <= DIR_UPDATE_RAD:
-                direction = slit_dir
+            new_dir = _refit_direction(self._cut_dir0, direction, slit_dir)
+            if new_dir is not None:
+                direction = new_dir
                 self._cut_dir = direction
                 sa = (pts - c) @ direction
                 sb = (pts - c) @ lat_ax

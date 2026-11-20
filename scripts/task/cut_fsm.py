@@ -265,6 +265,10 @@ class CutTaskFSM:
     def on_occluded(self, obs):
         if self.visible(obs):
             return self.go(S.RESUME, 'view restored', obs)
+        if self.vision and obs.scissors_visible and obs.tissue_visible:
+            # Same rule as the generic check: a hidden front with the scene seen is a
+            # clear-and-look problem, not an occlusion to wait out (m5b_protocol_v1_1).
+            return self.go(S.CLEAR_VIEW, 'front unknown; clearing the view', obs)
         if self.ticks_in_state >= self.cfg['view']['occlusion_wait_ticks']:
             self.go(S.CAMERA_ADJUST, 'occlusion persists', obs)
 
@@ -366,6 +370,10 @@ class CutTaskFSM:
     def on_resume(self, obs):
         target = self.return_to or S.ALIGN
         if not self.visible(obs):
+            if self.vision and obs.scissors_visible and obs.tissue_visible:
+                # Blades cover the front, not the scene: clear-and-look, not OCCLUDED
+                # (m5b_protocol_v1_1, the V_relax spec gap).
+                return self.go(S.CLEAR_VIEW, 'front unknown; clearing the view', obs)
             return self.go(S.OCCLUDED, 'view lost on resume', obs)
         if target in NEEDS_GRASP and not self.grasps_ok(obs):
             return self.go(S.RELOCALIZE, 'grasp missing on resume', obs)

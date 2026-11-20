@@ -57,11 +57,14 @@
     "LOCALIZE->EXPOSE",
     "LOCALIZE->GRASP",
     "OCCLUDED->CAMERA_ADJUST",
+    "OCCLUDED->CLEAR_VIEW",
     "OCCLUDED->RESUME",
     "RELOCALIZE->FAILED",
     "RELOCALIZE->RESUME",
     "RESUME->ALIGN",
+    "RESUME->CLEAR_VIEW",
     "RESUME->EXPOSE",
+    "RESUME->RETRACT_ADJUST",
     "RETRACT_ADJUST->FAILED",
     "RETRACT_ADJUST->RESUME"
   ],
@@ -1703,6 +1706,77 @@
         "DONE"
       ]
     },
+    "vision_occluded_then_hidden": {
+      "events": {
+        "occlude": [
+          10,
+          11
+        ],
+        "front_hidden": [
+          12
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 33,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CLEAR_VIEW",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    },
     "vision_progress_poison": {
       "events": {
         "progress_bias_m": 0.009
@@ -1739,6 +1813,74 @@
         "EXPOSE",
         "ALIGN",
         "FAILED"
+      ]
+    },
+    "vision_relax_resume_clear": {
+      "events": {
+        "relax": 14,
+        "front_hidden": [
+          18
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 32,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN",
+        "RESUME->CLEAR_VIEW",
+        "RESUME->RETRACT_ADJUST",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
       ]
     }
   }

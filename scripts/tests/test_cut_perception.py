@@ -253,5 +253,41 @@ class ValidityTests(unittest.TestCase):
         self.assertAlmostEqual(est['tension_proxy']['strain_proxy'], 0.0, places=3)
 
 
+class DirectionRefitTests(unittest.TestCase):
+    """_refit_direction: the anchored, low-passed slit refit (m5a_amendment_v4)."""
+    ANCHOR = np.array([1.0, 0.0, 0.0])
+
+    def rotated(self, deg, axis=(0.0, 0.0, 1.0)):
+        axis = axis / np.linalg.norm(axis)
+        a = np.radians(deg)
+        K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
+        return (np.eye(3) + np.sin(a) * K + (1 - np.cos(a)) * K @ K) @ self.ANCHOR
+
+    def test_rejects_candidate_10_deg_off_anchor(self):
+        self.assertIsNone(cp._refit_direction(self.ANCHOR, self.ANCHOR, self.rotated(10.0)))
+
+    def test_accepts_3_deg_and_returns_the_blend(self):
+        d = self.rotated(3.0)
+        out = cp._refit_direction(self.ANCHOR, self.ANCHOR, d)
+        np.testing.assert_allclose(out, cp.unit(cp.DIR_SMOOTH * self.ANCHOR + (1 - cp.DIR_SMOOTH) * d),
+                                   atol=1e-12)
+
+    def test_ratcheted_candidates_never_leave_the_anchor_cone(self):
+        # Each candidate rotates 4 deg further from the PREVIOUS accepted direction; the
+        # old prev-relative 20 deg clamp ratcheted ~0.95 rad, the anchor cone cannot.
+        prev = self.ANCHOR.copy()
+        ang = 0.0
+        for k in range(1, 21):
+            cand = self.rotated(min(4.0 * k, 90.0))
+            out = cp._refit_direction(self.ANCHOR, prev, cand)
+            if out is not None:
+                prev = out
+            ang = np.degrees(np.arccos(np.clip(prev @ self.ANCHOR, -1, 1)))
+            self.assertLessEqual(ang, np.degrees(cp.DIR_UPDATE_RAD) + 1e-9)
+        # By construction candidates past ~5 deg are all rejected, so the estimate stays
+        # inside the cone; the old ratchet would have walked to ~80 deg.
+        self.assertLessEqual(ang, np.degrees(cp.DIR_UPDATE_RAD) + 1e-9)
+
+
 if __name__ == '__main__':
     unittest.main()

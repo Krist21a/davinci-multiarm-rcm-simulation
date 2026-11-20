@@ -1,6 +1,6 @@
 {
   "success": true,
-  "tests_run": 235,
+  "tests_run": 241,
   "failures": 0,
   "errors": 0,
   "skipped": [],
@@ -16,7 +16,7 @@
   },
   "static_checks": {
     "python_files": 76,
-    "config_json_files": 25,
+    "config_json_files": 27,
     "errors": []
   },
   "source_sha256": {
@@ -64,12 +64,12 @@
     "scripts/build/simtools.py": "1e96191c5a9a2ebae37a51bdc19bff4811e2e770f2e49949ec30e321e9bf30af",
     "scripts/build/upgrade_si_articulation.py": "cb63d96441416ec1d64e3a872426bf7ce30f2994debcfdd8b3a872ef21fdf807",
     "scripts/build/validate_endoscope_scene.py": "5f54885225a26380f69d7e869b293111722f36532ae893d485f08086c18a4f81",
-    "scripts/task/cut_fsm.py": "c01da54c93ed0df57e61070cae71be596768860bd71bdc04308ea4ca3c27551b",
-    "scripts/task/fake_world.py": "410b908b3e86cca39e37b283640a4282ccc2ff91e8b24de4896cef60a16ebb39",
+    "scripts/task/cut_fsm.py": "165e046d18775c18832acb6ae5655abcfd2f015d4c69790045fd3c276a26919e",
+    "scripts/task/fake_world.py": "4026495df09672a0446ce67b76926cc4513c76125445e7477cb80c83d74f2745",
     "scripts/task/ground_truth.py": "79bf8575f78e40eb0f335b91d6f996c54ff7ee83efded89dd605a2f1888396e3",
     "scripts/task/run_cut_task.py": "68b263d46dfec360f2a28a9cfaafc00ad9cc5bde49bdcce284a7f9af064c3aaf",
     "scripts/task/sim_world.py": "5a891885996d276d54c8d7ad98949c2b9b19d80c65b2b7b2738d3ac03442f4d5",
-    "scripts/task/test_cut_fsm.py": "838a1dd6fba40b13c9edf1a4f8ecdbfd9fb38d97f767ef7bffcb81339c34f2b8",
+    "scripts/task/test_cut_fsm.py": "70dc05ba10a930973610cc7e1c3ae8f4e0501ec429a6548c98b7f2c310d2db70",
     "scripts/task/tool_pose.py": "bd39e8533c66607f6d2c04c524d3f49e5174caca64fca4e684b564a6fc942f78",
     "scripts/task/visibility.py": "7df52bcee081993da8fd9fc0be23b0e68c3c897b48e7c51fe9346c3b56854083",
     "scripts/task/workspace.py": "cae1ed99e81d554bfcc448510bfcdd4f7ccfd8778c0f9527fedbdcd42a149362",
@@ -79,7 +79,7 @@
     "scripts/tests/test_articulation.py": "b7aa3180746fc8da605a79b69dd1de0606602c479df9f72c722cf4c5bfc80892",
     "scripts/tests/test_bladder_retraction.py": "819fab43a09219a5242c4420a9ce7c5a3f7bc448c7a0e8293a1b2ae609c54910",
     "scripts/tests/test_controller_refresh.py": "b616a554d45ceaeb88540f02bb065e4114d9be85a68f01fc1f4ff89ba07deb24",
-    "scripts/tests/test_cut_perception.py": "4d8f945005fb7fb34e48032a87650500ae11f178ee7649614ba8e267354eee3b",
+    "scripts/tests/test_cut_perception.py": "4f602ce89d767f401077de45b091682a1a07502f9f1791183f9819171b7f44d6",
     "scripts/tests/test_cut_runner.py": "ac265cfadc98ee9fe4ab40c91d24068873a70335f7d9ec576cb1b0d48900270f",
     "scripts/tests/test_cut_safety.py": "49263dc54526a7302745f035c9050465032a1d186ac23bfb7a193b0bc2f3b549",
     "scripts/tests/test_instrument_geometry.py": "74f516576ea0315dfcfe4194e3e339d256c23b5fddba56d4fd28c5822eb7aa0e",
@@ -91,7 +91,7 @@
     "scripts/tests/tool_pose_accuracy.py": "ac213b40726e56d29bb3e7c9a82c7f2843dbb0f36d6a9f5051ac580a3bd969b0",
     "scripts/tissue/tissue_cut_demo.py": "09c9dd43e720dddc081433ad7f4599c8ae9d7f3c86f32e248f27f0324cd0b1de",
     "scripts/verify_rcm.py": "40cfaf9c41c28ee5fcebeb25f947416c2fc1a0c708cdfbceae58964d13a9716d",
-    "scripts/vision/cut_perception.py": "04b2f496233749922d958d865d73b575ed32a4d797ce14672e92a6ece8abdd90",
+    "scripts/vision/cut_perception.py": "5964a035d9568408c0155f11313d2ba97e4c6ec6a0c1a00aca095987c5d082d7",
     "scripts/vision/replay_perception.py": "ae52999f4a1546acba9ec6c24ec88c00b0c886264dbba37b5822f7fd5cf670f9",
     "scripts/vision/run_perception_eval.py": "a16d62eea11260854ec722ac66384d5ddda5b98638b1a51bffa15275d3de132b",
     "scripts/vision/run_visual_task_suite.py": "4054b57c451fe7285245567a824f5911fbdf21a80100e1878995dd3e714c16fa",
@@ -128,12 +128,14 @@
     "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
     "config/legacy_rcm_config.json": "394026c13337548644baed355829fa417111fb64a0ef845b2b1915b5cb49a1c5",
     "config/perception/m5a_acceptance.json": "f8baa06cef9177edd1b99ac014cc90dfd61aa6feb59cd766765c66cfb2d621a6",
+    "config/perception/m5a_amendment_v4.json": "0b1cd842059a14cc94ecb5a106b81fbbb76025103104019e26d0e33dae888ccd",
     "config/perception/m5a_gates.json": "2c446bfacbe2167be9c985295e27333412e570b5d0cd6861669088ca040da8f4",
     "config/rcm_config.json": "c576471f18d61920f22afaa19f8e0defd1fb8ebb0a58cd033008f254642ebf80",
     "config/registered_plan.json": "19844602a37373e65ae3a9a1eecfde2c0a0eaaca9760c12c5e68a8149bb75487",
     "config/task/cut_task.json": "9a701c0a194f83b23c3b86643baf48888e85119f9eeefe1cfffa0adacdc3d562",
     "config/task/fascia_benchmark.json": "d88c2cbbe295b674ec895d2d7662dd5de7708fd9520b0b69300ae3710f9b7b3f",
-    "config/task/m5b_protocol.json": "4edb3cf377fb4c501d8b882b8f97da6e97ad8cd5b3b83714b1d1cd82b81dd403"
+    "config/task/m5b_protocol.json": "4edb3cf377fb4c501d8b882b8f97da6e97ad8cd5b3b83714b1d1cd82b81dd403",
+    "config/task/m5b_protocol_v1_1.json": "8594f6be7449f49cc53294ab263dc11c66666e938039171f532b078554ec0650"
   },
   "scope": "Offline unit/mocked regressions and real Lua interpreter with sim stubs; live scene results are separate reports."
 }
