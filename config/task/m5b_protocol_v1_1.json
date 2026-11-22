@@ -1,0 +1,15 @@
+{
+  "_note": "M5b protocol v1.1 amendment. Registered BEFORE the v1.1 FSM change and BEFORE any v1.1 run. Scope, truth boundary, parameters, budgets, runs and criteria B0-B8 of config/task/m5b_protocol.json apply unchanged except as listed here. v1 results (validation/task/m5b_summary.json, e1d5835) stay as they are.",
+  "protocol_version": "1.1",
+  "base_protocol": "config/task/m5b_protocol.json (v1)",
+  "perception": "estimator per config/perception/m5a_amendment_v4.json (anchored, low-passed direction refit). Provisional: M5a v4 acceptance is pending a user decision.",
+  "fsm_change": {
+    "file": "scripts/task/cut_fsm.py",
+    "spec_gap_in_v1": "In vision mode the generic NEEDS_VIEW check routes 'scissors and tissue visible, front unknown' to CLEAR_VIEW, but on_resume and on_occluded did not: RESUME with an unknown front went to OCCLUDED, waited occlusion_wait_ticks and escalated to CAMERA_ADJUST although the cause was the blades covering the edge (V_relax: RETRACT_ADJUST -> RESUME -> OCCLUDED -> CAMERA_ADJUST -> FAILED, front invalid 'no provable pre-cut front (0 px at the near edge)' on every tick 9-27).",
+    "change": "vision mode only: on_resume and on_occluded apply the same rule as the generic check — if not visible but scissors_visible and tissue_visible, go to CLEAR_VIEW; otherwise unchanged. Truth mode is untouched (B0 must stay trace-identical). The CLEAR_VIEW budget (clear_view_attempts = 3), its reset-on-success and the return target (CUT -> ALIGN, so a fresh front fix precedes any closure) are unchanged."
+  },
+  "runs": "the same 11 runs as v1, outputs prefixed m5b_v1_1_ (validation/task/m5b_v1_1_<id>.json, summary validation/task/m5b_v1_1_summary.json)",
+  "criteria": "B0-B8 unchanged.",
+  "b5_strict_reading": "B5 is scored literally: a FAILED counts as fail-closed only if its reason is a budget exhaustion or a refused/impossible command. A FAILED caught by a truth acceptance check after the visual loop declared completion (v1 V_noise_depth_0p5: 'cut length below target') does NOT satisfy B5. Under this reading v1 B5 was FAIL (the v1 summary marked it PASS); the v1.1 summary states this correction.",
+  "independence_disclosure": "The scenarios are deterministic and the same as v1, whose logs were used to design both fixes. v1.1 is therefore a development result, not a held-out test."
+}

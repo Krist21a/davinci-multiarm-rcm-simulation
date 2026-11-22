@@ -16,6 +16,13 @@ function setGrip(index,angle)
     local arm=arms[index]
     local entry=arm and INSTRUMENTS and INSTRUMENTS[arm.arm]
     if not entry or not entry.hinge_slide then return baseSetGrip(index,angle) end
+    -- The base controller validates too, but the slide must not move (or do arithmetic on bad input)
+    -- before that validation. Intervals here are the installed per-joint bounds, not the total jaw range.
+    if type(angle)~='number' or angle~=angle or math.abs(angle)==math.huge or not arm.grip or #arm.grip==0 then return false end
+    for _,h in ipairs(arm.grip) do
+        local cyclic,lim=sim.getJointInterval(h)
+        if not cyclic and (not lim or angle<lim[1] or angle>lim[1]+lim[2]) then return false end
+    end
     if not entry.slideHandle then
         for _,h in ipairs(sim.getObjectsInTree(sim.handle_scene,sim.handle_all,0)) do
             if sim.getObjectAlias(h)==entry.hinge_slide then entry.slideHandle=h end

@@ -1,0 +1,15 @@
+{
+  "protocol_version": "1.2",
+  "base_protocol": "config/task/m5b_protocol.json",
+  "previous_amendment": "config/task/m5b_protocol_v1_1.json",
+  "perception_amendment": "config/perception/m5a_amendment_v5.json",
+  "changes": {
+    "initial_view": "Apply the explicit ECM view after task homing and before placing the sheet. Record home and applied camera matrices, the live ECM target, and the per-frame ECM target for new captures.",
+    "withdrawal": "Snapshot the pre-cut tool pose before the first accepted cutter motion, including a first advance after a no-motion alignment or an initial CLEAR_VIEW back-off. A missing snapshot cannot certify withdrawal after motion. Do not close open jaws to withdraw.",
+    "closure": "In vision mode, check the new visual progress after advance and before closure. Missing/invalid progress refuses closure; if progress has reached the target, use the normal withdrawal path, which fails closed if the jaws cannot safely withdraw. In tool_pose mode, require both the directed visual jaw axis and the proprioceptive opening axis to agree with the visual target within 5 degrees (the existing M5a direction scale) at ALIGN and immediately before closing. Recheck the existing lateral tolerance before closing. This adds checks; no existing thresholds or budgets are loosened.",
+    "B7": "Read truth just before issuing the jaw command. Publish the sample only for an accepted closure. Missing/nonfinite samples cannot satisfy B7."
+  },
+  "criteria": "B0-B8 unchanged; B5 follows the literal budget/refusal rule from v1.1. Do not count a truth terminal rejection as B5 success.",
+  "verification": "Offline regressions plus a live B0 comparison with validation/task/m5a_trace_check.json if the simulator is available. Any v1.2 vision runs before M5a v5 acceptance are development diagnostics only, not M5b acceptance. Report failures without tuning.",
+  "runs": "Same cases and budgets as v1. Use new run/report names (m5b_v1_2_) so prior evidence is not overwritten."
+}

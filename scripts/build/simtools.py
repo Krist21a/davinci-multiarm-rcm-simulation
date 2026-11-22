@@ -22,6 +22,7 @@ ENDO_CONFIG = CONFIG / 'endoscope'
 ENDO_SRC = REPO / 'src' / 'endoscope'
 ENDO_VALIDATION = REPO / 'validation' / 'endoscope'
 INSTRUMENT_SCENE = REPO / 'scenes' / 'davinci_si_instruments.ttt'
+ARTICULATED_SCENE = REPO / 'scenes' / 'davinci_si_articulated_verified.ttt'
 INSTRUMENT_SRC = REPO / 'src' / 'instruments'
 INSTRUMENT_VALIDATION = REPO / 'validation' / 'instruments'
 TISSUE_SRC = REPO / 'src' / 'tissue'
@@ -56,8 +57,17 @@ def _import_client():
 def connect(args):
     RemoteAPIClient = _import_client()
     client = RemoteAPIClient(host=args.host, port=args.port)
+    # A disconnected REQ socket otherwise keeps an unsent request alive during
+    # context destruction, so even a receive timeout may leave the CLI hanging.
+    client.socket.LINGER = 0
+    client.socket.SNDTIMEO = int(args.timeout * 1000)
     client.socket.RCVTIMEO = int(args.timeout * 1000)
-    sim = client.require('sim')
+    try:
+        sim = client.require('sim')
+    except Exception:
+        client.socket.close(linger=0)
+        client.context.term()
+        raise
     return client, sim
 
 
@@ -150,6 +160,59 @@ def controller_source(rcm_config, collision_pairs) -> str:
     """The exact text embedded as /RCMController: generated data + committed controller source."""
     return ('CONFIG=' + lua(rcm_config) + '\nCOLLISION_PAIRS=' + lua(collision_pairs) + '\n'
             + read_text(ENDO_SRC / 'rcm_controller.lua'))
+
+
+def refreshed_controller_source(embedded: str, tissue=False, tissue_source=None) -> str:
+    """Keep the scene's generated/geometry-identified data, replace only known Lua sources.
+
+    Refuse unfamiliar layouts instead of silently grafting a controller onto an old
+    or unrelated scene. No Lua is evaluated in Python and no role is inferred from labels.
+    `tissue_source` explicitly selects a different tissue.lua file (e.g. the frozen
+    src/tissue/legacy/tissue_v1.lua for locked collectors); the default is current
+    src/tissue/tissue.lua.
+    """
+    embedded = embedded.replace('\r\n', '\n')
+    marker = '-- Software RCM controller for the endoscope task scene'
+    head, found, _ = embedded.partition(marker)
+    if not found:
+        raise ValueError('unrecognized embedded RCM controller; rebuild this scene first')
+    lines = head.rstrip('\n').split('\n')
+    instrument = len(lines) == 3 and lines[2].startswith('INSTRUMENTS=')
+    if len(lines) not in (2, 3) or not lines[0].startswith('CONFIG=') or not lines[1].startswith('COLLISION_PAIRS='):
+        raise ValueError('unrecognized controller data prefix; refusing source replacement')
+    if len(lines) == 3 and not instrument:
+        raise ValueError('unrecognized instrument capability prefix')
+    if tissue and not instrument:
+        raise ValueError('tissue task requires a geometry-identified instrument scene')
+    source = head + read_text(ENDO_SRC / 'rcm_controller.lua')
+    if instrument:
+        source += '\n' + read_text(INSTRUMENT_SRC / 'capability_guard.lua')
+        if '["articulation"]=' in head:
+            source += '\n' + read_text(INSTRUMENT_SRC / 'articulation.lua')
+        source += '\n' + read_text(Path(tissue_source) if tissue_source is not None
+                                   else TISSUE_SRC / 'tissue.lua')
+    return source
+
+
+def refresh_controller(sim, handle, tissue=False, tissue_source=None) -> str:
+    """Update the loaded, stopped scene only; return the exact controller code SHA-256.
+
+    The .ttt on disk is NOT saved. Direct GUI playback still needs a rebuilt scene.
+    Called before simulation starts so changed Lua cannot coexist with old runtime state.
+    """
+    if sim.getSimulationState() != sim.simulation_stopped:
+        raise RuntimeError('controller source can only be refreshed while simulation is stopped')
+    old = sim.getStringProperty(handle, 'code')
+    source = refreshed_controller_source(old, tissue=tissue, tissue_source=tissue_source)
+    try:
+        sim.setStringProperty(handle, 'code', source)
+        actual = sim.getStringProperty(handle, 'code').replace('\r\n', '\n')
+        if actual != source:
+            raise RuntimeError('controller source read-back mismatch')
+    except Exception:
+        sim.setStringProperty(handle, 'code', old)
+        raise
+    return hashlib.sha256(actual.encode('utf-8')).hexdigest()
 
 
 def panel_data(endoscope_cfg, rcm_config):

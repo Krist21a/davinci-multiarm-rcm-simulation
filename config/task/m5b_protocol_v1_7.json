@@ -1,0 +1,8 @@
+{
+  "protocol_version": "1.7",
+  "previous_amendment": "config/task/m5b_protocol_v1_6.json",
+  "scope": "Development fix for front evidence selection and guarded viewing on the same non-anatomical, row-coded simulated sheet. Not M5 acceptance.",
+  "current_front": "When a provable slit was observed in the current RGB-D frame, do not prefer the memory candidate for a difference of at most one existing 0.5 mm spatial bin. A materially shorter slit is still rejected. Keep gap and look-ahead criteria, local chart validity, fresh material progress, minimum 0.25 mm post-closure increase, and the prohibition on using memory for control.",
+  "optical_retry": "If the post-advance observation cannot confirm the front or scissors but still sees the sheet, has no faults, and passes grasp and tension checks, hold the cutting arm in place and use at most one guarded camera adjustment from the existing candidate table and shared camera budget. Take a new observation after the accepted move and rerun all interlocks including same-frame front, scissors, alignment and sweep checks. On insufficient or refused evidence use the existing fail-closed recovery. Keep all endpoint, collision, alignment and numeric recovery limits.",
+  "trials": "Existing v1.6 RGB-D front diagnostics are development inputs. Record marked truth nominal trace and marked vision nominal and 0.5 mm depth-noise trials at yaw +4.5 deg, pitch 0 and insertion 0.080 m, using seeds 0 and 1 respectively. Report truth peak and terminal cut length, closures, post-closure reacquisitions, optical retries and failures. No holdout reuse or camera qualification."
+}

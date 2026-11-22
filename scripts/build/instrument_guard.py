@@ -77,6 +77,11 @@ def shapes_under(sim, joint):
 
 def wrist_frame(sim, by, arm):
     """dVRK wrist_pitch_link frame P (world) from the scene joints; also returns the frame residuals."""
+    if arm + '_dvrk_pitch_frame' in by:
+        T = world(sim, by[arm + '_dvrk_pitch_frame'])
+        j9 = world(sim, by[arm + '_joint9'])
+        return T, dict(pitch_axis_alignment=float(abs(T[:3, 2] @ j9[:3, 2])),
+                       explicit_articulation=True)
     j9, j10, j11 = (world(sim, by[f'{arm}_joint{n}']) for n in (9, 10, 11))
     x = unit(j10[:3, 3] - j9[:3, 3])
     z9, z10, z11 = j9[:3, 2], j10[:3, 2], j11[:3, 2]
@@ -102,10 +107,31 @@ def expected(model, T_WP):
 
 
 def identify_arm(sim, by, arm):
+    # Identify in neutral wrist/jaw pose, then restore exactly. Model number still
+    # comes only from meshes, not the articulation metadata or a role label.
+    if arm + '_wrist_yaw_joint' in by:
+        hs = [by[arm + '_wrist_yaw_joint'], by[arm + '_joint10'], by[arm + '_joint11']]
+        slide = by.get(arm + '_jaw_hinge_slide')
+        if slide is not None:
+            hs.append(slide)
+        qs = [sim.getJointPosition(h) for h in hs]
+        try:
+            for h in hs:
+                sim.setJointPosition(h, 0.0)
+            return _identify_neutral(sim, by, arm)
+        finally:
+            for h, q in zip(hs, qs):
+                sim.setJointPosition(h, q)
+    return _identify_neutral(sim, by, arm)
+
+
+def _identify_neutral(sim, by, arm):
     T_WP, frame_res = wrist_frame(sim, by, arm)
     scene = {}
     for part, n in (('wrist', 9), ('jaw_plus', 10), ('jaw_minus', 11)):
         hs = shapes_under(sim, by[f'{arm}_joint{n}'])
+        if part == 'wrist' and arm + '_wrist_yaw_visual' in by:
+            hs.append(by[arm + '_wrist_yaw_visual'])
         scene[part] = np.vstack([shape_points(sim, h) for h in hs]) if hs else np.zeros((0, 3))
     scores = {}
     for m in MODELS:

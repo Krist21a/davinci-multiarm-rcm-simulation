@@ -4,8 +4,23 @@
   "tension": {"low_strain": 0.04, "low_strain_after_cut_start": 0.02, "high_strain": 0.25, "tear_is_failure": true,
               "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."},
   "grasp": {"min_nodes": 3},
+  "events": {"relax_m": 0.0005,
+             "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."},
   "view": {"center_margin": 0.35, "occlusion_wait_ticks": 6},
-  "cut": {"length_m": 0.009, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+  "vision": {"fix_max_age_ticks": 6,
+             "basis": "config/task/m5b_protocol.json: a remembered front fix stays usable for this many world ticks after its last valid estimate."},
+  "perception": {"mode": "off", "markers": true, "depth_noise_m": 0.0,
+                 "camera_pose_error": {"trans_m": 0.0, "rot_deg": 0.0, "mode": "per_tick"}, "seed": 0,
+                 "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control unless cut.control_source is 'vision'. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run). camera_pose_error.mode: 'per_tick' draws a fresh error each tick (M5a semantics); 'fixed' draws the rotation axis and translation direction once per run (a calibration bias, config/task/m5b_protocol.json)."},
+  "cut": {"length_m": 0.009, "max_overcut_m": 0.001, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+          "vision_axis_tolerance_deg": 5.0,
+          "control_source": "truth",
+          "control_source_basis": "config/task/m5b_protocol.json: 'truth' (default, unchanged behaviour) or 'vision' — the cutter's front, alignment, advance, stop and visibility come from the cut_perception estimate; tension/grasped stay truth until M6, tear/overcut stay truth safety monitors.",
+          "clear_back_m": 0.003,
+          "clear_back_basis": "config/task/m5b_protocol.json CLEAR_VIEW attempt 1: cutter backs this far off along its jaw axis, jaws unchanged, to re-observe the front.",
+          "align_mode": "tool_pose",
+          "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
+          "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
           "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."},
   "budgets": {
     "localize_ticks": 5,
@@ -14,6 +29,8 @@
     "camera_adjust_attempts": 3,
     "retract_adjust_attempts": 4,
     "relocalize_attempts": 2,
+    "clear_view_attempts": 3,
+    "clear_view_attempts_basis": "config/task/m5b_protocol.json: consecutive clear-and-look attempts before FAILED (back-off, withdrawal-if-closed, look-only).",
     "total_ticks": 400
   }
 }

@@ -148,8 +148,9 @@ def geometry(model, faces_per_part=2500):
     A = float(np.linalg.norm(T_PY[:3, 3]))
     if abs(A - d['kinematics']['pitch_to_yaw_m']) > 1e-6:
         raise ValueError(f'{model}: dvrk_model yaw offset {A} differs from the descriptor')
-    wrist = [mesh_in_link(v) for v in pv.get('wrist_pitch_link', [])]
-    wrist += [(apply(T_PY, V), F) for V, F in (mesh_in_link(v) for v in yv.get('wrist_yaw_link', []))]
+    pitch_mesh = merge([mesh_in_link(v) for v in pv.get('wrist_pitch_link', [])])
+    yaw_mesh = merge([mesh_in_link(v) for v in yv.get('wrist_yaw_link', [])])
+    wrist = [pitch_mesh, (apply(T_PY, yaw_mesh[0]), yaw_mesh[1])]
     wrist = decimate(*merge(wrist), faces_per_part)
 
     # Jaw hinge: jaw links hang from wrist_yaw_link directly or from a prismatic jaw_axis_link (ProGrasp).
@@ -183,7 +184,10 @@ def geometry(model, faces_per_part=2500):
     if abs(float(np.linalg.norm(hinge)) - k['jaw_hinge_offset_m']) > 1e-6:
         raise ValueError(f'{model}: hinge offset {hinge} differs from the descriptor')
     tip_dvrk = tj['tool_tip']['origin'][:3, 3]
-    return dict(model=model, wrist=wrist, T_PY=T_PY, hinge_Y=hinge, tip_Y=jaw_tip(jaws, hinge), tip_dvrk_Y=tip_dvrk,
+    return dict(model=model, wrist=wrist, pitch_mesh=decimate(*pitch_mesh, faces_per_part),
+                yaw_mesh=decimate(*yaw_mesh, faces_per_part),
+                T_PY=T_PY, hinge_Y=hinge, tip_Y=jaw_tip(jaws, hinge), tip_dvrk_Y=tip_dvrk,
+                T_Y_tip=tj['tool_tip']['origin'],
                 hinge_slope_m_per_rad=hinge_slope, hinge_jaw_range_rad=hinge_range, **jaws)
 
 

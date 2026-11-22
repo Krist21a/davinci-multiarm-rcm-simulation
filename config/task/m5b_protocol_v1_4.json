@@ -1,0 +1,9 @@
+{
+  "protocol_version": "1.4",
+  "previous_amendment": "config/task/m5b_protocol_v1_3_1.json",
+  "base_protocol": "config/task/m5b_protocol.json",
+  "scope": "Development review corrections on the non-anatomical simulation sheet. Not an acceptance decision or a new ECM qualification study.",
+  "control": "Compute visual cutter travel from the actual observed tip-to-front gap plus remaining material progress, converted to travel along the jaw. Keep the existing per-move cap, minimum move, sweep reserve, and post-advance check. Permit guarded return to the recorded park pose without changing jaw opening in vision mode: this sheet model has no instrument contact and movement alone does not cut. Never close merely to park. Clear-and-look never moves forward merely to undo a back-off. Restore the existing clear-and-look counter when view is recovered. Keep the requested initial insertion in camera recovery. Terminal instrumentation does not inject disturbances.",
+  "perception": "Retain the 85 percent span threshold and two-lane minimum. Use an edge supported by the second sample at each end of a lane instead of using an isolated outermost depth point in the origin and span. Use an oriented orthonormal basis on the current sheet plane; transport remembered lateral locations as points, and do not learn slit state from truncated frames. A new slit and usable material coordinate are still required together after closure.",
+  "evaluation": "Keep B0-B8, strict B5, the 9-10 mm interval, existing tension and alignment thresholds, collision envelopes, joint limits, and numeric budgets. Distinguish missing evidence from a pass. Keep historic reports unchanged. Offline regressions and synthetic cases are development evidence only; rerun live scenarios under new versioned names before claiming an improvement."
+}

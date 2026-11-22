@@ -1,0 +1,36 @@
+{
+  "method": {
+    "parent": "config/task/m5_live_same_bite_v1.json",
+    "scope": "Development on the same conventional marked sheet, same full FSM, safety checks, signed gates and actual 9-10 mm score. No terminal signal inferred from actuation count, reaching ready, supervision or a previous image.",
+    "method": "After a failed normal 3-mm closed look use the remaining CLEAR_VIEW attempts, within the original global ECM movement budget, for real registered camera targets instead of parking before confirming the endpoint. Switch to native HD 70-degree optics only for that recovery and preserve metric optical history. Keep both labels and scissors in the same actual RGB-D observation. While still uncut, hold a lost view within the existing occlusion-wait interval, refresh the pre-cut optical initialization and require real fresh entry evidence (never reset cut history after a closure).",
+    "recovery_targets": [
+      [
+        0,
+        4.5,
+        0.088
+      ],
+      [
+        -4.5,
+        4.5,
+        0.08
+      ],
+      [
+        0,
+        0,
+        0.08
+      ]
+    ],
+    "recovery_size": [
+      1280,
+      960
+    ],
+    "noise_guard": "When depth noise is enabled, reduce the forward distance permitted by the modeled endpoint sweep by one configured noise sigma before motion. No subtraction from the final fresh guard check; never advance on negative budget. Do not alter any pose error, optics validation, structural interval or stop/acceptance threshold.",
+    "scoring": "Use the parent scorer and all five cases, recording every attempt and actual rendered recovery image pair. Report all results; no signed acceptance or independent runs."
+  },
+  "parent_protocol_sha256": "f779b3755ea7f21948bc3950575b94a945f92d4ccb869ac0833965265204b7ff",
+  "sources": {
+    "config/task/m5_live_active_look_v1.json": "d967cec3761d53571641d6325120b396b1988b554fb723cdcc75eb7e5185b629",
+    "scripts/task/run_active_look.py": "6b52ad0961d18ad8bf1e832b120988e9d6a19cbb5e38692937c7fad3f1e8ca0c",
+    "scripts/task/live_active_look.py": "2bfd2ccc331c5d0e784feaf3ae9f74f511c77b7e0de11526c56a36683a360460"
+  }
+}
