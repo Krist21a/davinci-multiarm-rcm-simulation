@@ -1,0 +1,190 @@
+{
+  "registration_sha256": "e8beb0b5d2723594da8242a3b33cb3fa7d79813dc8644362b2b91313a39a1894",
+  "scorer_sha256": "4dfcdcf287db3f22372d6bb62c3c28c226274e804da645395e4888ec80046970",
+  "cases": {
+    "nominal": {
+      "report_sha256": "f2eea009c986bdb6158658c809b99de4211cbea0cf4fac8cbcf93e36b8327c3b",
+      "state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "final_mm": 9.000000000000002,
+      "peak_mm": 9.000000000000002,
+      "tear": 0,
+      "faults": [],
+      "actual_ready": true,
+      "actual_closed": true,
+      "same_q": true,
+      "strict": true,
+      "bites": [
+        {
+          "closure": 11,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            14
+          ],
+          "before_mm": 0.0,
+          "after_mm": 3.0
+        },
+        {
+          "closure": 19,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            22
+          ],
+          "before_mm": 3.0,
+          "after_mm": 5.0
+        },
+        {
+          "closure": 27,
+          "chart": "confirmed_same_bite",
+          "fix_age": 2,
+          "reacquired": [],
+          "before_mm": 5.0,
+          "after_mm": 9.000000000000002
+        }
+      ],
+      "issues": [
+        "bite 3 has 0 fresh reacquisitions",
+        "no full visual completion",
+        "no verified constant post-reacquisition length to park"
+      ],
+      "passed": false
+    },
+    "depth_noise_0p5": {
+      "report_sha256": "38dbb42a873fb1456f9a57174194a63642b755c87a28b4bc30ff32abcf498fb7",
+      "state": "FAILED",
+      "reason": "scissors closure refused: visual endpoint bound",
+      "final_mm": 5.0,
+      "peak_mm": 5.0,
+      "tear": 0,
+      "faults": [],
+      "actual_ready": false,
+      "actual_closed": false,
+      "same_q": false,
+      "strict": true,
+      "bites": [
+        {
+          "closure": 14,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            17
+          ],
+          "before_mm": 0.0,
+          "after_mm": 3.0
+        },
+        {
+          "closure": 22,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            25
+          ],
+          "before_mm": 3.0,
+          "after_mm": 5.0
+        }
+      ],
+      "issues": [
+        "no full visual completion",
+        "not closed at measured ready pose and command",
+        "structural length"
+      ],
+      "passed": false
+    },
+    "occlusion_transient": {
+      "report_sha256": "726131eaa250c18d2185337f2ea4406776ba011422a44f2e8a51d11d9a306f07",
+      "state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "final_mm": 0.0,
+      "peak_mm": 0.0,
+      "tear": 0,
+      "faults": [],
+      "actual_ready": false,
+      "actual_closed": true,
+      "same_q": false,
+      "strict": true,
+      "bites": [],
+      "issues": [
+        "no full visual completion",
+        "not closed at measured ready pose and command",
+        "structural length",
+        "no verified constant post-reacquisition length to park"
+      ],
+      "passed": false
+    },
+    "slip_regrasp": {
+      "report_sha256": "51123002ef9d6272b095140ea5301209ed81214a85c3dd581a8b0368b8070db5",
+      "state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "final_mm": 3.0,
+      "peak_mm": 3.0,
+      "tear": 0,
+      "faults": [],
+      "actual_ready": false,
+      "actual_closed": true,
+      "same_q": false,
+      "strict": true,
+      "bites": [
+        {
+          "closure": 11,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            15
+          ],
+          "before_mm": 0.0,
+          "after_mm": 3.0
+        }
+      ],
+      "issues": [
+        "no full visual completion",
+        "not closed at measured ready pose and command",
+        "structural length"
+      ],
+      "passed": false
+    },
+    "relax": {
+      "report_sha256": "7a3dbd4962f5d3bdc8bb636feec94277d09a1bfbad97323dbf05f752b0dc668b",
+      "state": "FAILED",
+      "reason": "clear-and-look exhausted",
+      "final_mm": 6.0,
+      "peak_mm": 6.0,
+      "tear": 0,
+      "faults": [],
+      "actual_ready": true,
+      "actual_closed": true,
+      "same_q": true,
+      "strict": true,
+      "bites": [
+        {
+          "closure": 24,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [
+            27
+          ],
+          "before_mm": 0.0,
+          "after_mm": 3.0
+        },
+        {
+          "closure": 39,
+          "chart": "current",
+          "fix_age": 0,
+          "reacquired": [],
+          "before_mm": 3.0,
+          "after_mm": 6.0
+        }
+      ],
+      "issues": [
+        "bite 2 has 0 fresh reacquisitions",
+        "no full visual completion",
+        "structural length",
+        "no verified constant post-reacquisition length to park"
+      ],
+      "passed": false
+    }
+  },
+  "passed": false,
+  "signed_gates_modified": false
+}

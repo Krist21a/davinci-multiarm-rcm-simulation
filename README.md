@@ -41,7 +41,7 @@ flowchart LR
     G -->|否| R[保留失败结果]
 ```
 
-模型不读取仿真真值、帧序号或运动状态。真值只用于标签与离线评分。原始数据集、缓存和权重不入 Git；仓库保留方案、清单、报告及少量说明图。**当前没有新的 M5、M6 或 M7 验收，也没有将模型接入控制。** 复现入口：[M5 端点记录](docs/M5_ENDPOINT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
+模型不读取仿真真值、帧序号或运动状态。真值只用于标签与离线评分。原始数据集、缓存和权重不入 Git；仓库保留方案、清单、报告及少量说明图。**当前没有新的 M5、M6 或 M7 验收，也没有将模型接入控制。** 复现入口：[M5 端点记录](docs/M5_ENDPOINT.md) · [M5 实跑记录与复现命令](docs/M5_LIVE_DEVELOPMENT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
 
 ---
 
