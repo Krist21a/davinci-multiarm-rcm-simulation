@@ -10,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 
@@ -73,6 +73,8 @@ def fake_world(tmp, aux_views=2, hd_twin=True):
     w.arm_cfg = {'ecm': {'rcm_world': [0., 0., 0.]}}
     w.target_of = lambda arm: [0.0, 0.0, 0.08]
     w.timing = {}
+    w.closure_commands = []
+    w.accepted_closures = 0
     w.truth = FakeTruth()
 
     stats = [{'arm': a, 'failures': 0, 'max_drift_m': 0.0,
@@ -214,6 +216,7 @@ class FrameContractTests(unittest.TestCase):
                 self.assertIn('label_tcp_M', labels)
                 self.assertIn('label_grasped_pts', labels)
                 self.assertEqual(main['rgb'].shape, (480, 640, 3))
+                self.assertEqual(main['label_accepted_closures'].item(), 0)
             with np.load(Path(d) / 'hd_005.npz') as hd:
                 self.assertEqual(set(hd.files), {'rgb', 'depth', 'cam_R', 'cam_t', 'intrinsics'})
                 self.assertEqual(hd['rgb'].shape, (960, 1280, 3))
@@ -222,6 +225,22 @@ class FrameContractTests(unittest.TestCase):
                                  {'rgb', 'depth', 'cam_R', 'cam_t', 'intrinsics', 'delta'})
                 self.assertEqual(aux['delta'].shape, (3,))
             self.assertEqual(w.truth.reads_by_purpose.get('dataset_label'), 1)
+
+    def test_closure_logging_counts_only_accepted_returns(self):
+        with tempfile.TemporaryDirectory() as d:
+            w = fake_world(d, aux_views=0, hd_twin=False)
+            with patch.object(collect.SimWorld, 'close_scissors', side_effect=[False, True]) as close:
+                self.assertFalse(w.close_scissors())
+                self.assertEqual(w.accepted_closures, 0)
+                w.tick += 2
+                self.assertTrue(w.close_scissors())
+                self.assertEqual(close.call_count, 2)
+            self.assertEqual(w.accepted_closures, 1)
+            self.assertEqual(w.closure_commands, [{'after_tick': 5, 'accepted': False},
+                                                 {'after_tick': 7, 'accepted': True}])
+            w._perception_tick()
+            with np.load(Path(d) / 'tick_007.npz', allow_pickle=False) as frame:
+                self.assertEqual(frame['label_accepted_closures'].item(), 1)
 
 
 if __name__ == '__main__':

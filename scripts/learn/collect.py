@@ -4,9 +4,10 @@ Protocol: config/learn/learned_perception_v1.json (binding; its pinned scene and
 sha256 are verified at startup). One headless CoppeliaSim instance per worker (own RPC port,
 settings-profile suffix, ASCII stage dir); episodes run sequentially in-process exactly like
 run_cut_task.py does: connect -> SimWorld -> CutTaskFSM.run -> final observe -> stop_simulation.
-LearnWorld overrides only _perception_tick so the shadow estimator never runs; every label read
-is tagged GroundTruth.purpose('dataset_label'). run_cut_task.py, sim_world.py, cut_fsm.py,
-configs and scenes are not modified.
+LearnWorld overrides _perception_tick so the shadow estimator never runs and wraps
+close_scissors to log successful/refused CUT closure returns without changing behavior; every
+label read is tagged GroundTruth.purpose('dataset_label'). run_cut_task.py, sim_world.py,
+cut_fsm.py, configs and scenes are not modified.
 
 Auxiliary views are an approximation of reachable views for training only: the absolute
 (yaw, pitch, insertion) target is drawn uniformly inside the registered ECM envelope and the
@@ -137,15 +138,19 @@ def atomic_npz(path_noext, arrays):
 class LearnWorld(SimWorld):
     """SimWorld whose _perception_tick writes dataset frames; the shadow estimator never runs.
 
-    capture = dict(out_dir=Path, aux_views=int, hd_twin=bool, aux_seed=int, envelope=dict).
-    The HD twin and the aux sensor are separate render-only vision sensors with the ECM
-    camera's optics; the ECM sensor, its pose and its image are never moved or replaced."""
+    close_scissors is wrapped to log accepted/refused CUT closure returns; control behavior
+    is unchanged (the wrapped return value is passed through). capture = dict(out_dir=Path,
+    aux_views=int, hd_twin=bool, aux_seed=int, envelope=dict). The HD twin and the aux sensor
+    are separate render-only vision sensors with the ECM camera's optics; the ECM sensor,
+    its pose and its image are never moved or replaced."""
 
     def __init__(self, *a, capture=None, **kw):
         self._capture = dict(capture or {})
         self._sensors = {}
         self._twin = None
         self._aux_sensor = None
+        self.closure_commands = []
+        self.accepted_closures = 0
         super().__init__(*a, **kw)
         if self._capture.get('hd_twin'):
             self._twin = self._spawn_sensor(HD_RESOLUTION, 'hd_twin')
@@ -190,6 +195,13 @@ class LearnWorld(SimWorld):
             raise RuntimeError(f'{name} handle is not a vision sensor (no shape allowed)')
         sim.setObjectParent(handle, -1, True)   # world-absolute pose is set before every render
         return handle
+
+    def close_scissors(self):
+        tick = self.tick
+        ok = super().close_scissors()
+        self.closure_commands.append({'after_tick': tick, 'accepted': bool(ok)})
+        self.accepted_closures += int(bool(ok))
+        return ok
 
     @staticmethod
     def _pose_sensor(sim, handle, R, t):
@@ -261,6 +273,7 @@ class LearnWorld(SimWorld):
                      cam_R=cam_R, cam_t=cam_t, intrinsics=self._intrinsics(self.W, self.H),
                      tick=np.int64(tick))
         frame.update(labels)
+        frame['label_accepted_closures'] = np.int64(self.accepted_closures)
         atomic_npz(out / f'tick_{tick:03d}', frame)
         if self._twin is not None:
             self._hd_tick(out, tick, cam_R, cam_t)
@@ -381,7 +394,7 @@ def run_episode(port, stage, proto, base_cfg, split, index, tag, opts):
         final = world.observe(inject_events=False)
         issues = completion_issues(final, cfg)
         rep = fsm.report()
-        res.update(final_state=rep['final_state'], reason=rep['reason'],
+        res.update(final_state=rep['final_state'], reason=rep['reason'], fsm_log=rep['log'],
                    ticks=world.tick, cut_length_m=final.cut_length_m, issues=issues)
         if any(e.get('event') == 'perception_error' for e in world.event_log):
             res['status'], res['error'] = 'error', 'frame capture failed (perception_error)'
@@ -411,6 +424,8 @@ def run_episode(port, stage, proto, base_cfg, split, index, tag, opts):
         res['truth_reads_by_purpose'] = world.truth.reads_by_purpose
         res['timings'] = world.timing_summary()
         res['sensors'] = dict(world._sensors)
+        res['closure_commands'] = world.closure_commands
+        res['world_event_log'] = world.event_log
         res['initial_view_readback'] = world.initial_view_readback
         mean = lambda k: (res['timings'].get(k) or {}).get('mean_s')
         res['mean_render_ms'] = {'hd': None if mean('render_hd') is None else round(mean('render_hd') * 1e3, 2),
