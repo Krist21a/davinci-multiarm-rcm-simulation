@@ -1,0 +1,92 @@
+{
+  "purpose": "Infrastructure throughput measurement for a proposed learned-perception study. Not a perception, task or M5 result.",
+  "protocol": {
+    "episode": "run_cut_task.py --mode full --scenario {scenario} --control-source truth --trace, perception mode=shadow with per-tick npz dump (rgb, depth, camera, tcp, markers, truth labels)",
+    "concurrency_levels": [
+      1
+    ],
+    "repeats_per_worker": 1,
+    "tag": "learn_throughput_smoke_v1",
+    "data_root": "F:/davinci_m5_learn",
+    "repeats": 1,
+    "scenario": "nominal",
+    "base_port": 23800,
+    "batch_wall": "from the moment all instances of a level have opened their RPC port (or failed) to the end of the last episode; simulator startup is reported separately",
+    "frames_per_hour": "total dumped frames of a level / batch wall * 3600",
+    "determinism_check": "every successful episode is expected to produce the same nodes_sha256 trace; a difference across parallel instances would indicate interference"
+  },
+  "host": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "logical_cpus": 20,
+    "python": "3.13.5"
+  },
+  "git": {
+    "head": "9996c2dfa73f07811b976969c9a67929397dad8c",
+    "dirty_paths": 640
+  },
+  "source_sha256": {
+    "scripts/task/run_cut_task.py": "8d1d4cf8485689533ed5b34352e6933b126b49978ac89baab94ef3e0b1f52d9d",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/task/cut_fsm.py": "f21c3549fdea53a6f9da5b08278ca16fa73229aa563c98cb420b3abf8b8b7d63",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "src/tissue/tissue.lua": "40211fe35bcca3978f9cacc2f6e206ccc0ea6faa8e0e68abb38ca0fca9e38070",
+    "src/endoscope/rcm_controller.lua": "19caac5b63f0e5be062ca2acb85e9e6ef31c70a0cf0d2754ca8b03931f019ff2",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  },
+  "levels": [
+    {
+      "concurrency": 1,
+      "workers": [
+        {
+          "n": 1,
+          "worker": 0,
+          "port": 23810,
+          "runs": [
+            {
+              "name": "n1_w0_r0",
+              "returncode": 0,
+              "wall_s": 54.71,
+              "success": true,
+              "final_state": "DONE",
+              "error": null,
+              "frames": 17,
+              "bytes": 16886423,
+              "capture_manifest": true,
+              "trace_nodes_sha256": [
+                "e3b0c44298fc1c14",
+                "ee9a8deaac4284ba",
+                "ee9a8deaac4284ba",
+                "e5a1af9cc4a98d4e",
+                "e55ae8590c01b6df",
+                "189b2250e2c5d0c2",
+                "4f533bf4acf49bf8",
+                "4f533bf4acf49bf8",
+                "8c5605c8eac5ad33",
+                "9ee779825b1db480",
+                "d805f7261d308d5a",
+                "ef7de4601656ad1e",
+                "0457af54b8ad0b1f",
+                "ec08fd27b132e754",
+                "467a07e474e32861",
+                "2aacac05bc3e6075",
+                "2aacac05bc3e6075"
+              ]
+            }
+          ],
+          "sim_startup_s": 2.817764299999908
+        }
+      ],
+      "episodes": 1,
+      "successful": 1,
+      "batch_wall_s": 54.71,
+      "frames": 17,
+      "gb": 0.017,
+      "frames_per_hour": 1119,
+      "episodes_per_hour": 65.8,
+      "mean_episode_s": 54.71,
+      "mean_bytes_per_frame": 993319,
+      "traces_identical": true
+    }
+  ]
+}
