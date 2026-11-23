@@ -1,0 +1,24 @@
+# Learned-perception training environment (.venv-learn, Python 3.13).
+# Newest torch with a cu126 Windows wheel on the official index as of 2026-11-23
+# (torch 2.15.0 is newer but ships CUDA 13 on Windows; driver 566.24 caps at CUDA 12.7).
+# torchvision 0.24.1 pins torch==2.9.1 exactly.
+#
+# Install:
+#   uv venv .venv-learn --python 3.13
+#   uv pip install --python .venv-learn/Scripts/python.exe -r requirements-learn.txt
+#
+# torch / torchvision come from the official PyTorch wheel index:
+#   https://download.pytorch.org/whl/cu126
+torch @ https://download.pytorch.org/whl/cu126/torch-2.9.1%2Bcu126-cp313-cp313-win_amd64.whl
+torchvision @ https://download.pytorch.org/whl/cu126/torchvision-0.24.1%2Bcu126-cp313-cp313-win_amd64.whl
+numpy==2.3.0
+pillow==13.0.0
+filelock==4.3.0
+fsspec==2026.9.0
+jinja2==3.1.6
+markupsafe==3.0.4
+mpmath==1.3.0
+networkx==3.7
+setuptools==84.2.1
+sympy==1.14.0
+typing-extensions==4.16.0
