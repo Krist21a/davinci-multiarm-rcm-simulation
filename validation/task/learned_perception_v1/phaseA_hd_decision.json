@@ -1,0 +1,15 @@
+{
+  "protocol": "config/learn/learned_perception_v1.json, data_generation.optics.hd_twin_1280",
+  "decided": "2026-11-23, before any phase-A development episode and before any H1 episode",
+  "basis": "measured render/collection cost only (no model, no label statistics): validation/task/learned_perception_v1/phaseA_identity_on.json vs phaseA_identity_off.json, dev indices 0-2, 3 parallel workers",
+  "measurements": {
+    "episode_wall_s_with_hd_and_4_aux": [98.053, 92.495, 94.163],
+    "episode_wall_s_without": [79.245, 78.186, 79.769],
+    "mean_hd_render_ms": [158.75, 159.18, 173.24],
+    "mean_aux_render_ms": [53.94, 62.85, 56.46],
+    "hd_bytes_per_episode": [81780445, 64651455, 62855836],
+    "aux_bytes_per_episode": [89313760, 70033827, 68290188],
+    "main_bytes_per_episode": [22034171, 17417860, 16902411]
+  },
+  "decision": "Keep the every-tick HD twin (no fallback). HD rendering is about 3 s of a ~15 s (~19 %) overhead per episode including aux views and compression; about 165 MB per episode in total, ~0.55 TB for 3300 episodes, within the 931 GB F: drive."
+}
