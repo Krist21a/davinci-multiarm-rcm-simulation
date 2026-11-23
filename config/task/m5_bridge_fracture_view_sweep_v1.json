@@ -1,0 +1,10 @@
+{
+  "scope": "Final read-only 8 mm ECM feasibility screen for v5 fracture surfaces. Nominal 9 mm already gave four direct positive RGB-D frames, but actual 8 mm is UNKNOWN at working, native-HD and one registered nominal pose. No alteration of fracture renderer, reader, pixel thresholds, motion/closure guards, 0.5 mm noise seed or structural scorer.",
+  "parent": "config/task/m5_visible_fracture_dev_v5.json",
+  "parent_sha256": "05edfd6f99b71c8e0a7e73ecc88716fe3b3411e70e10454e0c5dccee47a69130",
+  "case": "depth_noise_0p5",
+  "poses": [[0, 4.5, 0.088], [3, 0, 0.088], [-3, 0, 0.088], [0, 3, 0.088], [0, -3, 0.088], [4.5, 3, 0.088], [-4.5, -3, 0.088]],
+  "optics": [1280, 960, 70],
+  "protocol": "Cut from zero with original v5 noisy strict-vision FSM to exactly three guarded closures and stop the FSM. Save the closure prefix, closed jaws and independent 8 mm label only after sealing all predictions. For EVERY pose in the ordered list attempt one guarded ECM command with jaws closed and no cutter, grasper or retraction commands; refuse/unlanded view is a recorded failure, not replaced. Acquire two separate RGB-D exposures and independent scissors/slit fits per landed pose with deterministic 0.5 mm depth noise. No scorer label, recorded negative, or reader output directs the camera or the cutter. Never resume or close scissors.",
+  "gate": "Use byte-identical bridge_fracture.py. At least one listed pose must have two consecutive direct-slit, visible-scissors frames with ALL SEVEN live row-8 ligaments positively identified as NOT_STOP at actual structural 8 mm. None may STOP below 9; the already sealed v5 nominal 9 mm positive must remain at least two consecutive frames. UNKNOWN never counts as BELOW. No stop-controller integration without this and independent confirmation."
+}

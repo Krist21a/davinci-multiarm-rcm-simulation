@@ -179,11 +179,11 @@ class ArticulationTests(unittest.TestCase):
             assert(m[12]~=m2[12] or m[8]~=m2[8], 'wrist target ignored by FK')
             assert(digest()==before, 'converged FK mutated state')
             r=toolPoseFK(2,1.5,0,0.045,0,0,0)     -- unreachable in the stub: solver cannot converge
-            assert(r.ok and r.shaft_ok==false)
+            assert(not r.ok and r.shaft_ok==false and r.tcp==nil)
             assert(digest()==before, 'refused FK mutated state')
             stub.blockWrist=function(a,b) return a=='a2_tool' end
             r=toolPoseFK(2,0,0,0.046,0,0,0)       -- solver converges then rejects on collision
-            assert(r.ok and r.shaft_ok==false)
+            assert(not r.ok and r.shaft_ok==false and r.tcp==nil)
             assert(digest()==before, 'collision FK mutated state or counters')
             stub.blockWrist=nil
         """)
@@ -226,6 +226,9 @@ class ArticulationTests(unittest.TestCase):
     def test_set_tool_pose_collision_rolls_back_shaft_and_wrist(self):
         self.lua("""
             assert(setWrist(2,0.1,0,0));assert(setRCMTarget(2,0,0,0.045))
+            local a=arms[2]
+            a.targetError=0.001;a.drift=0.002;a.maxDrift=0.003;a.distance=0.31
+            sim.setObjectPosition(a.projection,-1,{1,2,3})
             -- The pair only collides once the wrist roll crosses 0.25: the shaft leg of the
             -- path converges, then the combined pose is refused mid-sweep.
             stub.blockWrist=function(a,b) return a=='a2_tool' and stub.q.a2_roll>0.25 end
@@ -233,6 +236,8 @@ class ArticulationTests(unittest.TestCase):
             eq(stub.q.a2_insert,0.045);eq(stub.q.a2_roll,0.1)
             eq(stub.q.a2_pitch,0);eq(stub.q.a2_yaw,0)
             eq(arms[2].lastTarget[1],0);eq(arms[2].lastTarget[3],0.045)
+            assert(a.converged);eq(a.targetError,0.001);eq(a.drift,0.002);eq(a.maxDrift,0.003);eq(a.distance,0.31)
+            local p=sim.getObjectPosition(a.projection,-1);eq(p[1],1);eq(p[2],2);eq(p[3],3)
             assert(arms[2].collisionBlocks==1)
             stub.blockWrist=nil
             assert(setToolPose(2,0,0,0.048,0.6,0.2,-0.3), 'cleared pair must accept')

@@ -25,6 +25,10 @@ class FakeWorld:
         # 'fix' is lost on every closure (like SimWorld) and on front_hidden ticks, and is
         # restored by a successful clear_view back-off.
         self.vision = vision
+        # FakeWorld's retract_scissors models the jaw-preserving tool_pose park; tests
+        # can set 'shaft' explicitly to exercise the refuse-before-motion endpoint guard.
+        self.align_mode = 'tool_pose'
+        self.awaiting_new_slit = False
         self.fix_lost = False
         self.tick = 0
         self.retraction = 0.0
@@ -39,6 +43,7 @@ class FakeWorld:
         self.pending = 0.0
         self.camera_moves = 0
         self.closures_while_hidden = 0
+        self.at_ready = True          # cutter starts at the measured ready pose; motion leaves it
         self.actions = []
 
     # -- sensing ----------------------------------------------------------------------------------------------
@@ -49,15 +54,16 @@ class FakeWorld:
         start = self.e.get('occlude_until_camera')
         return start is not None and self.tick >= start and self.camera_moves == 0
 
-    def observe(self):
+    def observe(self, *, inject_events=True):
         self.tick += 1
-        for arm, t in self.e.get('slip', {}).items():
-            if self.tick == t:
-                self.grasped[arm] = 0
-                self.points.pop(arm, None)
-        if self.e.get('relax') == self.tick:
-            self.retraction -= 0.0005
-            self.base_strain = max(0.0, self.base_strain - 0.07)
+        if inject_events:
+            for arm, t in self.e.get('slip', {}).items():
+                if self.tick == t:
+                    self.grasped[arm] = 0
+                    self.points.pop(arm, None)
+            if self.e.get('relax') == self.tick:
+                self.retraction -= 0.0005
+                self.base_strain = max(0.0, self.base_strain - 0.07)
         hidden = self.hidden()
         drift = self.e.get('drift')
         offset = 0.6 if drift is not None and self.tick >= drift and self.camera_moves == 0 else 0.1
@@ -132,22 +138,39 @@ class FakeWorld:
     def jaws_closed(self):
         return not self.blades_open
 
-    def clear_view(self, d):
+    def at_ready_pose(self):
+        """The cutter is at the ready pose; 'ready_broken' keeps the park refused even after a
+        reported recovery motion (models a mismatched or unreachable anchor)."""
+        return self.at_ready and not self.e.get('ready_broken', False)
+
+    def clear_view(self, d, prefer_park=False):
         """CLEAR_VIEW back-off: a working one restores the remembered front fix."""
         self.actions.append(('clear_view', d, self.tick))
         if self.e.get('clear_view_refused'):
             return False
+        self.at_ready = False               # a real back-off leaves the ready pose
         if not self.e.get('clear_view_useless'):
             self.fix_lost = False
         return True
 
     def align_scissors(self, cut_start, progress):
         self.aligned = True
+        self.at_ready = False
         return 0.0005
 
     def advance_scissors(self, d):
         self.pending = d
+        self.at_ready = False
         return True
+
+    def closure_aligned(self):
+        return self.aligned
+
+    def endpoint_advance_budget(self):
+        return 1.0
+
+    def endpoint_travel(self, remaining):
+        return remaining
 
     def close_scissors(self):
         if self.hidden():
@@ -162,7 +185,10 @@ class FakeWorld:
 
     def retract_scissors(self):
         self.actions.append(('retract_scissors', self.tick))
-        return not self.e.get('park_fails', False)
+        if self.e.get('park_fails', False):
+            return False
+        self.at_ready = True              # an accepted park restores the ready pose
+        return True
 
     def adjust_camera(self):
         if self.camera_moves >= self.e.get('camera_poses', 3):

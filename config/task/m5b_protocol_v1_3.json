@@ -1,0 +1,10 @@
+{
+  "protocol_version": "1.3",
+  "previous_amendment": "config/task/m5b_protocol_v1_2_1.json",
+  "perception_amendment": "config/perception/m5a_amendment_v6.json",
+  "changes": {
+    "endpoint": "Use tissue-only material progress for completion. Bound advance and recheck closure by projecting the actual modeled 0.5-to-0-rad sampled blade sweep onto the visual material coordinate, using gripper FK translated to the visual TCP. Reserve the existing 0.3 mm tissue interaction radius and half of the existing 0.5 mm scan bin. Refuse if the cap cannot permit a positive meaningful move (0.2 mm, the existing IK position tolerance), or if the fresh sweep exceeds the original target plus allowed overcut. This is a visual/model guard, not a guarantee on deformed spring topology.",
+    "post_closure": "After closure do not use a pre-cut or memory-only front until a newly observed slit re-establishes the front. No tool pose is allowed to originate or advance the front. For CLEAR_VIEW, lost sheet or scissors routes to OCCLUDED before consuming another cutter back-off. On the third attempt after closure, try one guarded ECM adjustment instead of look-only, charged to both the existing clear-view and global camera-adjustment budgets. Keep all existing numerical acceptance, collision and motion limits."
+  },
+  "runs": "Use the same B0-B8 definitions and strict B5. This diagnostic rerun prioritizes T_nominal_identity, V_nominal, V_occlusion_transient, and V_noise_depth_0p5 (all traced); report any unrun cases instead of implying acceptance. Write new versioned outputs. Report the number of successful post-closure slit reacquisitions, real cut length and the reason for any refusal."
+}

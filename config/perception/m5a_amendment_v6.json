@@ -1,0 +1,21 @@
+{
+  "protocol_version": 6,
+  "previous_amendment": "config/perception/m5a_amendment_v5.json",
+  "estimator": "For an observed slit, report material-coordinate progress using the visible strip extent and known undeformed length. Do not shrink projected progress when the visible span exceeds design length. Require at least 85% of the design length for a usable material coordinate. Keep the original point/front scoring fields, direction cone, depth/bin thresholds, and intact-tissue look-ahead. For a slit already evidenced in the centre or in history, check two overlapping lanes at +/- half the existing gap band. A displaced candidate must have observed bank tissue on both sides at the distal slit bin and pass the existing near-connected run and look-ahead. Do not accept a shorter candidate if any bank-supported connected run continues more than one bin past it.",
+  "occlusion_probes": {
+    "ticks": [5, 9, 13],
+    "minimum_hidden_frames_per_target": 3,
+    "distance_m": 0.015,
+    "radius_m": 0.0025,
+    "datasets": {
+      "holdout_nominal_shaft": {"dataset": "probe6_nominal_shaft", "scenario": "nominal", "align_mode": "shaft"},
+      "holdout_relax_large": {"dataset": "probe6_relax_large", "scenario": "relax_large", "align_mode": "tool_pose"},
+      "holdout5_nominal_view": {"dataset": "probe6_nominal_view", "scenario": "nominal", "align_mode": "tool_pose", "initial_view": [1.5, -2.5]},
+      "holdout5_relax_view": {"dataset": "probe6_relax_view", "scenario": "relax", "align_mode": "tool_pose", "initial_view": [-2.0, 2.5]},
+      "holdout3_slip_handover": {"dataset": "probe6_slip_handover", "scenario": "slip_handover", "align_mode": "tool_pose"}
+    },
+    "capture": "In truth-mode shadow captures on the verified scene, render extra RGB-D at the registered world ticks with temporary non-respondable spheres on both true sightlines. Do not step or replace the normal control frame; remove spheres after the probe. Store the extra render, tick and capture provenance. The normal full sequence primes the replay estimator; branch the estimator for each probe so probes cannot alter the normal sequence state. Score using the same coarse depth-visibility rule, only count a probe for a target if the target is truth-occluded.",
+    "scoring": "Augment only the ten previously unexercised zero-wrong occlusion gates. Preserve their original observations and add the new occluded observations; still require zero valid-but-wrong. Require three new hidden frames per target for each companion, otherwise FAILED (no evidence). Do not pool artificial occlusion into ordinary availability or accuracy gates. Other gates and definitions stay unchanged."
+  },
+  "independence": "Previous development and holdout recordings are replayed again and are not pristine. New occlusion probes use pre-registered known scenarios; they verify missing occlusion coverage, not generalization. Do not inspect or tune against the new probe frames before freezing the estimator."
+}

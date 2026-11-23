@@ -1,0 +1,6 @@
+{
+  "id": "ruler_align_probe_v1",
+  "parent": "ruler_entry_mount_v1",
+  "scope": "At the first reproduced ALIGN on the entry-preserving fixture, disambiguate the suppressed FK rejection in the historical None. Scoring only, never close or change cutting arms. A missing solve is not an impossibility proof.",
+  "queries": "Freeze time after the normal guarded jaw opening. Use the exact original tool_pose.solve with the same limits, margins, alignment target, tolerances and checked FK. Log FK refusal reasons. Try independently q0 and q0 with ONLY wrist pitch or yaw seeded at +/-22.5 or +/-45 deg. Never substitute a shaft pose when checked FK refuses. Each seed is a numerical initial guess, not a robot motion. Verify actual shaft/wrist state, TCP pose, grip, cut length, torn and tissue hash stay unchanged. If a converged safe-FK solution exists this permits a separately registered guarded approach test, not a successful closure."
+}

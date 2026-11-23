@@ -162,11 +162,14 @@ def controller_source(rcm_config, collision_pairs) -> str:
             + read_text(ENDO_SRC / 'rcm_controller.lua'))
 
 
-def refreshed_controller_source(embedded: str, tissue=False) -> str:
+def refreshed_controller_source(embedded: str, tissue=False, tissue_source=None) -> str:
     """Keep the scene's generated/geometry-identified data, replace only known Lua sources.
 
     Refuse unfamiliar layouts instead of silently grafting a controller onto an old
     or unrelated scene. No Lua is evaluated in Python and no role is inferred from labels.
+    `tissue_source` explicitly selects a different tissue.lua file (e.g. the frozen
+    src/tissue/legacy/tissue_v1.lua for locked collectors); the default is current
+    src/tissue/tissue.lua.
     """
     embedded = embedded.replace('\r\n', '\n')
     marker = '-- Software RCM controller for the endoscope task scene'
@@ -186,11 +189,12 @@ def refreshed_controller_source(embedded: str, tissue=False) -> str:
         source += '\n' + read_text(INSTRUMENT_SRC / 'capability_guard.lua')
         if '["articulation"]=' in head:
             source += '\n' + read_text(INSTRUMENT_SRC / 'articulation.lua')
-        source += '\n' + read_text(TISSUE_SRC / 'tissue.lua')
+        source += '\n' + read_text(Path(tissue_source) if tissue_source is not None
+                                   else TISSUE_SRC / 'tissue.lua')
     return source
 
 
-def refresh_controller(sim, handle, tissue=False) -> str:
+def refresh_controller(sim, handle, tissue=False, tissue_source=None) -> str:
     """Update the loaded, stopped scene only; return the exact controller code SHA-256.
 
     The .ttt on disk is NOT saved. Direct GUI playback still needs a rebuilt scene.
@@ -199,7 +203,7 @@ def refresh_controller(sim, handle, tissue=False) -> str:
     if sim.getSimulationState() != sim.simulation_stopped:
         raise RuntimeError('controller source can only be refreshed while simulation is stopped')
     old = sim.getStringProperty(handle, 'code')
-    source = refreshed_controller_source(old, tissue=tissue)
+    source = refreshed_controller_source(old, tissue=tissue, tissue_source=tissue_source)
     try:
         sim.setStringProperty(handle, 'code', source)
         actual = sim.getStringProperty(handle, 'code').replace('\r\n', '\n')

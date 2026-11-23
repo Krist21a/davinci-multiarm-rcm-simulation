@@ -187,6 +187,22 @@ function release(index)
     sim.setObjectParent(arm.held,-1,true);arm.held=nil
     return true
 end
+local function snapshotPoseState(arm)
+    return {lastTarget=arm.lastTarget,converged=arm.converged,targetError=arm.targetError,drift=arm.drift,
+            distance=arm.distance,maxDrift=arm.maxDrift,failures=arm.failures,
+            collisionBlocks=arm.collisionBlocks,lastCollision=arm.lastCollision,
+            projection=sim.getObjectPosition(arm.projection,sim.handle_world)}
+end
+
+local function restorePoseState(arm,s,restoreDiagnostics)
+    arm.lastTarget=s.lastTarget;arm.converged=s.converged;arm.targetError=s.targetError
+    arm.drift=s.drift;arm.distance=s.distance;arm.maxDrift=s.maxDrift
+    if restoreDiagnostics then
+        arm.failures=s.failures;arm.collisionBlocks=s.collisionBlocks;arm.lastCollision=s.lastCollision
+    end
+    sim.setObjectPosition(arm.projection,sim.handle_world,s.projection)
+end
+
 function setRCMTarget(index,yaw,pitch,insertion)
     local arm=arms[index]
     if not arm or not finite(yaw) or not finite(pitch) or not finite(insertion) then return false end
@@ -196,12 +212,14 @@ function setRCMTarget(index,yaw,pitch,insertion)
     local start=arm.lastTarget
     local saved={};for i,h in ipairs(arm.handles) do saved[i]=sim.getJointPosition(h) end
     local savedInsert=sim.getJointPosition(arm.insertion)
+    local state=snapshotPoseState(arm)
     local steps=math.max(1,math.ceil(math.abs(yaw-start[1])/.5),math.ceil(math.abs(pitch-start[2])/.5),math.ceil(math.abs(insertion-start[3])/.005))
     for k=1,steps do
         local f=k/steps
         if not control(arm,start[1]+f*(yaw-start[1]),start[2]+f*(pitch-start[2]),start[3]+f*(insertion-start[3])) then
             for i,h in ipairs(arm.handles) do sim.setJointPosition(h,saved[i]) end
-            sim.setJointPosition(arm.insertion,savedInsert);arm.lastTarget=start
+            sim.setJointPosition(arm.insertion,savedInsert)
+            restorePoseState(arm,state,false)
             return false
         end
     end

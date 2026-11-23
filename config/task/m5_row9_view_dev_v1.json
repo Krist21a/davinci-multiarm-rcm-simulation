@@ -1,0 +1,10 @@
+{
+  "scope": "One passive optical checkpoint from an actual 8 mm full-vision noise run; no truth trajectory supplied to the controller, no early task completion or changed cut guards. The earlier native HD 8 mm exposure had only one bank, so neither is a certified negative.",
+  "reference": "config/task/m5_row9_contact_dev_v1.json",
+  "reference_sha256": "9c149214a1c9e49ac8447c3016f11f7647f03389e2dbd5255a0b79b5469ebbbb",
+  "case": "depth_noise_0p5",
+  "view": [0, 4.5, 0.088],
+  "optics": [1280, 960, 70],
+  "capture": "From zero execute the previous active-look full vision FSM with identical configuration and no extra actions until the third actual commanded closure. Verify its closure ticks and structural trace prefix against the archived noise trial only AFTER sealing optical predictions. With jaws closed, move the ECM to the previously successful nominal 9 mm optical pose under the same guarded motor command, take two consecutive native HD RGB-D exposures with same-exposure HD scissors and direct slit estimates. Do not resume cutting on the probe result. Save all RGB-D and estimates separately from independent structural label, then shut down this owned instance.",
+  "screen": "Use the byte-unchanged row9_terminal.py classifier and compare the two same-pose 8 mm exposures to the already sealed nominal 9 mm exposures at ticks 31/32. Require two qualified NOT_STOP at actual 8 mm, zero false STOP, matching pre-move closure trace, and two positive nominal 9 mm readings. UNKNOWN is not a negative. This is a development image screen, not control authorization or M5 completion."
+}

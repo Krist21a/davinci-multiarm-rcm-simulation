@@ -1,0 +1,21 @@
+{
+  "protocol_version": 5,
+  "base_protocol": "config/perception/m5a_gates.json",
+  "previous_amendment": "config/perception/m5a_amendment_v4.json",
+  "estimator_change": "Transport the remembered direction and the v4 anchor from the previous camera coordinates into current camera coordinates using the supplied camera-to-world rotations. Keep the same 5-degree cone, low-pass, and front/lateral estimation rules.",
+  "holdout_replacements": {
+    "holdout3_view_a": {
+      "dataset": "holdout5_nominal_view",
+      "scenario": "nominal",
+      "initial_view": [1.5, -2.5]
+    },
+    "holdout3_relax_view_b": {
+      "dataset": "holdout5_relax_view",
+      "scenario": "relax",
+      "initial_view": [-2.0, 2.5]
+    }
+  },
+  "capture": "Use full, truth control, tool_pose, default verified scene, shadow frame dump, no pose/depth perturbation during capture, and new empty output directories. Before scoring, verify that the post-home ECM target equals the registered yaw/pitch (1e-6 degree numerical equality), the physical camera rotation differs from home, and every sheet frame was captured at the registered target. Require complete, contiguous captures with at least one pre-sheet and one sheet frame.",
+  "evaluation": "Use all original gates, thresholds, seeds, development datasets and degradations unchanged. Apply the original seven per-view gates to each replacement dataset. The two other v3 holdouts are reused and disclosed as such; they are not pristine. Fail aggregate checks with missing datasets, and zero-count checks with no relevant samples. Record metadata and frame hashes and the amendment in new reports.",
+  "acceptance": "The v3 acceptance does not transfer. Report all failures and require a new explicit user decision before using this evaluation as acceptance of a closed loop. Do not inspect or tune on the new holdouts before the estimator is frozen."
+}

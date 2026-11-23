@@ -1,0 +1,7 @@
+{
+  "scope": "Frozen diagnostic only. No pose qualification, selection by truth, holdout, cumulative retries or control changes.",
+  "cases": {"V_nominal": 25, "V_noise_depth_0p5": 20, "truth": 16},
+  "source": "Replay the v1.9.1 marked runs up to the first loss after realignment (or the withdrawn, 10 mm truth sample). Require the captured raw RGB-D and cut estimator output to match the source at the checkpoint.",
+  "intervention": "Without stepping time, try each of the existing ECM absolute angular candidates from the same reference pose via setRCMTarget. Restore before the next branch. Preserve insertion, cutter, tissue, prior visual estimator and per-tick noise draw. Never issue a jaw command in an optical branch. Compare candidate RGB-D evidence only, not simulated future movement or a new qualification.",
+  "positive": "For vision cases require directly observed slit or bank_slit, mapped progress, a valid material chart and visible scissors in the same frame. At the withdrawn truth endpoint also report whether visual progress falls in [9,10] mm. Scissors visibility is a separate metric since a withdrawn tip need not be visible. A positive is not closure permission. Refusal, invalid chart, memory-only or no proof must not be called a valid alternative."
+}

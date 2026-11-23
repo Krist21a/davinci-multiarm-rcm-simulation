@@ -1,4 +1,4 @@
-"""State machine for the prostate-adjacent cutting task: PSM1 retracts, PSM2 cuts, PSM3 assists / takes over,
+"""State machine for the test-sheet cutting task: PSM1 retracts, PSM2 cuts, PSM3 assists / takes over,
 the ECM holds the view.
 
 The machine only decides; a World (scripts/task/sim_world.py for CoppeliaSim, fake_world.py for tests) senses
@@ -75,6 +75,8 @@ class CutTaskFSM:
         self.target = None
         self.tick_count, self.ticks_in_state = 0, 0
         self.vision = cfg['cut'].get('control_source', 'truth') == 'vision'
+        self.front_recovery = self.vision and cfg.get('perception', {}).get('front_recovery', False)
+        self.cut_started = False
         self.attempts = {S.CAMERA_ADJUST: 0, S.RETRACT_ADJUST: 0, S.RELOCALIZE: 0, S.CLEAR_VIEW: 0}
         self.log, self.visited, self.transitions = [], {S.INIT}, set()
         self.handover = None
@@ -88,7 +90,8 @@ class CutTaskFSM:
             self.return_to = S.EXPOSE                         # re-tension after a new grasp
         if new in (S.OCCLUDED, S.FAILED, S.RETRACT_ADJUST, S.RELOCALIZE, S.CAMERA_ADJUST, S.CLEAR_VIEW):
             self.w.hold()
-        self.log.append(dict(tick=self.tick_count, frm=old.name, to=new.name, label=new.value, reason=reason,
+        self.log.append(dict(tick=self.tick_count, world_tick=getattr(self.w, 'tick', None),
+                             frm=old.name, to=new.name, label=new.value, reason=reason,
                              obs=None if obs is None else _summary(obs)))
         self.transitions.add((old.name, new.name))
         self.visited.add(new)
@@ -118,8 +121,11 @@ class CutTaskFSM:
     # -- supervisor -------------------------------------------------------------------------------------------
     def tension_ok(self, obs):
         # Once the cut has started the sheet relaxes on purpose (the cut releases it), so the lower bound drops.
+        # In vision mode the estimator's progress cannot be a safety signal: whether a closure already
+        # happened is the FSM's own fact; the truth cut length stays a monitor input only.
         t = self.cfg['tension']
-        low = t.get('low_strain_after_cut_start', t['low_strain']) if obs.cut_length_m > 0 else t['low_strain']
+        started = self.cut_started if self.vision else obs.cut_length_m > 0
+        low = t.get('low_strain_after_cut_start', t['low_strain']) if started else t['low_strain']
         return low <= obs.tension <= t['high_strain']
 
     def grasps_ok(self, obs):
@@ -219,11 +225,23 @@ class CutTaskFSM:
         return obs.cut_progress_m if self.vision else obs.cut_length_m
 
     def _complete(self, obs):
+        # Endpoint completion must be earned from a verified stopped state: jaws closed at the
+        # stop AND after the jaw-preserving recovery motion returned to the measured ready pose.
+        # An open-at-stop sample is FAILED, not a closed withdrawal; never setGrip merely to park.
+        closed_at_stop = self.w.jaws_closed()
+        if not closed_at_stop and self.w.align_mode != 'tool_pose':
+            # Shaft-mode recovery can move the cutter close-then-park; refuse before any
+            # motion rather than let an open-at-stop sample become a closed withdrawal.
+            return self.go(S.FAILED, 'jaws open at the endpoint', obs)
         if not self.w.retract_scissors():
             return self.go(S.FAILED, 'scissors retraction refused', obs)
         # Retraction can fail indirectly (e.g. tissue damage during simulation steps).
         # The withdrawn tip need not remain in view; only the terminal safety checks apply.
-        final = self.w.observe()
+        final = self.w.observe(inject_events=False)
+        if not closed_at_stop or not self.w.jaws_closed():
+            return self.go(S.FAILED, 'jaws open at the endpoint', final)
+        if not self.w.at_ready_pose():
+            return self.go(S.FAILED, 'cutter did not return to the ready pose', final)
         issues = completion_issues(final, self.cfg)
         if issues:
             return self.go(S.FAILED, '; '.join(issues), final)
@@ -232,11 +250,15 @@ class CutTaskFSM:
     def on_align(self, obs):
         if self.vision:
             progress = self._progress(obs)
-            if progress is not None and progress >= self.cfg['cut']['length_m']:
+            if progress is None or not math.isfinite(progress) or progress < 0:
+                return self.go(S.FAILED, 'scissors alignment refused: invalid visual progress', obs)
+            if progress >= self.cfg['cut']['length_m']:
                 return self._complete(obs)          # done before any jaw opening
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
         err = self.w.align_scissors(self.target.cut_start, self._progress(obs))
+        if getattr(self.w, 'view_blocked', False):
+            return self._blocked_candidate(obs, 'alignment')
         if err is not None and err <= self.cfg['cut']['align_tolerance_m']:
             return self.go(S.CUT, f'blades aligned ({err * 1000:.2f} mm)', obs)
         if self.ticks_in_state >= self.cfg['budgets']['align_ticks']:
@@ -244,26 +266,76 @@ class CutTaskFSM:
 
     def on_cut(self, obs):
         progress = self._progress(obs)
+        if self.vision and (progress is None or not math.isfinite(progress) or progress < 0):
+            return self.go(S.FAILED, 'scissors advance refused: invalid visual progress', obs)
         if progress is not None and progress >= self.cfg['cut']['length_m']:
             return self._complete(obs)
+        remaining = self.cfg['cut']['length_m'] - progress
+        cap = self.cfg['cut']['advance_m']
+        if self.vision:
+            travel = self.w.endpoint_travel(remaining)
+            budget = self.w.endpoint_advance_budget()
+            if travel is None or budget is None or min(travel, cap, budget) < 0.0002:
+                return self.go(S.FAILED, 'scissors advance refused: visual endpoint bound', obs)
+            step = min(travel, cap, budget)
+        else:
+            step = min(cap, remaining)
         if not self.w.open_scissors():
             return self.go(S.FAILED, 'scissors cannot open', obs)
-        # Bound the commanded advance, not the physical cut: blade extent and the tissue grid
-        # can still cause overshoot, which is checked separately by the supervisor.
-        step = min(self.cfg['cut']['advance_m'], self.cfg['cut']['length_m'] - progress)
         if not self.w.advance_scissors(step):
+            if getattr(self.w, 'view_blocked', False):
+                return self._blocked_candidate(obs, 'advance')
             return self.go(S.FAILED, 'scissors advance refused (limits or collision)', obs)
         # Advancing is not instantaneous. Recheck ALL interlocks on the fresh observation,
         # including faults, tears, grasp loss and strain, before the irreversible closure.
         fresh = self.w.observe()
+        if self.front_recovery:
+            fresh = self._retry_advanced_view(fresh)
         if self.supervise(fresh):
             return
+        if self.vision:
+            progress = self._progress(fresh)
+            if progress is None or not math.isfinite(progress) or progress < 0:
+                return self.go(S.FAILED, 'scissors closure refused: invalid visual progress', fresh)
+            if progress >= self.cfg['cut']['length_m']:
+                return self._complete(fresh)
+            if not self.w.closure_aligned():
+                return self.go(S.FAILED, 'scissors closure refused: fresh alignment out of tolerance', fresh)
+            budget = self.w.endpoint_advance_budget()
+            if budget is None or budget < -1e-12:
+                return self.go(S.FAILED, 'scissors closure refused: visual endpoint bound', fresh)
         if not self.w.close_scissors():
             return self.go(S.FAILED, 'scissors cannot close', fresh)
+        self.cut_started = True
+
+    def _blocked_candidate(self, obs, phase):
+        if self.attempts[S.CAMERA_ADJUST] >= self.cfg['budgets']['camera_adjust_attempts']:
+            return self.go(S.FAILED, f'{phase}: predicted cutter occlusion; camera budget exhausted', obs)
+        self.go(S.CAMERA_ADJUST, f'{phase}: predicted cutter occlusion', obs)
+
+    def _retry_advanced_view(self, obs):
+        """Keep the open cutter at its advanced pose while changing only the camera."""
+        limit = self.cfg['cut']['length_m'] + self.cfg['cut'].get('max_overcut_m', 0.0)
+        if (self.visible(obs) or not obs.tissue_visible or obs.faults
+                or (obs.torn and self.cfg['tension']['tear_is_failure'])
+                or not all(math.isfinite(v) for v in (obs.tension, obs.max_strain, obs.cut_length_m))
+                or not 0 <= obs.cut_length_m <= limit + 1e-12
+                or not self.grasps_ok(obs) or not self.tension_ok(obs)
+                or self.attempts[S.CAMERA_ADJUST] >= self.cfg['budgets']['camera_adjust_attempts']):
+            return obs
+        self.attempts[S.CAMERA_ADJUST] += 1
+        self.w.hold()
+        accepted = self.w.adjust_camera()
+        # A note, not a state transition: the FSM stays in CUT with the open cutter advanced.
+        self.log.append(dict(tick=self.tick_count,
+                             note=f'post-advance optical retry: camera {"moved" if accepted else "refused"}',
+                             world_tick=getattr(self.w, 'tick', None)))
+        return self.w.observe() if accepted else obs
 
     # -- recovery states --------------------------------------------------------------------------------------
     def on_occluded(self, obs):
         if self.visible(obs):
+            self.attempts[S.CLEAR_VIEW] = 0
             return self.go(S.RESUME, 'view restored', obs)
         if self.vision and obs.scissors_visible and obs.tissue_visible:
             # Same rule as the generic check: a hidden front with the scene seen is a
@@ -276,12 +348,13 @@ class CutTaskFSM:
         """Front unknown with scissors and tissue still seen: clear-and-look.
 
         Attempt 1 backs the cutter off along its jaw axis, attempt 2 withdraws it fully
-        when the jaws are closed (else a second back-off), attempt 3 only looks."""
+        when the jaws are closed (else a second back-off), attempt 3 changes the
+        viewpoint if awaiting a post-closure slit and the camera budget permits."""
         if self.visible(obs):
             self.attempts[S.CLEAR_VIEW] = 0
             return self.go(S.RESUME, 'view restored', obs)
-        if not obs.scissors_visible:
-            return self.go(S.OCCLUDED, 'scissors lost while clearing the view', obs)
+        if not obs.scissors_visible or not obs.tissue_visible:
+            return self.go(S.OCCLUDED, 'scissors or tissue lost while clearing the view', obs)
         self.attempts[S.CLEAR_VIEW] += 1
         if self.attempts[S.CLEAR_VIEW] > self.cfg['budgets']['clear_view_attempts']:
             return self.go(S.FAILED, 'clear-and-look exhausted', obs)
@@ -290,7 +363,12 @@ class CutTaskFSM:
         if attempt == 1:
             ok = self.w.clear_view(back)
         elif attempt == 2:
-            ok = self.w.retract_scissors() if self.w.jaws_closed() else self.w.clear_view(back)
+            ok = self.w.clear_view(back, prefer_park=self.w.jaws_closed())
+        elif (self.w.awaiting_new_slit or (self.cut_started and self.vision
+              and self.cfg.get('perception', {}).get('recovery_view_after_cut', False))) and (
+                self.attempts[S.CAMERA_ADJUST] < self.cfg['budgets']['camera_adjust_attempts']):
+            self.attempts[S.CAMERA_ADJUST] += 1
+            ok = self.w.adjust_camera()
         else:
             ok = True                                       # look only
         if not ok:
@@ -298,6 +376,7 @@ class CutTaskFSM:
 
     def on_camera_adjust(self, obs):
         if self.visible(obs) and self.centred(obs) and self.ticks_in_state > 1:
+            self.attempts[S.CLEAR_VIEW] = 0
             return self.go(S.RESUME if self.return_to != S.LOCALIZE else S.LOCALIZE, 'view restored by the camera', obs)
         self.attempts[S.CAMERA_ADJUST] += 1
         if self.attempts[S.CAMERA_ADJUST] > self.cfg['budgets']['camera_adjust_attempts']:

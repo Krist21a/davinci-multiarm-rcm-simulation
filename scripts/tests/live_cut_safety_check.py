@@ -64,7 +64,7 @@ def main():
                          event=None if args.scenario == 'nominal' else args.scenario)
         fsm = CutTaskFSM(world, cfg, cut_only=args.mode == 'cut_only')
         fsm.run()
-        obs = world.observe()
+        obs = world.observe(inject_events=False)
         issues = completion_issues(obs, cfg)
         result.update(fsm.report(), controller_sha256=world.controller_sha256,
                       success=fsm.state == S.DONE and not issues, acceptance_issues=issues,

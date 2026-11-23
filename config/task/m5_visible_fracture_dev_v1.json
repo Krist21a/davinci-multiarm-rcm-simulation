@@ -1,0 +1,13 @@
+{
+  "scope": "Versioned render-only synthetic-sheet experiment. The native scene, unchanged original GroundTruth structural cut_length, springs, face removal, scissors guards, PBD simulation, thresholds and case seeds remain unchanged. This is not the historical M5 result or a clinical model.",
+  "parent": "config/task/m5_live_active_look_v1.json",
+  "parent_sha256": "d967cec3761d53571641d6325120b396b1988b554fb723cdcc75eb7e5185b629",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "preflight": "The first launcher attempt refused before creating a task report or image because the manually transcribed scene hash above was mistyped. Corrected against the actual file before first acquisition.",
+  "visual_gap_m": 0.0004,
+  "render_rule": "On a surviving central face bordering a missing neighbouring face, render that face 0.4 mm outward along the sheet's transverse unit axis. Recession occurs only for the material face itself, based on the existing physical spring-dependent face survival, not cut_length, a hidden prefix or a row label; renderer does not change any node, spring, face survival, gripper, collision or scored constraint. All other sheet visuals remain identical. At 70-degree 1280px and 135 mm working depth, the two receding banks should make a >=5-pixel deep gap. No artificial readout stripe or truth-driven movement command.",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "screen": "Replay the original visual FSM from zero twice with the only new option visual_gap_m. Keep the original structural scorer and closure interlocks. Capture native camera RGB-D, same-exposure scissors and slit, both banks, and the independent structural trajectory. Seal image-only row9_terminal.py predictions before joining structural labels. Require two supported NOT_STOP at actual 8 mm under noise, two consecutive supported STOP_CANDIDATE at actual 9 mm nominal, zero false stops under 9, no tears or overcut. A failed or UNKNOWN pair forbids control integration; no threshold alteration or substitution of scorer labels.",
+  "next": "Only after this screen passes independently may a separately registered visual stop controller be trialled from zero on nominal, depth_noise_0p5, occlusion_transient, slip_regrasp and relax. Preserve strict=True and verify optical reacquisition, structural 9-10 mm, no peak >10 mm, zero tear/fault and closed return to _ready_q."
+}

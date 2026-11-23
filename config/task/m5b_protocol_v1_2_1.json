@@ -1,0 +1,8 @@
+{
+  "protocol_version": "1.2.1",
+  "base_protocol": "config/task/m5b_protocol.json",
+  "previous_amendment": "config/task/m5b_protocol_v1_2.json",
+  "correction": "Compare the opening axis as a line, not a directed vector: abs(dot(FK opening, visual lateral)). Symmetric blades make the two signs physically equivalent, exactly as already implemented in tool_pose._residual. The visual jaw pointing axis still uses the signed dot product. The 5-degree tolerance, lateral/progress checks, all other thresholds and budgets, B0-B8, and the strict B5 reading are unchanged.",
+  "trigger": "The v1.2 nominal diagnostic reached a visual pointing error below one degree after alignment, yet rejected the axes until the alignment budget expired. Source inspection showed the mismatch: the new checker used a signed opening-axis dot product while the existing solver converged to either sign. Keep the partial v1.2 run reports as-is.",
+  "verification": "Test both signs of the opening axis, reject a misaligned opening line and a reversed pointing axis, and make all new runs under the m5b_v1_2_1_ prefix. These scenarios reuse development scenarios and the M5a acceptance is pending, so they are not acceptance evidence."
+}

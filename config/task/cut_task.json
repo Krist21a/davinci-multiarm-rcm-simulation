@@ -13,6 +13,7 @@
                  "camera_pose_error": {"trans_m": 0.0, "rot_deg": 0.0, "mode": "per_tick"}, "seed": 0,
                  "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control unless cut.control_source is 'vision'. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run). camera_pose_error.mode: 'per_tick' draws a fresh error each tick (M5a semantics); 'fixed' draws the rotation axis and translation direction once per run (a calibration bias, config/task/m5b_protocol.json)."},
   "cut": {"length_m": 0.009, "max_overcut_m": 0.001, "advance_m": 0.003, "align_tolerance_m": 0.0015, "retract_step_m": 0.0002,
+          "vision_axis_tolerance_deg": 5.0,
           "control_source": "truth",
           "control_source_basis": "config/task/m5b_protocol.json: 'truth' (default, unchanged behaviour) or 'vision' — the cutter's front, alignment, advance, stop and visibility come from the cut_perception estimate; tension/grasped stay truth until M6, tear/overcut stay truth safety monitors.",
           "clear_back_m": 0.003,

@@ -1,0 +1,18 @@
+{
+  "id": "seam_slide_v1",
+  "parent": "config/task/ruler_endpoint_v1.json",
+  "seam_parent": "config/task/surface_seam_pilot_v1.json",
+  "seam_parent_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+  "reader_sha256": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+  "fixture": "Fixed rail pilot left terminal strip flat but pushed the free entrance over its markings. Replace all added positional pins with a statically registered frictionless normal guide: columns 6..10 and 13..17, rows 0..12, original rest plane, half-clearance 0.10 mm. The incision columns 11 and 12 and the outer grasp sites are not guided. No new crossing spring, no pinning in-plane motion, no grip or tear exemption. After each PBD distance sweep project only nonpinned guide nodes along the rest normal into the slab, before strain and tear checks. No fixture in camera image or cutter path; an explicit ideal model boundary condition, not a fabricated physical apparatus.",
+  "preflight": "Same pilot gate and same two native/frozen-real-4x exposures as seam_rail_v1, one named fixture. Inclusive connected patch and adjacent boundary counts >=4 on both banks of rows 7..10. Loaded and pulled negative must be UNKNOWN in raw/noisy RGB-D, no open terminal crossings. Both real grasps and outward motions, zero damage, no fault. Use native if both native and 4x pass, else use passing 4x. No cutting until passing selection.",
+  "development_runs": [
+    {"id":"pull","goal_mm":9,"cap_mm":3,"pull_only":true},
+    {"id":"a","goal_mm":8,"cap_mm":3},
+    {"id":"b","goal_mm":8.5,"cap_mm":3},
+    {"id":"c","goal_mm":9,"cap_mm":3},
+    {"id":"d","goal_mm":8,"cap_mm":2},
+    {"id":"e","goal_mm":9,"cap_mm":2}
+  ],
+  "work_gate": "Identical safety, blind reader, per-bite, working-frame 8 BELOW / 9 STOP, distinct physical acquisition runs, noise and park requirements as surface_seam_pilot_v1 and seam_rail_v1. No confirmation or visual commands on a failed development gate. If optics fail a geometric gate, score the material geometry and stop changing fixtures without new evidence."
+}

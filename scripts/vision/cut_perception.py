@@ -1,10 +1,10 @@
-"""Shadow-mode perception for the tissue-cutting task (M4/M5a).
+"""RGB-D perception for the test-sheet cutting task.
 
 Pure numpy + scipy.ndimage: no simulator imports, so the same code runs live inside
 SimWorld.observe() and offline in unit tests / replay_perception.py. The estimator
 consumes the ALREADY-ACQUIRED endoscope RGB and depth plus an assumed camera pose
 (which may carry a seeded calibration error) and returns an estimate for every field
-together with a validity flag and a reason. Nothing here is ever used for control.
+together with a validity flag and a reason. The same estimates drive M5b vision mode.
 
 Fail closed: an uncertain field is invalid with a reason, never a confident wrong value.
 
@@ -41,6 +41,16 @@ constant to <1e-15 m on the nominal dump).
 import math
 
 import numpy as np
+
+import material_coordinate
+
+
+def measure_bilateral(*args, junctions=False):
+    from bilateral_surface import measure     # lazy: module import must stay light
+    if junctions:
+        from bank_junction import boundary
+        return measure(*args, boundary=boundary, record_knots=True)
+    return measure(*args)
 
 TISSUE_RGB = (0.86, 0.42, 0.48)          # sim_world.TISSUE_RGB / tissue.lua sheet colour
 MARKER_DISTAL_RGB = (0.0, 1.0, 1.0)      # pure cyan — not present in the scene palette
@@ -93,6 +103,23 @@ def unit(v):
     v = np.asarray(v, dtype=float)
     n = np.linalg.norm(v)
     return v / n if n else v
+
+
+def material_interval(along, lateral, length):
+    """Estimate near/far material edges from multiple populated sheet lanes."""
+    lo, hi = np.percentile(lateral, [2, 98])
+    edges = np.linspace(lo, hi, 6)
+    observed = []
+    for a, b in zip(edges[:-1], edges[1:]):
+        lane = along[(lateral >= a) & (lateral < b)]
+        if len(lane) < MIN_SLIT_PX:
+            continue
+        lane = np.sort(lane)
+        # A single sample outside either edge must not qualify an otherwise short lane.
+        start, end = lane[1], lane[-2]
+        if end - start >= 0.85 * length and max(start - lane[0], lane[-1] - end) <= GAP_BIN_M:
+            observed.append((start, end))
+    return np.median(observed, axis=0) if len(observed) >= 2 else None
 
 
 def _refit_direction(anchor, prev, slit_dir):
@@ -169,6 +196,29 @@ def _sphere_centre(pts_cam, radius):
     return c
 
 
+def _ray_sphere_centre(points, radius, initial):
+    """Fit measured range to the first sphere intersection, not to the back surface."""
+    from scipy.optimize import least_squares
+
+    ranges = np.linalg.norm(points, axis=1)
+    if (len(ranges) < MIN_MARKER_PX or not np.all(np.isfinite(ranges) & (ranges > radius))
+            or not np.isfinite(initial).all() or radius <= 0):
+        return None
+    rays = points / ranges[:, None]
+
+    def residual(centre):
+        foot = rays @ centre
+        disc = radius**2 - np.sum((foot[:, None]*rays - centre)**2, axis=1)
+        # Outside the apparent silhouette, penalize the missed ray separately.
+        return np.r_[foot - np.sqrt(np.maximum(disc, 0)) - ranges, np.sqrt(np.maximum(-disc, 0))]
+
+    fit = least_squares(residual, initial, loss='soft_l1', f_scale=0.0005, max_nfev=60)
+    if (not fit.success or not np.isfinite(fit.x).all() or fit.x[2] <= radius
+            or np.linalg.matrix_rank(fit.jac) != 3):
+        return None
+    return fit.x
+
+
 def _plane_fit(pts):
     c = pts.mean(axis=0)
     _, _, Vt = np.linalg.svd(pts - c, full_matrices=False)
@@ -236,7 +286,9 @@ class CutPerception:
     def __init__(self, W, H, f, far, rcm_world, marker_radius=MARKER_RADIUS,
                  marker_offsets=MARKER_OFFS, marker_colours=MARKER_COLOURS,
                  tcp_local=None, jaw_axis_local=None, tcp_len=None,
-                 sheet_width_m=None):
+                 sheet_width_m=None, sheet_length_m=None, opening_axis_local=None,
+                 material_pattern=False, local_material_chart=False, front_recovery=False, ray_marker_fit=False,
+                 bilateral_surface=False):
         self.W, self.H, self.f, self.far = W, H, f, far
         self.rcm_world = np.asarray(rcm_world, dtype=float)
         self.marker_radius = marker_radius
@@ -245,15 +297,25 @@ class CutPerception:
         self.tcp_local = None if tcp_local is None else np.asarray(tcp_local, dtype=float)
         self.jaw_axis_local = (None if jaw_axis_local is None
                                else unit(np.asarray(jaw_axis_local, dtype=float)))
+        self.opening_axis_local = (None if opening_axis_local is None
+                                   else unit(np.asarray(opening_axis_local, dtype=float)))
         self.sheet_width_m = sheet_width_m   # known full strip width (truncation check)
+        self.sheet_length_m = sheet_length_m
+        self.material_pattern = material_pattern
+        self.local_material_chart = local_material_chart
+        self.front_recovery = front_recovery
+        self.ray_marker_fit = ray_marker_fit
+        self.bilateral_surface = bilateral_surface
         self.w0 = None                   # first post-grasp tissue width
         self._cut_dir = None             # remembered near->far cut direction (camera frame)
         self._cut_dir0 = None            # the first established direction: refit anchor
-        self._cut_lat = None             # remembered cut-line lateral position
+        self._cut_camera_R = None        # camera-to-world rotation of those coordinates
+        self._cut_camera_t = None
+        self._cut_line_point = None      # remembered point on the cut line (camera frame)
         self._slit_seen = False          # a slit was measured at least once: no pre-cut ever again
         self._front_d = None             # remembered front offset from the near edge (m):
                                          # the crack is permanent and only grows
-        self._front_lat = None           # remembered front lateral offset (plane coords)
+        self._front_point = None         # remembered apex, used for its lateral position
         self._front_ext = None           # sheet along-extent when the front was updated
 
     @classmethod
@@ -263,13 +325,21 @@ class CutPerception:
         sheet_width_m = a.get('sheet_width_m')
         if sheet_width_m is None and 'NU' in meta and 'spacing_m' in meta:
             sheet_width_m = (meta['NU'] - 1) * meta['spacing_m']
+        sheet_length_m = a.get('sheet_length_m')
+        if sheet_length_m is None and 'NV' in meta and 'spacing_m' in meta:
+            sheet_length_m = (meta['NV'] - 1) * meta['spacing_m']
         return cls(a['W'], a['H'], a['f'], a['far'],
                    np.asarray(a['rcm_world'], dtype=float),
                    marker_radius=a.get('marker_radius', MARKER_RADIUS),
                    marker_offsets=a.get('marker_offsets', MARKER_OFFS),
                    marker_colours=a.get('marker_colours', MARKER_COLOURS),
                    tcp_local=a.get('tcp_local'), jaw_axis_local=a.get('jaw_axis_local'),
-                   tcp_len=a.get('tcp_len'), sheet_width_m=sheet_width_m)
+                   tcp_len=a.get('tcp_len'), sheet_width_m=sheet_width_m, sheet_length_m=sheet_length_m,
+                   opening_axis_local=a.get('opening_axis_local'),
+                   material_pattern=a.get('material_pattern', False),
+                   local_material_chart=a.get('local_material_chart', False),
+                   front_recovery=a.get('front_recovery', False), ray_marker_fit=a.get('ray_marker_fit', False),
+                   bilateral_surface=a.get('bilateral_surface', False))
 
     # -- field estimators -------------------------------------------------------------------------------------
     def _tissue(self, rgb, depth):
@@ -291,25 +361,27 @@ class CutPerception:
     def _marker(self, rgb, depth, color):
         m = _mask(rgb, color)
         if int(m.sum()) < MIN_MARKER_PX:
-            return None, None, f'{int(m.sum())} px'
+            return None, None, f'{int(m.sum())} px', None
         pts, u, v = _masked_points(m, depth, self.W, self.H, self.f, self.far)
         if pts is None or len(pts) < MIN_MARKER_PX:
-            return None, None, 'no finite-depth marker points'
+            return None, None, 'no finite-depth marker points', None
         keep = np.abs(pts[:, 2] - np.median(pts[:, 2])) < 0.01
         if keep.sum() < MIN_MARKER_PX:
-            return None, None, 'marker depth outliers'
-        return _sphere_centre(pts[keep], self.marker_radius), (float(u.mean()), float(v.mean())), ''
+            return None, None, 'marker depth outliers', None
+        samples = pts[keep]
+        return _sphere_centre(samples, self.marker_radius), (float(u.mean()), float(v.mean())), '', samples
 
     def _scissors(self, rgb, depth):
         """Yaw pose from a Kabsch fit of the three marker offsets to the sphere centres."""
         names = ('distal', 'proximal', 'third')
-        centres, uvs, missing = [], [], []
+        centres, uvs, missing, samples = [], [], [], []
         for name, col in zip(names, self.marker_colours):
-            c, uv, err = self._marker(rgb, depth, col)
+            c, uv, err, points = self._marker(rgb, depth, col)
             if c is None:
                 missing.append(f'{name} marker missing: {err}')
             centres.append(c)
             uvs.append(uv)
+            samples.append(points)
         if missing:
             return dict(valid=False, reason='; '.join(missing),
                         distal_uv=list(uvs[0]) if uvs[0] else None,
@@ -318,9 +390,17 @@ class CutPerception:
         R, t, rms = _kabsch(self.marker_offsets, np.stack(centres))
         base = dict(distal_uv=list(uvs[0]), proximal_uv=list(uvs[1]), third_uv=list(uvs[2]),
                     fit_rms_m=rms)
-        if rms > FIT_RMS_MAX_M:
+        if not math.isfinite(rms) or rms > FIT_RMS_MAX_M:
             return dict(valid=False, reason=f'marker fit rms {rms * 1000:.2f} mm > '
                                             f'{FIT_RMS_MAX_M * 1000:.2f} mm', **base), None
+        if self.ray_marker_fit:
+            refined = [_ray_sphere_centre(pts, self.marker_radius, c) for pts, c in zip(samples, centres)]
+            if any(v is None for v in refined):
+                return dict(valid=False, reason='unresolved ray/sphere fit', **base), None
+            R, t, rms = _kabsch(self.marker_offsets, np.stack(refined))
+            base.update(original_rms_m=base['fit_rms_m'], fit_rms_m=rms)
+            if not math.isfinite(rms) or rms > FIT_RMS_MAX_M:
+                return dict(valid=False, reason='ray marker rigid-fit RMS out of tolerance', **base), None
         if self.tcp_local is None:
             return dict(valid=False, reason='tcp_local calibration missing', **base), None
         tip = R @ self.tcp_local + t
@@ -330,6 +410,8 @@ class CutPerception:
                    tip_uv=list(self._project(tip)), **base)
         if jaw is not None:
             est['jaw_axis'] = jaw.tolist()
+        if self.opening_axis_local is not None:
+            est['opening_axis'] = unit(R @ self.opening_axis_local).tolist()
         info = dict(tip=tip, axis=axis, tip_uv=est['tip_uv'])
         return est, info
 
@@ -378,7 +460,7 @@ class CutPerception:
                     slit_sel=slit_sel, recovery=recovery, reach_far=reach_far,
                     band=band, occ=occ, b_start=b_start, edges=edges)
 
-    def _cut(self, tissue, mask, plane, pts, scis, depth):
+    def _cut(self, tissue, mask, plane, pts, scis, depth, rgb):
         """Cut start / front / direction in the fitted sheet plane.
 
         The sheet is a strip: Vt[0] spans its WIDTH (the lateral axis), Vt[1] its length
@@ -388,8 +470,10 @@ class CutPerception:
         if not tissue['valid']:
             return dict(valid=False, front_valid=False, reason='no tissue plane'), None
         c, Vt = plane
-        lat_ax, len_ax, normal = Vt[0], Vt[1], Vt[2]
+        lat_ax, len_ax = Vt[:2]
+        normal = np.asarray(tissue['normal'], dtype=float)
 
+        prior = self._cut_dir
         if self._cut_dir is None:
             if scis is None or scis.get('tip') is None:
                 return dict(valid=False, front_valid=False,
@@ -406,10 +490,13 @@ class CutPerception:
             for end in ends:
                 p = c + np.median(s_len[end]) * len_ax + np.median(s_w[end]) * lat_ax
                 d_uv.append(np.hypot(*(np.asarray(self._project(p)) - np.asarray(tip_uv))))
-            self._cut_dir = len_ax if int(np.argmin(d_uv)) == 0 else -len_ax
-            self._cut_dir0 = self._cut_dir          # anchor every later slit refit to this
+            prior = len_ax if int(np.argmin(d_uv)) == 0 else -len_ax
 
-        direction = self._cut_dir                 # points from the near edge to the far edge
+        projected = prior - (prior @ normal) * normal
+        if np.linalg.norm(projected) < 1e-8:
+            return dict(valid=False, front_valid=False, reason='cut direction normal to fitted plane'), None
+        direction = unit(projected)
+        lat_ax = unit(np.cross(normal, direction))
         sa = (pts - c) @ direction
         sb = (pts - c) @ lat_ax
         s_near, s_far = np.percentile(sa, [2, 98])
@@ -422,20 +509,36 @@ class CutPerception:
         near = sa < s_near + 0.003
         w_src = sb[near] if int(near.sum()) >= 8 else sb
         w_lo, w_hi = np.percentile(w_src, [2, 98])
-        line_lat = 0.5 * (w_lo + w_hi) if self._cut_lat is None else self._cut_lat
+        near_midpoint = 0.5 * (w_lo + w_hi)
+        line_lat = (near_midpoint if self._cut_line_point is None
+                    else float((self._cut_line_point - c) @ lat_ax))
 
         # A visible extent much narrower than the real strip makes the lateral
         # centre unreliable — fail closed on the front (the direction stays valid).
         # min/max over the component-cleaned mask; percentiles would under-read
         # even a fully visible sheet (the mask never covers the outer edge px).
-        truncated = self.sheet_width_m is not None and \
-            float(sb.max() - sb.min()) < 0.85 * self.sheet_width_m
+        def truncated(samples):
+            return self.sheet_width_m is not None and np.ptp(samples) < 0.85 * self.sheet_width_m
+
+        if truncated(sb):
+            return dict(valid=True, direction=direction.tolist(), front_valid=False,
+                        mode='slit' if self._slit_seen else 'pre_cut',
+                        reason='sheet lateral extent truncated'), None
+        if self._cut_dir is None:
+            self._cut_dir = self._cut_dir0 = direction
 
         sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
+        chart = None
+        if self.material_pattern:
+            chart = material_coordinate.measure(rgb, depth, mask, sa_px, sb_px, line_lat,
+                                                allow_partial=self.local_material_chart)
+            if chart['valid']:
+                start_sa = s_near = chart['origin_m']
+                s_far = s_near + chart['projected_knots_m'][-1]
+                extent = s_far - s_near
         res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
 
-        # A long enough slit defines the cut line itself: refit direction, clamped to
-        # the prior.
+        # A long enough slit defines the cut line itself: refit within the anchor cone.
         if res['run_len'] >= SLIT_UPDATE_M and int(res['slit_sel'].sum()) >= 6:
             hs_dir, hs_lat = sa_px[res['slit_sel']], sb_px[res['slit_sel']]
             q = np.stack([hs_dir - hs_dir.mean(), hs_lat - hs_lat.mean()], axis=1)
@@ -444,15 +547,31 @@ class CutPerception:
             if slit_dir @ self._cut_dir0 < 0:
                 slit_dir = -slit_dir
             new_dir = _refit_direction(self._cut_dir0, direction, slit_dir)
-            if new_dir is not None:
+            if new_dir is not None and new_dir @ self._cut_dir0 >= math.cos(DIR_UPDATE_RAD):
+                new_lat_ax = unit(np.cross(normal, new_dir))
+                new_sb = (pts - c) @ new_lat_ax
+                if truncated(new_sb):
+                    return dict(valid=True, direction=direction.tolist(), front_valid=False,
+                                mode='slit' if self._slit_seen else 'pre_cut',
+                                reason='sheet lateral extent truncated'), None
+                line_point = (self._cut_line_point if self._cut_line_point is not None
+                              else c + s_near * direction + line_lat * lat_ax)
                 direction = new_dir
                 self._cut_dir = direction
+                lat_ax, sb = new_lat_ax, new_sb
+                line_lat = float((line_point - c) @ lat_ax)
                 sa = (pts - c) @ direction
-                sb = (pts - c) @ lat_ax
                 s_near, s_far = np.percentile(sa, [2, 98])
                 start_sa = float(np.percentile(sa, 1))
                 extent = s_far - s_near
                 sa_px, sb_px, pz = self._plane_coords(c, normal, direction, lat_ax)
+                if self.material_pattern:
+                    chart = material_coordinate.measure(rgb, depth, mask, sa_px, sb_px, line_lat,
+                                                        allow_partial=self.local_material_chart)
+                    if chart['valid']:
+                        start_sa = s_near = chart['origin_m']
+                        s_far = s_near + chart['projected_knots_m'][-1]
+                        extent = s_far - s_near
                 res = self._gap_scan(mask, sa_px, sb_px, pz, depth, line_lat, s_near, s_far)
 
         slit_px_n = int(res['slit_sel'].sum())
@@ -461,10 +580,9 @@ class CutPerception:
         # Once a slit is measured, the crack line is the median lateral of its gap
         # pixels, low-passed — a single frame jitters, the crack line is persistent.
         if slit_meas:
-            self._slit_seen = True
             slit_lat = float(np.median(sb_px[res['slit_sel']]))
-            new_lat = slit_lat if self._cut_lat is None else \
-                LAT_SMOOTH * self._cut_lat + (1.0 - LAT_SMOOTH) * slit_lat
+            new_lat = slit_lat if self._cut_line_point is None else \
+                LAT_SMOOTH * line_lat + (1.0 - LAT_SMOOTH) * slit_lat
             if new_lat != line_lat:
                 # The band moved: re-scan around the updated line before scoring —
                 # a fraction of a millimetre of band shift changes the look-ahead.
@@ -473,17 +591,23 @@ class CutPerception:
                                      line_lat, s_near, s_far)
                 slit_px_n = int(res['slit_sel'].sum())
                 slit_meas = res['run_len'] >= SLIT_MIN_LEN_M and slit_px_n >= 2
-            self._cut_lat = new_lat
-            line_lat = self._cut_lat
+            if slit_meas:
+                self._slit_seen = True
+                self._cut_line_point = c + res['run_end'] * direction + line_lat * lat_ax
 
         start = c + start_sa * direction + line_lat * lat_ax
         cut = dict(valid=True, reason='', direction=direction.tolist(), start=start.tolist())
-        meta = dict(lat=lat_ax, line_lat=line_lat)
-
-        if truncated:
-            return dict(cut, front_valid=False,
-                        mode='slit' if self._slit_seen else 'pre_cut',
-                        slit_px=slit_px_n, reason='sheet lateral extent truncated'), meta
+        if chart is not None:
+            cut['material_chart'] = chart
+            if chart['valid']:
+                cut['material_start'] = start.tolist()
+        elif self.sheet_length_m:
+            bounds = material_interval(sa, sb, self.sheet_length_m)
+            if bounds is not None:
+                near_edge, far_edge = bounds
+                cut['material_start'] = (c + near_edge * direction + line_lat * lat_ax).tolist()
+                cut['material_scale'] = max(1.0, self.sheet_length_m / (far_edge - near_edge))
+        meta = dict(lat=lat_ax, direction=direction)
 
         def provable(s):
             return _provable_ahead(s, res['band'], res['occ'], res['b_start'],
@@ -493,18 +617,36 @@ class CutPerception:
         # if its look-ahead proves the crack ends there (see _provable_ahead). Once a
         # slit has ever been measured there is no fall-back to the pre-cut start.
         cands = []                            # (source, along, lateral)
+        distal = []
         if slit_meas:
             cands.append(('slit', res['run_end'], line_lat))
+        if self._slit_seen:
+            # A displaced slit needs the two banks in the same distal bin, not
+            # simply missing colour off to one side of the strip.
+            for lat in (line_lat - GAP_BAND_M / 2, line_lat + GAP_BAND_M / 2):
+                lane = self._gap_scan(mask, sa_px, sb_px, pz, depth, lat, s_near, s_far)
+                if lane['run_len'] < SLIT_MIN_LEN_M or lane['reach_far']:
+                    continue
+                end = lane['run_end']
+                dist = sb_px - lat
+                bin_mask = mask & (sa_px >= end - GAP_BIN_M) & (sa_px < end)
+                if not all(np.any(bin_mask & (side * dist >= GAP_BAND_M)
+                                  & (side * dist < 2 * GAP_BAND_M)) for side in (-1, 1)):
+                    continue
+                distal.append(end)
+                if lane['recovery']:
+                    cands.append(('bank_slit', end, lat))
         if self._front_d is not None and \
                 (self._front_ext is None or abs(extent - self._front_ext) < 0.003):
-            cands.append(('memory', s_near + self._front_d,
-                          self._front_lat if self._front_lat is not None else line_lat))
+            memory_lat = float((self._front_point - c) @ lat_ax)
+            cands.append(('memory', s_near + self._front_d, memory_lat))
         evidence = int((((sa_px - start_sa) ** 2 +
                          (sb_px - line_lat) ** 2 < NEAR_EVIDENCE_M ** 2) & mask).sum())
         if not self._slit_seen and evidence >= MIN_NEAR_PX:
             cands.append(('pre_cut', start_sa, line_lat))
 
-        ok = [cd for cd in cands if provable(cd[1])]
+        ok = [cd for cd in cands if (cd[0] == 'bank_slit' or provable(cd[1]))
+              and not any(end > cd[1] + GAP_BIN_M + 1e-12 for end in distal)]
         if not ok:
             if self._slit_seen:
                 reason = 'slit seen but no front candidate provable ahead'
@@ -517,12 +659,17 @@ class CutPerception:
                         slit_px=slit_px_n, reason=reason), meta
 
         src, front_s, front_lat = max(ok, key=lambda kv: kv[1])
+        if self.front_recovery and src == 'memory':
+            # A sub-bin difference is not evidence that the crack grew beyond this
+            # directly observed apex. A longer disagreement keeps the fix invalid.
+            direct = [cd for cd in ok if cd[0] in ('slit', 'bank_slit') and front_s - cd[1] <= GAP_BIN_M + 1e-12]
+            if direct:
+                src, front_s, front_lat = max(direct, key=lambda kv: kv[1])
         # The remembered front advances only from a provable slit apex; a remembered
         # crack cannot shrink (cracks are permanent).
-        if src == 'slit':
-            self._front_d = res['run_end'] - s_near if self._front_d is None \
-                else max(self._front_d, res['run_end'] - s_near)
-            self._front_lat, self._front_ext = line_lat, extent
+        if src in ('slit', 'bank_slit') and (self._front_d is None or front_s - s_near >= self._front_d):
+            self._front_d = front_s - s_near
+            self._front_point, self._front_ext = c + front_s * direction + front_lat * lat_ax, extent
         front_s = min(max(front_s, s_near), s_far - 0.0005)
         hs_lat = sb_px[res['slit_sel'] & (sa_px > front_s - 0.0015)]
         slit_open = float(np.percentile(hs_lat, 95) - np.percentile(hs_lat, 5)) \
@@ -537,6 +684,15 @@ class CutPerception:
         cut.update(front_valid=True, front=front_cam.tolist(), front_uv=list(uv),
                    cut_site_offset=float(offset), mode=mode,
                    slit_opening_m=float(slit_open), slit_px=int(slit_px))
+        chart = cut.get('material_chart')
+        if chart and chart['valid'] and mode != 'memory':
+            distance = float((front_cam - cut['material_start']) @ direction)
+            estimate = material_coordinate.locate(chart['material_knots_m'], chart['projected_knots_m'], distance)
+            if estimate is not None:
+                cut['progress_m'], cut['progress_cell_m'] = estimate
+        elif 'material_scale' in cut:
+            cut['progress_m'] = max(0.0, float((front_cam - cut['material_start']) @ direction)
+                                    * cut['material_scale'])
         return cut
 
     def _tension(self, tissue, mask, plane, cut_meta, depth, post_grasp, slit_opening):
@@ -544,7 +700,7 @@ class CutPerception:
             return dict(valid=False, reason='no tissue plane')
         c, Vt = plane
         lat = cut_meta['lat']
-        direction = np.asarray(self._cut_dir)
+        direction = cut_meta['direction']
         pts, _, _ = _masked_points(mask, depth, self.W, self.H, self.f, self.far)
         s_dir = (pts - c) @ direction
         s_lat = (pts - c) @ lat
@@ -571,21 +727,34 @@ class CutPerception:
         (camera->world). Returns a JSON-safe dict of fields with validity + reasons."""
         rgb = np.asarray(rgb, dtype=float)
         depth = np.asarray(depth, dtype=float)
+        if self.bilateral_surface:
+            return self._estimate_bilateral(rgb, depth, R_est, t_est)
+        if self._cut_camera_R is not None and self._cut_dir is not None:
+            current_from_previous = R_est.T @ self._cut_camera_R
+            self._cut_dir = unit(current_from_previous @ self._cut_dir)
+            self._cut_dir0 = unit(current_from_previous @ self._cut_dir0)
+            translation = R_est.T @ (self._cut_camera_t - t_est)
+            if self._cut_line_point is not None:
+                self._cut_line_point = current_from_previous @ self._cut_line_point + translation
+            if self._front_point is not None:
+                self._front_point = current_from_previous @ self._front_point + translation
+        self._cut_camera_R = R_est.copy()
+        self._cut_camera_t = t_est.copy()
         out = dict(tissue={}, scissors={}, cut={}, tension_proxy={})
         tissue, mask, plane, pts = self._tissue(rgb, depth)
         scis_est, scis = self._scissors(rgb, depth)
-        cut, cut_meta = self._cut(tissue, mask, plane, pts, scis, depth)
+        cut, cut_meta = self._cut(tissue, mask, plane, pts, scis, depth, rgb)
         slit_open = cut.get('slit_opening_m', 0.0) if cut else 0.0
         tension = self._tension(tissue, mask, plane, cut_meta, depth, post_grasp, slit_open)
 
         def world(d):
             d = dict(d)
-            for k in ('centroid', 'normal', 'e1', 'e2', 'tip', 'axis', 'jaw_axis',
-                      'front', 'direction', 'start'):
+            for k in ('centroid', 'normal', 'e1', 'e2', 'tip', 'axis', 'jaw_axis', 'opening_axis',
+                      'front', 'direction', 'start', 'material_start'):
                 if k in d and d[k] is not None:
                     v = np.asarray(d[k])
                     d[k] = (R_est @ v + t_est if v.shape == (3,) and k in
-                            ('centroid', 'tip', 'front', 'start') else R_est @ v).tolist()
+                            ('centroid', 'tip', 'front', 'start', 'material_start') else R_est @ v).tolist()
             return d
 
         out['tissue'] = world(tissue)
@@ -593,6 +762,24 @@ class CutPerception:
         out['cut'] = world(cut)
         out['tension_proxy'] = tension
         return out
+
+    def _estimate_bilateral(self, rgb, depth, R, t):
+        # Static replay uses an identity camera pose; a caller can request the same geometry in world coordinates.
+        cut = measure_bilateral(rgb, depth, self.W, self.H, self.f, self.far,
+                                junctions=self.bilateral_surface == 'junction')
+        tool, _ = self._scissors(rgb, depth)
+        def transport(field, positions, vectors):
+            result = dict(field)
+            for k in (*positions, *vectors):
+                if field.get(k) is not None:
+                    v = R @ np.asarray(field[k], dtype=float)
+                    result[k] = (v + t if k in positions else v).tolist()
+            return result
+        cut = transport(cut, ('front',), ('direction', 'normal'))
+        tool = transport(tool, ('tip',), ('axis','jaw_axis','opening_axis'))
+        tissue = dict(valid=cut.get('banks_visible', False), normal=cut.get('normal'))
+        return dict(cut=cut, scissors=tool, tissue=tissue,
+                    tension_proxy=dict(valid=False, reason='not evaluated by local endpoint observer'))
 
     def _project(self, pc):
         return (self.W / 2 - self.f * pc[0] / pc[2], self.H / 2 - self.f * pc[1] / pc[2])

@@ -1,0 +1,8 @@
+{
+  "scope": "Acquisition-launch correction only. Passive HD 8 mm detector, camera, optics, classification, control and scoring remain exactly the registered v1 plan.",
+  "parent": "config/task/m5_row9_hd_dev_v1.json",
+  "parent_sha256": "6cd5fcfd0e0e288079e698cbae2f298c9daa6db2ec4b4a5e900fffc2b7e80b8d5",
+  "failed_capture": "validation/task/m5_row9_hd_dev_v1_capture contains only a simulator log. The launcher created the run directory before the run's own create-exclusive check; there was no FSM trial or image prediction.",
+  "amendment": "Use an external temporary simulator log; let the runner exclusively create a fresh result directory. Copy the owned log to the result after the trial.",
+  "screen": "Exactly the unchanged row9_contact_dev_v1 classifier with the unchanged m5_row9_hd_dev_v1 negative-control criteria. Seal predictions before reading structural labels."
+}

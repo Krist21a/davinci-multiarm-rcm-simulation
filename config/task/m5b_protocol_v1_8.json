@@ -1,0 +1,8 @@
+{
+  "protocol_version": "1.8",
+  "previous_amendment": "config/task/m5b_protocol_v1_7.json",
+  "scope": "Predictive clearance diagnostics for the non-anatomical coded sheet, not M5 acceptance.",
+  "prediction": "For tool_pose vision, project short sightlines from the estimated camera to a 5 by 5 stencil on the current visual cut plane. Span the existing lateral gap band and forward look-ahead window. Test the candidate open jaw segments (0.5 rad, 0.6 mm capsule radius) and a 4 mm distal housing proxy (1.5 mm radius). Require a majority of sightlines and at least two of five at the front sample to be clear. This predicts only cutter self-occlusion, not actual visibility; no simulator sheet truth is used.",
+  "selection": "For alignment try the existing 1 mm setback and then 1.5 and 2 mm setbacks, which remain within the existing alignment tolerance around 1 mm. For advance try 100, 75, 50 and 25 percent of the existing endpoint-limited step, never below the pre-existing 0.2 mm minimum. Skip predicted blocked candidates without moving. Verify each chosen candidate's FK prediction before guarded actuation. If none works use an existing camera attempt then acquire fresh evidence, or stop if the budget is exhausted. Do not change closure, sweep, collision or endpoint checks. Keep truth and shaft control unchanged.",
+  "trials": "As v1.7, run marked truth and marked vision nominal and 0.5 mm noise from the registered +4.5 deg, 0 deg, 0.080 m diagnostic pose and seeds 0/1. Report prediction decisions, peak and terminal cut length, closures and reacquisition. No new camera qualification or holdout evidence."
+}

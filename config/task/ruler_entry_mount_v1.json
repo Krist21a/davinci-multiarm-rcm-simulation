@@ -1,0 +1,8 @@
+{
+  "id": "ruler_entry_mount_v1",
+  "pivot_local_uvw_m": [0.00004942133109355672, 0.0021275012206141896, -0.0000020827978343033278],
+  "static_calibration_sha256": "f323ea87e821584054dbeb06c278ad13dded59b6575d53f0effac8e1da38a67d",
+  "scope": "Distinct development fixture, no robot/scene/limits change or confirmation runs. Both centre-pivot angles failed before grasp: entry localization was refused. That is not an IK impossibility result.",
+  "geometry": "Use only 45 degrees, the smaller angle with potential endpoint visibility. Put the centre of rotation at the original loaded-before-grasp entry coordinate from the historical uncut truth calibration (tick 2). Freeze that coordinate relative to the original sheet basis at setup, not live progress or a score. All dimensions, PBD state transitions, roles and guards remain unchanged.",
+  "acquisition": "Full truth collection cap=3 mm and goals 8,9. Require first loaded entry visibility, both grasps, terminal DONE with actual 8 and 9/10 on the same fixture and safe park. Log failed stage, frame and IK refusal evidence if available. Missing mechanical coverage fails this pilot; do not spend held acceptance trajectories."
+}

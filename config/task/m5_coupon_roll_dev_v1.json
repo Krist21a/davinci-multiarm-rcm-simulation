@@ -1,0 +1,16 @@
+{
+  "scope": "Synthetic coupon roll development only, not M5 acceptance. Keep the v5 sheet renderer, scene, original constraint scorer, controller, guards, view policy, and noise seeds. Roll the initial flat placement about its original longitudinal cut line through the original cut entrance. Orthogonal across-sheet direction and two grasp points rotate together. No translation, pitch, jaw actuation change, visibility masks, or runtime mount motion.",
+  "parent": "config/task/m5_visible_fracture_dev_v5.json",
+  "parent_sha256": "05edfd6f99b71c8e0a7e73ecc88716fe3b3411e70e10454e0c5dccee47a69130",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "sheet": {"bridge_print": true, "bridge_fracture_faces": true},
+  "angles_deg": [8, -8, 16, -16],
+  "cases": ["nominal", "depth_noise_0p5"],
+  "reader_sha256": {
+    "scripts/vision/bridge_fracture.py": "3468ab32a388a704bb76d920c14711d6264ad20d91dcb6fa3d1dff77a95a5428",
+    "scripts/vision/bridge_observer.py": "0279825630490fad73345dc5fd07759521f29cff7419ae860e8abe2ed58ef00c"
+  },
+  "acquisition": "From uncut run the unchanged full ActiveLookFSM at every registered angle/case; encode angles in separate immutable directories, and capture all native observed RGB-D. Continue through ordinary success or guarded failure. Record both held grasps and all seven per-lane color counts at the first exposed ALIGN transition (before cutting, color counts are diagnostic only). Use pre-existing v5 as historical zero-roll context, not as new validation. Never run the bridge reader to make a motion or stop decision.",
+  "gate": "Seal image-only status and source hashes for every exposure before joining individual structural logs. Each angle needs both retractors to reach the first exposed ALIGN from uncut in both runs, strict truth isolation, no fault or tear or pass beyond 10 mm anywhere, and zero STOP_CANDIDATE at any structural length below 9 mm. At actual 8 mm in the noisy run require two consecutive NOT_STOP frames after fresh post-closure reacquisition and before or at the following closure's pre-actuation exposure; at actual 9 mm in nominal require two consecutive STOP_CANDIDATE frames with the same custody and at the same camera pose and intrinsics within each pair. A missing run, missing endpoint, unidentified material, or UNKNOWN is not a qualifying reading. No run gains authority to stop or close from this test; independent confirmation remains necessary even if passed."
+}

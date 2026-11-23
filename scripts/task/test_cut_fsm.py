@@ -4,6 +4,7 @@
 Also writes validation/task/fsm_unit_coverage.json with the states and transitions every scenario reached.
 """
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -277,7 +278,9 @@ class Scenarios(unittest.TestCase):
             visited |= set(r['visited'])
             trans |= set(r['transitions'])
         missing = sorted(s.name for s in S if s.name not in visited)
-        out = REPO / 'validation' / 'task' / 'fsm_unit_coverage.json'
+        # The default writes the historical coverage file; FSM_UNIT_COVERAGE_JSON is an opt-in
+        # versioned override used by run_regressions --out so reruns never rewrite history.
+        out = Path(os.environ.get('FSM_UNIT_COVERAGE_JSON', REPO / 'validation' / 'task' / 'fsm_unit_coverage.json'))
         out.parent.mkdir(parents=True, exist_ok=True)
         with open(out, 'w', encoding='utf-8', newline='\n') as f:
             f.write(json.dumps(dict(states={s.name: s.value for s in S}, states_reached=sorted(visited),

@@ -18,6 +18,7 @@ with patch.object(sys, 'path', [str(TASK), *sys.path]):
     import simtools
     from sim_world import SimWorld, TISSUE_RGB
     from visibility import depth_visible
+    from cutter_view import clear_stencil
     from workspace import H, NU, NV
 
 
@@ -66,7 +67,7 @@ class ControllerStartupTests(unittest.TestCase):
                 world = None
             else:
                 world = SimWorld(None, sim, None, {})
-            update.assert_called_once_with(sim, 10, tissue=True)
+            update.assert_called_once_with(sim, 10, tissue=True, tissue_source=None)
         return world, events
 
     def test_loaded_controller_is_refreshed_before_start(self):
@@ -92,7 +93,73 @@ class ControllerStartupTests(unittest.TestCase):
         np.testing.assert_allclose(frame['axis'], [0, 0, 1])
 
 
+class CouponRollTests(unittest.TestCase):
+    def test_sheet_roll_preserves_entrance_and_cut_axis_and_rotates_both_grasps(self):
+        w = SimWorld.__new__(SimWorld)
+        w.roi_proxy, w.canonical_seam = None, False
+        w.cutter, w.mode, w.pretension, w.tissue_source = 'psm2', 'full', .08, None
+        w.frame = Mock(return_value=dict(pivot=np.zeros(3), x=np.array([1., 0., 0.]),
+                                         axis=np.array([0., 1., 0.]), tcp=np.array([0., 0., .1])))
+        w.steps = Mock()
+        w.call = Mock(side_effect=[None, [.00092] * NV, None, [.00092] * NV])
+        w.sheet_cfg = {}
+        w.place_sheet()
+        base = w.call.call_args_list[0].args[1]
+        w.sheet_cfg = {'bridge_print': True, 'bridge_fracture_faces': True, 'roll_deg': 16}
+        w.place_sheet()
+        tilted = w.call.call_args_list[2].args[1]
+        angle = np.deg2rad(16.)
+        across = np.array([0., np.cos(angle), np.sin(angle)])
+        np.testing.assert_array_equal(tilted['origin'], base['origin'])
+        np.testing.assert_array_equal(tilted['v'], base['v'])
+        self.assertEqual(tilted['spacing'], base['spacing'])
+        np.testing.assert_allclose(tilted['u'], across, atol=1e-14)
+        mid = w.sheet_origin + .5 * (NV - 1) * H * w.v
+        for arm, sign in [('psm1', -1), ('psm3', 1)]:
+            np.testing.assert_allclose(w.grasp_points[arm], mid + sign * .5 * (NU - 1) * H * across)
+
+    def test_sheet_roll_refuses_invalid_mounts(self):
+        valid = dict(bridge_print=True, bridge_fracture_faces=True)
+        for value in (-16, -8., 0, 8, 16):
+            self.assertEqual(SimWorld._check_sheet_cfg(dict(valid, roll_deg=value))['roll_deg'], value)
+        for value in (True, None, '8', float('inf'), float('nan'), -17, 17):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'roll_deg'):
+                SimWorld._check_sheet_cfg(dict(valid, roll_deg=value))
+        with self.assertRaisesRegex(ValueError, 'roll_deg'):
+            SimWorld._check_sheet_cfg({'roll_deg': 8})
+
+
 class VisibilityTests(unittest.TestCase):
+    def test_transparent_tcp_marker_keeps_collision_and_detection_properties(self):
+        w = SimWorld.__new__(SimWorld)
+        w.cutter, w.scene_file = 'psm2', Path('scene.ttt')
+        w.sim = Mock(object_shape_type=1, objintparam_visibility_layer=10, objectspecialproperty_renderable=32)
+        w.by = {'psm2_tool_tip_visual': 7, 'psm2_yaw_ref2_respondable_visual': 8, 'psm2_tcp': 9}
+        w.sim.getObjectType.return_value = 1
+        w.sim.getObjectSpecialProperty.side_effect = [47, 15]
+        w.sim.getObjectInt32Param.side_effect = [1, 0]
+        with patch.object(sim_world, 'file_sha256', return_value='other'):
+            with self.assertRaises(ValueError):
+                w._exclude_tcp_marker()
+        w.sim.setObjectSpecialProperty.assert_not_called()
+        with patch.object(sim_world, 'file_sha256', return_value='8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7'):
+            self.assertEqual(w._exclude_tcp_marker()['properties_after'], 15)
+        w.sim.setObjectSpecialProperty.assert_called_once_with(7, 15)
+        w.sim.setObjectInt32Param.assert_called_once_with(7, 10, 0)
+        w.sim.removeObjects.assert_not_called()
+
+    def test_capsules_use_bounded_sightlines_not_infinite_rays(self):
+        points = np.array([[0., 0., 1.], [.03, 0., 1.]])
+        camera = np.zeros(3)
+        occluder = (np.array([-.002, 0., .5]), np.array([.002, 0., .5]), .001)
+        np.testing.assert_array_equal(clear_stencil(camera, points, [occluder]), [False, True])
+        behind = (occluder[0] + points[0], occluder[1] + points[0], occluder[2])
+        np.testing.assert_array_equal(clear_stencil(camera, points, [behind]), [True, True])
+        R = sim_world.cut_perception.rotvec(np.array([.5, -.3, .1]))
+        t = np.array([-.1, .2, .4])
+        transformed = (R @ occluder[0] + t, R @ occluder[1] + t, occluder[2])
+        np.testing.assert_array_equal(clear_stencil(t, points @ R.T + t, [transformed]), [False, True])
+
     def setUp(self):
         self.world = SimWorld.__new__(SimWorld)
         self.world.truth = sim_world.GroundTruth(self.world)   # localize() tags its reads
@@ -200,6 +267,10 @@ def bare_world():
     world.advanced = 0.0
     world.align_mode = 'shaft'
     world._pre_cut_q = None
+    # No homed anchor until a test installs an explicit ready state: a missing anchor
+    # must refuse, never pretend a successful park.
+    world._ready_q = None
+    world._ready_tcp = None
     world.tick = 0
     world.occluder = None
     return world
@@ -355,6 +426,10 @@ class HomeAndAlignmentTests(unittest.TestCase):
         world.call.side_effect = results
         world.task = {'planning': {'command_sequence_checked': [[0, 1, 0.04], [2, 1, 0.05]]}}
         world.place_sheet = Mock()
+        # Real homed-TCP readback: home() must never fabricate the ready anchor.
+        world.by = {'psm2_tcp': 12}
+        world.sim = SimpleNamespace(
+            getObjectMatrix=Mock(return_value=np.eye(4)[:3].reshape(-1).tolist()))
         return world
 
     def test_home_requires_explicit_success(self):
@@ -377,6 +452,61 @@ class HomeAndAlignmentTests(unittest.TestCase):
         self.assertIs(world.home(), True)
         self.assertEqual(world.steps.call_args_list, [call(20), call(30)])
         world.place_sheet.assert_called_once_with()
+        np.testing.assert_array_equal(world._ready_tcp, np.eye(4)[:3])
+        self.assertFalse(world._ready_tcp.flags.writeable)
+        self.assertIsNone(world._ready_q)      # shaft mode: the joint anchor is unused
+
+    def test_home_without_valid_tcp_anchor_refuses(self):
+        for matrix in (None, np.eye(4)[:3].reshape(-1).tolist()[:8], [np.nan] * 12):
+            with self.subTest(matrix=matrix):
+                world = self.make_home_world([True, True, True])
+                world.sim.getObjectMatrix.return_value = matrix
+                self.assertIs(world.home(), False)
+                self.assertIsNone(world._ready_tcp)
+
+    def test_tool_pose_home_freezes_measured_joint_anchor(self):
+        world = self.make_home_world([True, True, True,
+                                      {'available': True, 'roll': .1, 'pitch': .2, 'yaw': .3}])
+        world.align_mode = 'tool_pose'
+        world.target_of = Mock(return_value=(10.0, 20.0, 0.04))
+        self.assertIs(world.home(), True)
+        self.assertEqual(world._ready_q.shape, (6,))
+        np.testing.assert_allclose(world._ready_q, [10.0, 20.0, 0.04, .1, .2, .3])
+        self.assertFalse(world._ready_q.flags.writeable)
+        # A missing wrist state leaves tool_pose home refused rather than anchorless.
+        world2 = self.make_home_world([True, True, True, None])
+        world2.align_mode = 'tool_pose'
+        world2.target_of = Mock(return_value=(10.0, 20.0, 0.04))
+        self.assertIs(world2.home(), False)
+        self.assertIsNone(world2._ready_q)
+
+    def test_explicit_view_is_applied_after_homing_before_sheet_placement(self):
+        world = self.make_home_world([True, True, True])
+        world.args = SimpleNamespace(initial_view=[1.5, -2.5])
+        world.arm_cfg = {'ecm': {'insertion_home': 0.02}}
+        world.target_of = Mock(return_value=(1.5, -2.5, 0.02))
+        world.command = Mock(return_value=True)
+        world.camera = Mock(side_effect=[(np.eye(3), np.zeros(3)), (np.eye(3), np.ones(3))])
+        ordered = Mock()
+        for name in ('call', 'command', 'place_sheet'):
+            ordered.attach_mock(getattr(world, name), name)
+        self.assertTrue(world.home())
+        self.assertEqual(ordered.mock_calls[0], call.call('homeRCM'))
+        self.assertEqual(ordered.mock_calls[-2:], [call.command('ecm', 1.5, -2.5, 0.02, 25),
+                                                   call.place_sheet()])
+        self.assertEqual(world.initial_view_readback['target'], [1.5, -2.5, 0.02])
+
+    def test_initial_view_refuses_mismatched_insert_readback(self):
+        world = self.make_home_world([True, True, True])
+        world.args = SimpleNamespace(initial_view=[1.0, 2.0], initial_view_insertion_m=0.088)
+        world.arm_cfg = {'ecm': {'insertion_home': 0.08}}
+        world.target_of = Mock(return_value=(1.0, 2.0, 0.08))
+        world.command = Mock(return_value=True)
+        world.camera = Mock(return_value=(np.eye(3), np.zeros(3)))
+        with self.assertRaisesRegex(RuntimeError, 'disagrees with ECM readback'):
+            world.home()
+        world.command.assert_called_once_with('ecm', 1.0, 2.0, 0.088, 25)
+        world.place_sheet.assert_not_called()
 
     def test_alignment_rejection_is_not_reported_as_zero_error(self):
         world = bare_world()
@@ -587,8 +717,20 @@ class RoleConfigurationTests(unittest.TestCase):
         world.steps = Mock()
         world.call = Mock(return_value=True)
         world.arm_cfg['ecm'] = dict(world.arm_cfg['psm1'], insertion_home=0.02)
+        world.target_of = Mock(return_value=[0., 0., 0.02])
         self.assertTrue(world.adjust_camera())
         self.assertEqual(world.call.call_args_list[-1], call('setRCMTarget', 4, 3.0, 0.0, 0.02))
+
+    def test_camera_skips_current_pose_and_only_counts_accepted_move(self):
+        world = self.make_world()
+        world.target_of = Mock(return_value=[3., 0., 0.088])
+        world.command = Mock(side_effect=[False, True])
+        self.assertFalse(world.adjust_camera())
+        self.assertEqual(world.camera_moves, 0)
+        self.assertTrue(world.adjust_camera())
+        self.assertEqual(world.camera_moves, 1)
+        self.assertEqual(world.command.call_args_list, [call('ecm', -3., 0., 0.088, 25),
+                                                       call('ecm', 0., 3., 0.088, 25)])
 
 
 class RefusedCandidateTests(unittest.TestCase):
@@ -809,12 +951,27 @@ class GroundTruthPurposeTests(unittest.TestCase):
 
 
 class VisionModeTests(unittest.TestCase):
+    def test_view_selection_skips_occluded_candidate_before_actuation(self):
+        world = self.vision_world()
+        longer, shorter = np.ones(6), np.zeros(6)
+        world._tool_solve = Mock(side_effect=[dict(converged=True, q=longer), dict(converged=True, q=shorter)])
+        world._tool_fk = Mock(return_value=lambda q: np.eye(3, 4) * (1 + q[0]))
+        world._candidate_view_counts = Mock(side_effect=[(23, 1), (21, 3)])
+        world.tool_command = Mock()
+        targets = [(0.003, np.array([0., 0., .043])), (0.0015, np.array([0., 0., .0415]))]
+        result = world._visible_tool_candidate('advance', np.eye(3, 4), targets, np.eye(3)[2], np.eye(3)[0])
+        np.testing.assert_array_equal(result['q'], shorter)
+        world.tool_command.assert_not_called()
+        self.assertFalse(world.view_blocked)
+        self.assertEqual(world.event_log[-1]['selected_m'], .0015)
+
     """M5b cutter-arm vision control on SimWorld.__new__ stubs (m5b_protocol.json)."""
 
     EST = dict(scissors={'valid': True, 'tip': [0.0, 0.0, 0.10], 'jaw_axis': [0.0, 0.0, 1.0]},
                tissue={'valid': True, 'normal': [0.0, 1.0, 0.0]},
                cut={'valid': True, 'front_valid': True,
-                    'front': [0.0, 0.0, 0.05], 'direction': [0.0, 0.0, 1.0], 'start': [0.0, 0.0, 0.04]})
+                    'front': [0.0, 0.0, 0.05], 'direction': [0.0, 0.0, 1.0], 'start': [0.0, 0.0, 0.04],
+                    'material_start': [0., 0., 0.04], 'progress_m': 0.01, 'material_scale': 1.0})
 
     def vision_world(self, est=None, strict=True):
         world = bare_world()
@@ -828,6 +985,8 @@ class VisionModeTests(unittest.TestCase):
         world.v = np.array([0.0, 0.0, 1.0])
         world.camera_moves = len(SimWorld.CAMERA_POSES)
         world.pretension = 0.08
+        # Measured per-row rests of this stub's nominal H grid (current-controller world).
+        world.cutline_rest_m = np.full(NV, H * (1 - world.pretension))
         world.W = world.H = 41
         world.f = 20.0
         world.far = 1.0
@@ -891,10 +1050,11 @@ class VisionModeTests(unittest.TestCase):
         self.assertTrue(world._fix_valid())                       # exactly at the boundary
 
         world._fix = dict(fix)
-        world._closure_event = Mock()
         self.assertTrue(world.close_scissors())
         self.assertIsNone(world._fix)                             # closure voids the fix
 
+        world.camera_moves = 0
+        world.target_of = Mock(return_value=[0., 0., 0.08])
         for method, args in ((world.retract, ('psm1', 0.0002)),
                              (world.release, ('psm1',)),
                              (world.takeover_point, ('psm3', np.zeros(3))),
@@ -926,18 +1086,82 @@ class VisionModeTests(unittest.TestCase):
         world.retract('psm1', 0.0002)
         self.assertIsNone(world._fix)
 
+    def test_closure_demands_a_new_tissue_slit_and_material_coordinate(self):
+        world = self.vision_world()
+        self.assertTrue(world.close_scissors())
+        for mode in ('memory', 'pre_cut'):
+            world._update_fix(dict(self.EST, cut=dict(self.EST['cut'], mode=mode)))
+            self.assertIsNone(world._fix)
+        slit = dict(self.EST['cut'], mode='bank_slit')
+        world._update_fix(dict(self.EST, cut=dict(slit, progress_m=None)))
+        self.assertIsNone(world._fix)
+        world._update_fix(dict(self.EST, cut=slit))
+        self.assertFalse(world.awaiting_new_slit)
+        self.assertEqual(world.event_log[-1]['event'], 'post_closure_reacquired')
+
+    def test_coded_closure_needs_same_tick_chart_and_a_distal_reacquisition(self):
+        world = self.vision_world()
+        world.material_pattern = True
+        chart = dict(valid=True, material_knots_m=sim_world.cut_perception.material_coordinate.KNOTS_M.tolist(),
+                     projected_knots_m=[0, .002, .004, .007, .010],
+                     guard_knots_m=[-.0002, .0018, .0038, .0068, .0098])
+        cut = dict(self.EST['cut'], mode='slit', progress_m=.004, material_chart=chart)
+        world._update_fix(dict(self.EST, cut=cut))
+        self.assertTrue(world._fix_valid())
+        world.tick += 1
+        self.assertFalse(world._fix_valid())
+        self.assertFalse(world.close_scissors())
+        world._update_fix(dict(self.EST, cut=cut))
+        self.assertTrue(world.close_scissors())
+        world.tick += 1
+        for change in (dict(progress_m=.0041), dict(mode='memory', progress_m=.005),
+                       dict(progress_m=.005, material_chart={'valid': False})):
+            world._update_fix(dict(self.EST, cut=dict(cut, **change)))
+            self.assertFalse(world._fix_valid())
+            self.assertTrue(world.awaiting_new_slit)
+        world._update_fix(dict(self.EST, cut=dict(cut, progress_m=.005)))
+        self.assertTrue(world._fix_valid())
+        self.assertFalse(world.awaiting_new_slit)
+
+    def test_partial_chart_reacquires_only_in_the_observed_local_cell(self):
+        world = self.vision_world()
+        world.material_pattern = world.local_material_chart = True
+        world.awaiting_new_slit = True
+        world._pre_closure_progress = .003
+        knots = sim_world.cut_perception.material_coordinate.KNOTS_M[[0, 1, 2, 4]].tolist()
+        chart = dict(valid=True, material_knots_m=knots,
+                     projected_knots_m=[0., .002, .004, .010],
+                     guard_knots_m=[-.0002, .0018, .0038, .0098])
+        cut = dict(self.EST['cut'], mode='slit', progress_m=.0045, front=[0., 0., .043],
+                   progress_cell_m=knots[1:3], material_chart=chart)
+        for change in (dict(front=[0., 0., .048]), dict(progress_cell_m=knots[2:]),
+                       dict(mode='memory')):
+            world._update_fix(dict(self.EST, cut=dict(cut, **change)))
+            self.assertFalse(world._fix_valid())
+            self.assertTrue(world.awaiting_new_slit)
+        world._update_fix(dict(self.EST, cut=cut))
+        self.assertTrue(world._fix_valid())
+        self.assertFalse(world.awaiting_new_slit)
+        self.assertEqual(world.event_log[-1]['progress_cell_m'], knots[1:3])
+
+    def test_sweep_can_reach_beyond_closed_tcp(self):
+        result = sim_world.sweep_projection(np.zeros(3), np.array([0., 0., 1.]),
+                                            np.array([1., -1., 0.]), np.array([1., 0., 0.]))
+        self.assertGreater(result, 1.0)
+
     def align_world(self, tip, jaw=None):
         world = self.vision_world()
         world.align_mode = 'tool_pose'
         world.v = np.array([0.0, 0.0, 1.0])
         world.u = np.array([1.0, 0.0, 0.0])
-        world.cfg = {'cut': {'align_tolerance_m': 0.0015}}
+        world.cfg = {'cut': {'align_tolerance_m': 0.0015, 'vision_axis_tolerance_deg': 5.0}}
         world.tick = 1
         world._fix = dict(front=np.asarray(self.EST['cut']['front'], dtype=float),
                           direction=np.array([0.0, 0.0, 1.0]), normal=np.array([0.0, 1.0, 0.0]),
                           progress=0.0, tick=1, epoch=0)
         world._last_est = dict(scissors={'valid': True, 'tip': list(tip),
-                                         'jaw_axis': jaw or [0.0, 0.0, 1.0]},
+                                         'jaw_axis': jaw or [0.0, 0.0, 1.0],
+                                         'opening_axis': [1., 0., 0.]},
                                tissue={'valid': True})
         tcp0 = np.array([0.0, 0.0, 0.04])
         M = np.eye(3, 4)
@@ -949,7 +1173,7 @@ class VisionModeTests(unittest.TestCase):
         world.by = {'psm2_tcp': 99}
         world._tool_q = Mock(return_value=(np.zeros(6), {'limits': {'roll': (-1, 1),
                                                                    'pitch': (-1, 1), 'yaw': (-1, 1)}}))
-        world._tool_solve = Mock(return_value={'converged': True, 'q': np.ones(6)})
+        world._tool_solve = Mock(return_value={'converged': True, 'q': np.ones(6), 'q0': np.zeros(6)})
         world.tool_command = Mock(return_value=True)
         world.target_of = Mock(return_value=(0.0, 0.0, 0.04))
         return world
@@ -980,6 +1204,55 @@ class VisionModeTests(unittest.TestCase):
         world._tool_solve.assert_not_called()
         self.assertIsNone(world._pre_cut_q)                       # nothing moved yet
 
+    def test_aligned_position_does_not_accept_misdirected_axes(self):
+        tip = [0, 0, 0.049]
+        for jaw in ([0.5, 0, np.sqrt(0.75)], [0, 0, -1]):
+            with self.subTest(jaw=jaw):
+                world = self.align_world(tip, jaw)
+                self.assertIsNone(world._align_scissors_vision(0.0))
+                self.assertTrue(world.tool_command.called)
+                self.assertFalse(world.closure_aligned())
+        world = self.align_world(tip)
+        world._last_est['scissors']['opening_axis'] = [-1., 0., 0.]
+        self.assertTrue(world.closure_aligned())                  # either blade-opening-axis sign
+        self.assertAlmostEqual(world._align_scissors_vision(0.0), 0.0)
+        world._last_est['scissors']['opening_axis'] = [0., 1., 0.]
+        self.assertFalse(world.closure_aligned())
+
+    def test_first_advance_after_no_motion_alignment_does_not_skip_withdrawal(self):
+        world = self.align_world([0, 0, 0.049])
+        self.assertAlmostEqual(world._align_scissors_vision(0), 0)
+        self.assertIsNone(world._pre_cut_q)
+        world.tool_command.return_value = False
+        self.assertFalse(world.advance_scissors(0.003))
+        self.assertIsNone(world._pre_cut_q)
+        world.tool_command.return_value = True
+        world.call = Mock(return_value=[{}, {'grip': 0.0}])
+        self.assertTrue(world.advance_scissors(0.003))
+        # Explicit ready anchor; the cutter is displaced until the accepted restore lands.
+        world._ready_q = np.zeros(6)
+        world._ready_tcp = np.eye(3, 4)
+        world.at_ready_pose = Mock(side_effect=[False, True])
+        self.assertTrue(world.retract_scissors())
+        arm, q, steps = world.tool_command.call_args.args
+        self.assertEqual((arm, steps), ('psm2', 20))
+        np.testing.assert_array_equal(q, np.zeros(6))
+
+    def test_closure_scoring_samples_before_grip_changes_truth(self):
+        world = self.align_world([0, 0, 0.049])
+        world.cut_front = Mock(return_value=np.array([0.0005, 0, 0.05]))
+
+        def set_grip(*args):
+            world.cut_front.return_value = np.array([0.003, 0, 0.05])
+            return True
+
+        world.call = Mock(side_effect=set_grip)
+        self.assertTrue(world.close_scissors())
+        self.assertAlmostEqual(world.event_log[-1]['lateral_truth_m'], 0.0005)
+        world.call = Mock(return_value=False)
+        self.assertFalse(world.close_scissors())
+        self.assertEqual(len(world.event_log), 1)
+
     def test_align_vision_refuses_without_fresh_tip_or_agreeing_direction(self):
         world = self.align_world([0, 0, 0.049])
         world._last_est = dict(scissors={'valid': False}, tissue={'valid': True})
@@ -992,22 +1265,127 @@ class VisionModeTests(unittest.TestCase):
         world._fix['tick'] = -10                                  # age 11 > fix_max_age 6: stale
         self.assertIsNone(world._align_scissors_vision(0.0))
 
-    def test_retract_scissors_vision_refuses_open_jaws_without_a_truth_read(self):
+    def test_retract_scissors_vision_parks_with_open_jaws_without_closing(self):
         world = self.vision_world()
         world.align_mode = 'tool_pose'
         world._pre_cut_q = np.zeros(6)
+        world._ready_q = np.zeros(6)
+        world._ready_tcp = np.eye(3, 4)
         world.advanced = 0.003
-        world.call = Mock(side_effect=lambda name, *a: [{'arm': 'psm1'},
-                                                        {'target': [1.0, 2.0, 0.04], 'grip': 0.5}]
-                          if name == 'getRCMStats' else (_ for _ in ()).throw(AssertionError(name)))
+        world.call = Mock(return_value=[{}, {'grip': 0.5}])
+        world.tool_command = Mock(side_effect=[False, True])
+        world.at_ready_pose = Mock(side_effect=[False, False, True])
         self.assertFalse(world.retract_scissors())
+        self.assertIsNotNone(world._pre_cut_q)
+        self.assertTrue(world.retract_scissors())
+        self.assertIsNone(world._pre_cut_q)
+        world.call.assert_not_called()                            # no grip read, no setGrip
         self.assertEqual(world.truth.reads, {})                   # strict: any read would raise
+
+    def test_terminal_observation_does_not_inject_events_or_credit_a_new_fix(self):
+        world = self.vision_world(self.EST)
+        world._events = Mock()
+        world.awaiting_new_slit = True
+        world._estimate.return_value = dict(self.EST, cut=dict(self.EST['cut'], mode='slit'))
+        world.observe(inject_events=False)
+        world._events.assert_not_called()
+        self.assertTrue(world.awaiting_new_slit)
+        self.assertEqual(world.event_log, [])
+
+    def test_endpoint_travel_includes_actual_tip_gap_and_material_scale(self):
+        world = self.align_world([0., 0., 0.049])
+        world._fix['material_scale'] = 1.25
+        self.assertAlmostEqual(world.endpoint_travel(0.0001), 0.00108)
+        world._last_est['scissors']['tip'] = [0., 0., 0.051]
+        self.assertLess(world.endpoint_travel(0.0001), 0.0)
+
+    def test_sweep_bound_is_invariant_under_shared_optical_rotation(self):
+        world = self.align_world([0.001, 0.0, 0.049])
+        world._fix.update(start=np.array([0., 0., 0.04]), material_scale=1.05)
+        world.cfg['cut'].update(length_m=0.009, max_overcut_m=0.001)
+        world.by.update(j1=1, j2=2)
+        world.arm_cfg = {'psm2': {'grip_joints': ['j1', 'j2']}}
+        hinge = np.array([[0., 0., 1.], [0., 1., 0.], [-1., 0., 0.]])
+        tcp = np.array([0., 0., 0.04])
+        pivot = np.array([-0.002, 0.001, 0.033])
+        poses = {99: np.column_stack((np.eye(3), tcp)), 1: np.column_stack((hinge, pivot)),
+                 2: np.column_stack((hinge @ np.diag([-1., 1., -1.]), pivot))}
+        world.sim.getObjectMatrix.side_effect = lambda h, rel: poses[h].ravel().tolist()
+        bound = world.endpoint_advance_budget()
+        self.assertIsNotNone(bound)
+        rotation = sim_world.cut_perception.rotvec([0.25, 0.4, 0.1])
+        for key in ('start', 'direction'):
+            world._fix[key] = rotation @ world._fix[key]
+        for key in ('tip', 'opening_axis', 'jaw_axis'):
+            world._last_est['scissors'][key] = rotation @ world._last_est['scissors'][key]
+        self.assertAlmostEqual(world.endpoint_advance_budget(), bound)
+        physical = np.array([0., .002, .005, .008, .012])
+        world._fix['material_chart'] = (
+            sim_world.cut_perception.material_coordinate.KNOTS_M, physical, physical - .0003)
+        self.assertAlmostEqual(world.endpoint_travel(.001), -.001)
+        # 10 mm material -> 9 mm projected -> 8.7 mm on the earlier bank.
+        self.assertAlmostEqual(world.endpoint_advance_budget() - bound, .0087 - .010 / 1.05)
+        # Without row 9, the sweep may not infer its way into the 6-to-13 mm gap.
+        k = [0, 1, 2, 4]
+        world._fix['material_chart'] = (
+            sim_world.cut_perception.material_coordinate.KNOTS_M[k], physical[k], physical[k] - .0003)
+        self.assertAlmostEqual(world.endpoint_travel(.001), -.004)
+        self.assertAlmostEqual(world.endpoint_advance_budget() - bound, .0047 - .010 / 1.05)
+
+    def test_clear_view_never_returns_forward_to_park(self):
+        world = self.align_world([0., 0., 0.049])
+        world._pre_cut_q = np.zeros(6)
+        world._tool_fk = Mock(return_value=lambda _: np.column_stack((np.eye(3), [0., 0., 0.043])))
+        world.retract_scissors = Mock()
+        world._move_scissors = Mock(return_value=True)
+        self.assertTrue(world.clear_view(0.003, prefer_park=True))
+        world.retract_scissors.assert_not_called()
+        world._move_scissors.assert_called_once_with(-0.003, 15, record_park=False)
+
+    def test_initial_backoff_does_not_set_a_forward_park_pose(self):
+        world = self.align_world([0., 0., 0.049])
+        # Ready anchor at the stub's homed TCP: the back-off never moved the pose,
+        # so withdrawal is already parked and issues no second motion.
+        world._ready_q = np.zeros(6)
+        world._ready_tcp = np.eye(3, 4)
+        world._ready_tcp[:, 3] = [0., 0., 0.04]
+        self.assertTrue(world.clear_view(0.003))
+        self.assertIsNone(world._pre_cut_q)
+        self.assertTrue(world.retract_scissors())
+        self.assertEqual(world.tool_command.call_count, 1)
+
+    def test_shaft_tip_past_front_cannot_align_on_lateral_error_alone(self):
+        world = self.align_world([0., 0., 0.051])
+        world.align_mode = 'shaft'
+        world.by['psm2_joint8'] = 8
+        world.command = Mock(return_value=True)
+        self.assertGreater(world._align_scissors_vision(0.0), world.cfg['cut']['align_tolerance_m'])
+        world.command.assert_called_once()
+        arm, yaw, pitch, insertion, steps = world.command.call_args.args
+        self.assertEqual((arm, yaw, pitch, steps), ('psm2', 0., 0., 10))
+        self.assertAlmostEqual(insertion, 0.038)
+
+    def test_tool_fk_rejects_pose_from_rolled_back_shaft(self):
+        world = self.align_world([0., 0., 0.049])
+        world.call = Mock(return_value=dict(ok=True, shaft_ok=False, tcp=np.eye(3, 4).ravel()))
+        with self.assertRaisesRegex(RuntimeError, 'shaft pose unavailable'):
+            world._tool_fk(world.cutter)(np.zeros(6))
 
     def test_retract_scissors_vision_withdraws_when_closed(self):
         world = self.vision_world()
         world.align_mode = 'tool_pose'
         world._pre_cut_q = np.zeros(6)
         world.advanced = 0.003
+        # Explicit homed anchor; real at_ready_pose readback sees the cutter displaced,
+        # then landed at the ready TCP after the accepted restore motion.
+        world._ready_q = np.zeros(6)
+        world._ready_tcp = np.eye(3, 4)
+        world._ready_tcp[:, 3] = [0., 0., 0.04]
+        world.by = {'psm2_tcp': 99}
+        away = world._ready_tcp.copy()
+        away[:, 3] += [0., 0., 0.003]
+        world.sim = SimpleNamespace(getObjectMatrix=Mock(
+            side_effect=[away.reshape(-1).tolist(), world._ready_tcp.reshape(-1).tolist()]))
         world.call = Mock(side_effect=lambda name, *a: [{'arm': 'psm1'},
                                                         {'target': [1.0, 2.0, 0.04], 'grip': 0.0}]
                           if name == 'getRCMStats' else True)
@@ -1015,7 +1393,7 @@ class VisionModeTests(unittest.TestCase):
         self.assertTrue(world.retract_scissors())
         args = world.tool_command.call_args[0]
         self.assertEqual(args[0], 'psm2')
-        np.testing.assert_array_equal(args[1], np.zeros(6))       # the recorded pre-cut pose
+        np.testing.assert_array_equal(args[1], np.zeros(6))       # the immutable homed pose
         self.assertEqual(args[2], 20)
         self.assertEqual(world.advanced, 0.0)
 

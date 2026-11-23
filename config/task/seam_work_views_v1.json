@@ -1,0 +1,9 @@
+{
+  "id": "seam_work_views_v1",
+  "development_decision_sha256": "c843ef785c601b8964ead542f38e84fbdf852f0373c2140a9b35f0b3995e6f41",
+  "view_table": "config/task/m5b_ecm_view_study_v1.json",
+  "view_table_sha256": "a5e80a1d5b73279664304e47c979bdbf60c64124fe4e72e007012b3681dabc1b",
+  "cases": ["a", "b"],
+  "selection": "First by table order that gives explicit BELOW on case a (actual 8) AND STOP on case b (actual 9) under the locked contact-veto reader, both raw and 0.5 mm depth noise. All physical foreground remains. Characterize the actual individual 8/9/10 row boundary transects too, without treating a partial gap as clearance. Do not admit an alternative rule, tool-hidden render or park as success.",
+  "method": "Replay each registered full-mode truth acquisition to its last post-closure working frame. Match native RGB, depth, nodes, TCP, closed jaws, structure and tick. At frozen time use guarded zero-settling ECM commands to the exact 13 targets, restore work view between candidates; no cutter movement, no further closure and no stepping. Record refusals and measured targets. Capture real 4x RGB-D, crop only for storing the lossless local ROI with >=8 pixels of non-ink border, storing full RGB-D hashes and verifying exactly all ruler pixels retained. Score the full frames independently of oracle labels. Check native view, physics and all PSM readbacks after restoration. If no view passes, do not spend confirmation trials or wire the reader to controls."
+}

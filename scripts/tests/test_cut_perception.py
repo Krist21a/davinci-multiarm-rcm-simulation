@@ -15,6 +15,20 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'vision'))
 
 import cut_perception as cp  # noqa: E402
+import material_coordinate as mc  # noqa: E402
+
+
+class MaterialSpanTests(unittest.TestCase):
+    def test_looks_for_supported_edges_in_multiple_lanes(self):
+        s, w = (a.ravel() for a in np.meshgrid(np.linspace(0, 0.012, 41), np.linspace(-0.01, 0.01, 51)))
+        self.assertTrue(np.allclose(cp.material_interval(s, w, 0.013), [0, 0.012]))
+        keep = (s < 0.008) | (w < -0.009)
+        self.assertIsNone(cp.material_interval(s[keep], w[keep], 0.013))
+
+    def test_isolated_extrema_do_not_turn_a_short_lane_into_material_support(self):
+        row = np.array([0., 0.0002, 0.002, 0.004, 0.006, 0.008, 0.0107, 0.0111])
+        w = np.repeat(np.linspace(-0.011, 0.011, 7), len(row))
+        self.assertIsNone(cp.material_interval(np.tile(row, 7), w, 0.013))
 
 W, H, F, FAR = 200, 120, 150.0, 0.30
 
@@ -53,24 +67,29 @@ FRONT_TRUE = P0 + FRONT_SV * E_V + SLIT_U0 * E_U
 
 
 def render(slit_sv=None, markers=('d', 'p', 't'), nan_frac=0.0, tissue=True,
-           occlude_sv=None):
+           occlude_sv=None, camera_R=None, row_edges=None):
     """Pinhole render -> (rgb float HxWx3, depth HxW). Depth is z along the unnormalised ray."""
     u, v = np.meshgrid(np.arange(W), np.arange(H))
     d = np.stack([-(u - W / 2) / F, -(v - H / 2) / F, np.ones((H, W))], axis=-1)
     rgb = np.full((H, W, 3), 40.0)
     depth = np.full((H, W), FAR * 0.999)
+    to_camera = np.eye(3) if camera_R is None else camera_R.T
+    p0, normal, e_v, e_u = (to_camera @ p for p in (P0, NORMAL, E_V, E_U))
     if tissue:
-        denom = d @ NORMAL
-        s = (P0 @ NORMAL) / denom
+        denom = d @ normal
+        s = (p0 @ normal) / denom
         hit = s > 0
-        q = d * s[..., None] - P0
-        sv, su = q @ E_V, q @ E_U
-        inside = hit & (sv >= 0) & (sv <= L_V) & (np.abs(su) <= L_U / 2)
+        q = d * s[..., None] - p0
+        sv, su = q @ e_v, q @ e_u
+        inside = hit & (sv >= 0) & (sv <= (L_V if row_edges is None else row_edges[-1])) & (np.abs(su) <= L_U / 2)
         if slit_sv is not None:
             inside &= ~((sv <= slit_sv) & (np.abs(su - SLIT_U0) <= SLIT_W / 2))
         sel = inside & (s < depth)
         depth[sel] = s[sel]
         rgb[sel] = np.array(cp.TISSUE_RGB) * 255
+        if row_edges is not None:
+            for lo, hi, color in zip(row_edges, row_edges[1:], mc.COLORS):
+                rgb[sel & (sv >= lo) & (sv < hi)] = np.asarray(color) * 255
         if occlude_sv is not None:
             # Foreground occluder: covers the band ahead of sv in front of the plane.
             occ = hit & (sv > occlude_sv) & (sv < occlude_sv + 0.004) & (np.abs(su) < 0.004)
@@ -82,6 +101,7 @@ def render(slit_sv=None, markers=('d', 'p', 't'), nan_frac=0.0, tissue=True,
                                (M_T, cp.MARKER_THIRD_RGB, 't')):
         if tag not in markers:
             continue
+        centre = to_camera @ centre
         oc = centre
         b = dn @ oc
         disc = b ** 2 - (oc @ oc - MR ** 2)
@@ -115,6 +135,75 @@ def angle(a, b):
 
 
 class GeometryTests(unittest.TestCase):
+    def test_ray_marker_pose_from_exact_sphere_surfaces_and_missing_marker(self):
+        meta = meta_dict()
+        meta['estimator_args']['ray_marker_fit'] = True
+        est = cp.CutPerception.from_meta(meta)
+        valid, _ = est._scissors(*render())
+        self.assertTrue(valid['valid'], valid)
+        np.testing.assert_allclose(valid['tip'], TIP_TRUE, atol=1e-6)
+        self.assertLess(angle(valid['jaw_axis'], JAW_TRUE), .01)
+        invalid, _ = est._scissors(*render(markers=('d', 'p')))
+        self.assertFalse(invalid['valid'])
+        self.assertNotIn('tip', invalid)
+
+    def test_ray_fit_cannot_rescue_an_inconsistent_rigid_marker_triangle(self):
+        est = estimator()
+        est.ray_marker_fit = True
+        rgb, depth = render()
+        depth[cp._mask(rgb, cp.MARKER_THIRD_RGB)] += .004
+        invalid, _ = est._scissors(rgb, depth)
+        self.assertFalse(invalid['valid'])
+        self.assertGreater(invalid['fit_rms_m'], cp.FIT_RMS_MAX_M)
+        self.assertNotIn('original_rms_m', invalid)  # rejected before refinement
+
+    def test_a_current_slit_beats_a_sub_bin_memory_but_not_a_materially_shorter_slit(self):
+        for delta, expected in ((0.00005, 'slit'), (0.0007, 'memory')):
+            with self.subTest(delta=delta):
+                est = estimator()
+                est.front_recovery = True
+                image = render(slit_sv=FRONT_SV)
+                first = est.estimate(*image, np.eye(3), np.zeros(3))['cut']
+                self.assertEqual(first['mode'], 'slit')
+                est._front_d += delta
+                current = est.estimate(*image, np.eye(3), np.zeros(3))['cut']
+                self.assertEqual(current['mode'], expected, current)
+
+    def test_coded_rgbd_recovers_progress_on_the_shortened_nonuniform_sheet(self):
+        est = estimator()
+        est.material_pattern = True
+        # 9 mm of material lies at 6.5 mm in space; net span is under the old 11.05 mm gate.
+        row_edges = [0., 0.0018, 0.0036, 0.0065, 0.0105]
+        slit = 0.0065
+        rgb, depth = render(slit_sv=slit, row_edges=row_edges)
+        cut = est.estimate(rgb, depth, np.eye(3), np.zeros(3))['cut']
+        self.assertTrue(cut['material_chart']['valid'], cut)
+        self.assertTrue(cut['front_valid'], cut)
+        self.assertAlmostEqual(cut['progress_m'], 0.009, delta=0.001)
+        self.assertAlmostEqual(cut['material_chart']['projected_knots_m'][-1], 0.0105, delta=0.001)
+
+    def test_truncated_frame_does_not_seed_the_slit_or_direction_memory(self):
+        est = estimator()
+        est.sheet_width_m = 0.050
+        cut = est.estimate(*render(slit_sv=FRONT_SV), np.eye(3), np.zeros(3))['cut']
+        self.assertIn('truncated', cut['reason'])
+        self.assertIsNone(est._cut_dir0)
+        self.assertFalse(est._slit_seen)
+        est.sheet_width_m = L_U
+        cut = est.estimate(*render(), np.eye(3), np.zeros(3))['cut']
+        self.assertTrue(cut['front_valid'], cut)
+        self.assertEqual(cut['mode'], 'pre_cut')
+
+    def test_camera_rotation_does_not_rotate_static_world_direction_prior(self):
+        est = estimator()
+        R = cp.rotvec(np.array([0., 0., np.radians(12.)]))
+        first = est.estimate(*render(), np.eye(3), np.zeros(3))['cut']
+        self.assertTrue(first['valid'])
+        moved = est.estimate(*render(camera_R=R), R, np.zeros(3))['cut']
+        self.assertTrue(moved['valid'])
+        np.testing.assert_allclose(R @ est._cut_dir0, first['direction'], atol=1e-12)
+        np.testing.assert_allclose(moved['direction'], first['direction'], atol=1e-12)
+
     def test_kabsch_recovers_tip_and_jaw_with_lateral_offset(self):
         """3 non-collinear markers: full yaw pose, TCP off-axis to <1e-6 m."""
         rgb, depth = render()

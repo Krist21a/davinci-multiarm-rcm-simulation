@@ -163,20 +163,6 @@ local function wristTargetChecked(w,index,roll,pitch,yaw)
     return target
 end
 
-local function snapshotPoseState(arm)
-    return {lastTarget=arm.lastTarget,converged=arm.converged,targetError=arm.targetError,drift=arm.drift,
-            distance=arm.distance,maxDrift=arm.maxDrift,failures=arm.failures,
-            collisionBlocks=arm.collisionBlocks,lastCollision=arm.lastCollision,
-            projection=sim.getObjectPosition(arm.projection,sim.handle_world)}
-end
-
-local function restorePoseState(arm,s)
-    arm.lastTarget=s.lastTarget;arm.converged=s.converged;arm.targetError=s.targetError
-    arm.drift=s.drift;arm.distance=s.distance;arm.maxDrift=s.maxDrift
-    arm.failures=s.failures;arm.collisionBlocks=s.collisionBlocks;arm.lastCollision=s.lastCollision
-    sim.setObjectPosition(arm.projection,sim.handle_world,s.projection)
-end
-
 -- Forward kinematics probe for tool-pose IK: what would the TCP matrix be at
 -- (yaw,pitch,ins) shaft command + (roll,wpitch,wyaw) logical wrist? Purely a dry run —
 -- joints, insertion, wrist, counters and every pose-derived field are restored exactly.
@@ -195,14 +181,19 @@ function toolPoseFK(index,yaw,pitch,ins,roll,wpitch,wyaw)
     local oldInsert=sim.getJointPosition(arm.insertion)
     local wold=wristSnapshot(w)
     local saved=snapshotPoseState(arm)
-    local shaft_ok=control(arm,yaw,pitch,ins)
-    for i,h in ipairs(w.handles) do sim.setJointPosition(h,wtarget[i]) end
-    local tcp=arm.tcp and sim.getObjectMatrix(arm.tcp,sim.handle_world) or nil
+    local ran,result=pcall(function()
+        if not control(arm,yaw,pitch,ins) then return {ok=false,shaft_ok=false,reason='shaft IK or collision'} end
+        for i,h in ipairs(w.handles) do sim.setJointPosition(h,wtarget[i]) end
+        local tcp=arm.tcp and sim.getObjectMatrix(arm.tcp,sim.handle_world) or nil
+        return {ok=tcp~=nil,tcp=tcp,shaft_ok=true}
+    end)
     for i,h in ipairs(arm.handles) do sim.setJointPosition(h,old[i]) end
     sim.setJointPosition(arm.insertion,oldInsert)
-    wristRestore(w,wold)
-    restorePoseState(arm,saved)
-    return {ok=true,tcp=tcp,shaft_ok=shaft_ok}
+    local restored=wristRestore(w,wold)
+    restorePoseState(arm,saved,true)
+    if not restored then return {ok=false,reason='wrist rollback failed'} end
+    if not ran then return {ok=false,reason=tostring(result)} end
+    return result
 end
 
 -- One atomic shaft+wrist command: both are interpolated together (shaft at setRCMTarget's
@@ -223,6 +214,7 @@ function setToolPose(index,yaw,pitch,ins,roll,wpitch,wyaw)
     local saved={};for i,h in ipairs(arm.handles) do saved[i]=sim.getJointPosition(h) end
     local savedInsert=sim.getJointPosition(arm.insertion)
     local wold=wristSnapshot(w)
+    local state=snapshotPoseState(arm)
     for i=1,3 do if not wristFinite(wold[i]) then w.lastError='invalid joint readback';return false end end
     local steps=math.max(1,math.ceil(math.abs(yaw-start[1])/.5),math.ceil(math.abs(pitch-start[2])/.5),
                          math.ceil(math.abs(ins-start[3])/.005))
@@ -245,8 +237,8 @@ function setToolPose(index,yaw,pitch,ins,roll,wpitch,wyaw)
         if not ran then w.lastError='tool-pose motion error: '..tostring(accepted) end
         for i,h in ipairs(arm.handles) do sim.setJointPosition(h,saved[i]) end
         sim.setJointPosition(arm.insertion,savedInsert)
-        arm.lastTarget=start
         wristRestore(w,wold)
+        restorePoseState(arm,state,false)
         return false
     end
     w.lastError=''

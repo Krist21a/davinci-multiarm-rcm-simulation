@@ -13,6 +13,7 @@ M5b: every read also carries a purpose tag (reads_by_purpose). In vision-control
 TruthReadInControl, so a control path can never silently depend on truth.
 """
 import contextlib
+from pathlib import Path
 
 import numpy as np
 
@@ -24,6 +25,10 @@ class TruthReadInControl(RuntimeError):
 
 
 class GroundTruth:
+    # Measured-rest adapters (e.g. CellRestTruth) refuse the uniform fallback even on
+    # an explicitly frozen legacy controller.
+    measured_rest_required = False
+
     def __init__(self, world):
         self.world = world          # SimWorld; only .call(), .sim, .by and sheet state are read
         self.reads = {}
@@ -99,6 +104,24 @@ class GroundTruth:
             return rows * H
         return self._read('cut_length', go)
 
+    def _transverse_rests(self):
+        """Actual per-row centre transverse rests (tissueTransverseRestLengths readback).
+
+        The uniform nominal basis H*(1-pretension) applies only on the explicitly
+        frozen legacy controller, which predates the readback; adapters marked
+        measured_rest_required never fall back even there."""
+        rest = getattr(self.world, 'cutline_rest_m', None)
+        if rest is not None:
+            rest = np.asarray(rest, dtype=float)
+            if rest.shape != (NV,) or not np.isfinite(rest).all() or np.any(rest <= 0):
+                raise ValueError('invalid transverse rest lengths')
+            return rest
+        src = getattr(self.world, 'tissue_source', None)
+        if (src is not None and Path(src).name == 'tissue_v1.lua'
+                and not self.measured_rest_required):
+            return np.full(NV, H * (1 - self.world.pretension))
+        raise ValueError('missing measured transverse rest lengths')
+
     def cut_line_tension(self):
         """Median strain of the constraints across the cut line (columns NU/2-1 and NU/2), still uncut.
 
@@ -108,7 +131,8 @@ class GroundTruth:
             if self.world.sheet_origin is None:
                 return 0.0
             n = self.nodes()
-            L = np.linalg.norm(n[:, NU // 2] - n[:, NU // 2 - 1], axis=1) / (H * (1 - self.world.pretension)) - 1
+            rest = self._transverse_rests()
+            L = np.linalg.norm(n[:, NU // 2] - n[:, NU // 2 - 1], axis=1) / rest - 1
             # Rows already cut, and the two rows just ahead of the cut end where the slit opens, are not tension.
             ahead = int(round(self.cut_length() / H)) + 2
             L = L[ahead:NV - 1]

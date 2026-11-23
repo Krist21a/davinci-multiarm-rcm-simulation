@@ -1,0 +1,23 @@
+{
+  "id": "seam_rail_v1",
+  "parent": "config/task/ruler_endpoint_v1.json",
+  "seam_parent": "config/task/surface_seam_pilot_v1.json",
+  "seam_parent_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+  "scene_base_controller_sha256": "a682b6ad7c99a6dde5d5fee62a28e99490ba384eadf2b9e95767905bd575d52f",
+  "seam_controller_sha256": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+  "reader_sha256": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+  "fixture": "Two versions of parallel terminal boundary supports, implemented only by fixed PBD pins at the original node coordinates: outer columns 8,15 or inner 9,14; rows 6..12 inclusive. Nominal stand-off from the central incision is 3.5 or 2.5 mm. No fixture joins the two banks, no centre/entry/grasp pin, no changed rest lengths, renderer, instrument visibility, overrun or motion budget. Supports are model boundary conditions, not simulated hardware contact.",
+  "columns": {"outer": 8, "inner": 9},
+  "preflight": "Both variants: ordinary full grasp/exposure from uncut, save loaded then pull 0.2 mm outward once per arm under existing guards and save pulled. No PSM2 closure. At both phases acquire native and real 4x linear sensor RGB-D from the same frozen state; verify identical native pixels, depth, joint TCP, time and node state on restoration. Require mechanical/zero-damage pull pass and UNKNOWN raw and +0.5 mm noise. On actual images each of rows 7,8,9,10 must have a distinct >=4 connected pixel patch on each bank; at each 8,9,10 boundary require >=4 adjacent high-row pixels on each bank and no open transect at that boundary. Missing or foreground-covered depth is not open. Only a visibility prerequisite, not a stop signal.",
+  "selection": "Rank passing (fixture,scale) pairs by native before 4x, then outer before inner. Fix the first for working samples. If none passes, do not cut under this registration. A failed grasp/strain/optics result stays in evidence.",
+  "development_runs": [
+    {"id":"pull","goal_mm":9,"cap_mm":3,"pull_only":true},
+    {"id":"a","goal_mm":8,"cap_mm":3},
+    {"id":"b","goal_mm":8.5,"cap_mm":3},
+    {"id":"c","goal_mm":9,"cap_mm":3},
+    {"id":"d","goal_mm":8,"cap_mm":2},
+    {"id":"e","goal_mm":9,"cap_mm":2}
+  ],
+  "work_gate": "Keep surface_seam_pilot_v1 independent mechanics/scoring, before-any-motion post-closure working frames, actual structures not requested labels. All registered cutting runs must pass, negative pull must remain uncut. On selected native or frozen 4x observation require blind original reader BELOW at ALL actual working 8 mm, STOP at ALL actual working 9 mm, both raw and noisy, on at least two distinct runs covering the pair. Other below/above threshold outputs may abstain but must never be wrong; no action on unknown. Do not use a parked frame as a working sample. Truth-driven DONE is not vision completion.",
+  "confirmation": "Keep confirmation unused until the working gate passes. Lock a separate 7/8/9/10 actual structural sample and occlusion/noise protocol before qualification. Only then integrate visual stopping. No changes to historical acceptance or signed gates."
+}

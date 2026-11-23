@@ -47,6 +47,72 @@ class LateEventWorld(FakeWorld):
 
 
 class CutSafety(unittest.TestCase):
+    def test_last_clear_attempt_view_after_reacquisition_spends_existing_camera_budget(self):
+        cfg = copy.deepcopy(CFG)
+        cfg['cut']['control_source'] = 'vision'
+        cfg['perception']['recovery_view_after_cut'] = True
+        for started, spent, expected in [(True, 2, 1), (True, 3, 0), (False, 2, 0)]:
+            with self.subTest(started=started, spent=spent):
+                w = FakeWorld(cut_only=True, vision=True)
+                obs = w.observe()
+                obs.cut_site_visible, obs.tissue_visible, obs.scissors_visible = False, True, True
+                w.awaiting_new_slit = False
+                w.clear_view = w.close_scissors = lambda *args: self.fail('unexpected cutter motion')
+                fsm = CutTaskFSM(w, cfg, cut_only=True)
+                fsm.cut_started, fsm.state = started, S.CLEAR_VIEW
+                fsm.attempts[S.CLEAR_VIEW], fsm.attempts[S.CAMERA_ADJUST] = 2, spent
+                fsm.on_clear_view(obs)
+                self.assertEqual(fsm.attempts[S.CAMERA_ADJUST], spent + expected)
+                self.assertEqual(w.camera_moves, expected)
+
+    def test_endpoint_caps_motion_and_refuses_changed_sweep_before_closure(self):
+        cfg = copy.deepcopy(CFG)
+        cfg['cut']['control_source'] = 'vision'
+        world = FakeWorld(cut_only=True, vision=True, progress_bias_m=0.008)
+        world.endpoint_advance_budget = iter((0.0006, -0.0003)).__next__
+        world.closure_aligned = lambda: True
+        world.close_scissors = lambda: self.fail('closed beyond visual sweep limit')
+        fsm = CutTaskFSM(world, cfg, cut_only=True)
+        fsm.state = S.CUT
+        fsm.tick()
+        self.assertAlmostEqual(world.pending, 0.0006)
+        self.assertEqual(fsm.state, S.FAILED)
+        self.assertIn('closure refused: visual endpoint', fsm.reason)
+
+    def test_occlusion_recovery_resets_the_clear_view_attempts(self):
+        world = FakeWorld(cut_only=True, vision=True)
+        fsm = CutTaskFSM(world, CFG, cut_only=True)
+        fsm.state = S.OCCLUDED
+        fsm.attempts[S.CLEAR_VIEW] = CFG['budgets']['clear_view_attempts']
+        fsm.tick()
+        self.assertEqual(fsm.state, S.RESUME)
+        self.assertEqual(fsm.attempts[S.CLEAR_VIEW], 0)
+
+    def test_visual_closure_checks_new_progress_and_alignment_after_advance(self):
+        cfg = copy.deepcopy(CFG)
+        cfg['cut']['control_source'] = 'vision'
+        for progress, aligned, expected in ((0.0095, True, 'retraction refused'),
+                                             (None, True, 'invalid visual progress'),
+                                             (0.008, False, 'fresh alignment')):
+            with self.subTest(progress=progress, aligned=aligned):
+                world = FakeWorld(cut_only=True, vision=True, park_fails=True, progress_bias_m=0.008)
+                observe = world.observe
+
+                def report():
+                    obs = observe()
+                    if world.tick == 2:
+                        obs.cut_progress_m = progress
+                    return obs
+
+                world.observe = report
+                world.closure_aligned = lambda: aligned
+                world.close_scissors = lambda: self.fail('unexpected closure')
+                fsm = CutTaskFSM(world, cfg, cut_only=True)
+                fsm.state = S.CUT
+                fsm.tick()
+                self.assertEqual(fsm.state, S.FAILED)
+                self.assertIn(expected, fsm.reason)
+
     def test_all_interlocks_checked_after_advance(self):
         expected = {'fault': S.FAILED, 'tear': S.FAILED, 'slip': S.RELOCALIZE,
                     'strain': S.RETRACT_ADJUST, 'hidden': S.OCCLUDED,
@@ -62,6 +128,59 @@ class CutSafety(unittest.TestCase):
                 self.assertEqual(fsm.state, state)
                 self.assertEqual(fsm.log[-1]['obs']['faults'], ['injected after advance'] if event == 'fault' else [])
 
+    def test_post_advance_camera_retry_requires_fresh_safe_closure_evidence(self):
+        cfg = copy.deepcopy(CFG)
+        cfg['cut']['control_source'] = 'vision'
+        cfg['perception'] = {'front_recovery': True}
+        for scenario, expected in (('restored', S.CUT), ('still_hidden', S.CLEAR_VIEW),
+                                   ('torn_after_move', S.FAILED), ('sweep_after_move', S.FAILED),
+                                   ('torn_before_move', S.FAILED), ('budget_exhausted', S.CLEAR_VIEW)):
+            with self.subTest(scenario=scenario):
+                world = FakeWorld(cut_only=True, vision=True)
+                act = world.observe
+                def observe():
+                    obs = act()
+                    if world.tick == 2 or (world.tick == 3 and scenario == 'still_hidden'):
+                        obs.cut_site_visible = False
+                    if ((world.tick == 2 and scenario == 'torn_before_move')
+                            or (world.tick == 3 and scenario == 'torn_after_move')):
+                        obs.torn = 1
+                    return obs
+
+                world.observe = observe
+                world.endpoint_advance_budget = lambda: -.001 if scenario == 'sweep_after_move' and world.tick == 3 else .003
+                world.closure_aligned = lambda: True
+                called = []
+                world.close_scissors = lambda: called.append(world.tick) or True
+                fsm = CutTaskFSM(world, cfg, cut_only=True)
+                fsm.state = S.CUT
+                if scenario == 'budget_exhausted':
+                    fsm.attempts[S.CAMERA_ADJUST] = cfg['budgets']['camera_adjust_attempts']
+                fsm.tick()
+                self.assertEqual(fsm.state, expected)
+                self.assertEqual(called, [3] if scenario == 'restored' else [])
+                self.assertEqual(world.camera_moves, int(scenario not in ('torn_before_move', 'budget_exhausted')))
+
+    def test_predicted_occlusion_never_advances_to_closure(self):
+        cfg = copy.deepcopy(CFG)
+        cfg['cut']['control_source'] = 'vision'
+        for exhausted, expected in ((False, S.CAMERA_ADJUST), (True, S.FAILED)):
+            with self.subTest(exhausted=exhausted):
+                world = FakeWorld(cut_only=True, vision=True)
+                def refuse(_step):
+                    world.view_blocked = True
+                    return False
+
+                world.advance_scissors = refuse
+                world.close_scissors = lambda: self.fail('blocked candidate must not close')
+                fsm = CutTaskFSM(world, cfg, cut_only=True)
+                fsm.state = S.CUT
+                if exhausted:
+                    fsm.attempts[S.CAMERA_ADJUST] = cfg['budgets']['camera_adjust_attempts']
+                fsm.tick()
+                self.assertEqual(fsm.state, expected)
+                self.assertEqual(world.tick, 1)
+
     def test_retraction_refusal_is_not_done(self):
         world = FakeWorld(cut_only=True)
         world.retract_scissors = lambda: False
@@ -73,6 +192,7 @@ class CutSafety(unittest.TestCase):
         world = FakeWorld(cut_only=True)
         def withdraw():
             world.e['tear'] = world.tick + 1
+            world.at_ready = True          # an accepted park restores the ready pose
             return True
         world.retract_scissors = withdraw
         fsm = CutTaskFSM(world, CFG, cut_only=True)
@@ -83,6 +203,7 @@ class CutSafety(unittest.TestCase):
         world = FakeWorld(cut_only=True)
         def withdraw():
             world.base_strain = 0.30
+            world.at_ready = True          # an accepted park restores the ready pose
             return True
         world.retract_scissors = withdraw
         fsm = CutTaskFSM(world, CFG, cut_only=True)

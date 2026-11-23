@@ -1,0 +1,8 @@
+{
+  "protocol_version": "1.9",
+  "previous_amendment": "config/task/m5b_protocol_v1_8.json",
+  "scope": "Development on the same marked non-anatomical test sheet. Correct an imported visualization marker, not the optics of either physical blade.",
+  "asset": "models/davinci_foot_docking.urdf declares the psm2_tool_tip link's only visual, tool_tip_marker, as a green sphere of radius 0.0005 m with alpha 0, no collision element and a fixed joint. The 179 jaw model defines two independent mesh visuals and an empty tool_tip_link. Only the staged verified scene's psm2_tool_tip_visual may be optically excluded. Retain its handle, collision pairs, mesh, dynamics and all other non-render properties. Log property readback. Never hide a jaw, sensor marker or sheet pixel.",
+  "control": "Identical to v1.8. No endpoint, estimator, sweep, pose, joint, collision, truth boundary, recovery or closure rule changes.",
+  "trials": "Use the same marked truth, nominal vision and 0.5 mm seed-1 depth-noise development trials, seeds, initial diagnostic pose and runner as v1.8. Check trace identity on truth, closure/reacquisition ticks and actual cut growth on a second bite separately from 9-10 mm completion with guarded withdrawal. Keep prior reports. No holdout reuse or M5 acceptance."
+}

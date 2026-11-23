@@ -1,0 +1,8 @@
+{
+  "id": "seam_asymmetric_cell_v1",
+  "inherits": "config/task/seam_wide_cell_v1.json",
+  "change": "Move only the destructible LEFT print host to -2.5 mm. Keep the original right host at +0.5 mm (positive-u side unchanged), entry, overall width, far/near rows and all safety thresholds. The new central cell spans 3 mm laterally but 1 mm longitudinally. Left eleven side intervals share nine mm; right intervals retain 1 mm pitch. No tuning after viewing this specimen.",
+  "eligibility": "The narrower reference and proposed asymmetric specimen must settle in offline Lua without tears; the previous symmetric specimen must reproduce its startup tear count. This is only a prerequisite for live uncut preflight, not a mechanical or optical pass.",
+  "preflight": "Identical fully-intact optical requirement, full-mode grips, genuine pull, no cut, no tear, calibrated 30 degree 2560x1920 camera, unchanged optics restoration and seeded noise as seam_wide_cell_v1. Verify both signed far-row offsets (-2.5, +0.5 mm) relative to the original outer-edge centre. A 3 mm wide strip centred at zero would NOT qualify. Stop on failed preflight without any cutting acquisition.",
+  "work": "Inherit the same five fixed development trajectories, strict raw/noisy working evidence and per-bite length/park safety gates. No independent samples or vision control until they pass."
+}

@@ -95,6 +95,8 @@ class CutRunnerTests(unittest.TestCase):
                 stack.enter_context(patch.object(runner.Image.Image, 'save', side_effect=image_error))
             code = runner.main()
         cleanup.assert_called_once_with(self.client, self.sim)
+        if self.world.observe.called:
+            self.world.observe.assert_called_once_with(inject_events=False)
         report = json.loads(self.report_path.read_text(encoding='utf-8')) if self.report_path.exists() else None
         return code, report, stderr.getvalue()
 

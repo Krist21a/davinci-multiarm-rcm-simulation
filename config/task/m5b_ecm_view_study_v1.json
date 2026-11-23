@@ -1,0 +1,30 @@
+{
+  "id": "m5b_ecm_view_study_v1",
+  "controller_protocol": "config/task/m5b_protocol_v1_3_1.json",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "candidates_deg_deg_m": [
+    [0.0, 0.0, 0.08],
+    [-4.5, 0.0, 0.08], [4.5, 0.0, 0.08],
+    [0.0, -4.5, 0.08], [0.0, 4.5, 0.08],
+    [-4.5, -4.5, 0.08], [4.5, -4.5, 0.08],
+    [-4.5, 4.5, 0.08], [4.5, 4.5, 0.08],
+    [0.0, 0.0, 0.072], [0.0, 0.0, 0.088],
+    [0.0, -4.5, 0.088], [0.0, 4.5, 0.088]
+  ],
+  "capture": "Each candidate is a separate full nominal tool_pose truth-control run with unperturbed shadow RGB-D and trace. Apply the absolute RCM target after homing using the existing guard. Require successful completion without faults, matching requested target readback throughout all sheet frames and the same physical camera pose throughout those frames. Record refused candidates; do not retry them at another pose.",
+  "qualification": {
+    "paired_strip_columns": [4, 8, 12, 16, 19],
+    "minimum_paired_columns": 2,
+    "pixel_radius": 2,
+    "depth_tolerance_m": 0.0015,
+    "evidence": "For a paired column, the projected node at each physical end must have a tissue-colour pixel within the pixel and depth tolerance; ground truth is available only to this offline scorer. A supported frame also needs the live shadow estimator to report a valid current front, visual scissors and finite material progress. Require at least one supported frame before the first grasp, and at least one while both arms hold the uncut sheet. Among qualifying candidates choose highest minimum supported-frame fraction across those two windows, then highest loaded fraction, then protocol order. Report post-cut coverage but do not use it to choose.",
+    "no_qualifying_view": "Report the failed qualification honestly. Optionally run only the best partially supported candidate under the same ranking as an explicitly exploratory diagnostic, only if it passed guarded motion, fixed-pose capture and truth completion and has at least one supported loaded frame. Do not treat it as a verified pose."
+  },
+  "visual_trials": {
+    "scenario": "nominal",
+    "seed": 1,
+    "depth_noise_m": [0.0, 0.0005],
+    "criteria": "Same selected initial pose and unchanged controller, guards and budgets. Each trial must emit at least one closure; every closure must have a valid same-tick scissors estimate and front fix within the registered age, and must be followed by a newly observed slit before any further closure or completion. Require DONE and verified withdrawal, zero torn constraints/faults, and final true length within the existing 9-10 mm interval with no monitor or trace sample above 10 mm. Report ECM recovery moves if any, rather than implying a fixed view throughout the visual trial."
+  },
+  "scope": "Guarded viewpoint selection and two reused deterministic development scenarios on a non-anatomical sheet; not independent or M5 acceptance."
+}

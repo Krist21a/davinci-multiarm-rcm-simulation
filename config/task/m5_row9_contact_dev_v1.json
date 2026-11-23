@@ -1,0 +1,15 @@
+{
+  "scope": "Image-only development of a row-9 slit/ink proximity observation on the conventional marked sheet. The nominal 9 mm image at active-look tick 31 informed this candidate, so it is not an independent positive confirmation. No control or acceptance changes.",
+  "parent": "config/task/m5_live_active_look_v1.json",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "capture": "Replay both full-length strict-vision FSMs without changing their decisions or budgets. Save the exact raw RGB-D, camera matrix, and the noisy depth consumed by the estimator by cloning (not advancing) its RNG state at every observe(), including 640x480 and 1280x960. Save estimator outputs separately from structural observations. Compare bite ticks and structural sequence with the prior two runs to detect a capture side effect.",
+  "candidate": {
+    "boundary": "Existing flush ink code 2-to-3: material row 9; never a disappearance of an outer row-9 cell or an implicit central-face score.",
+    "front": "Current same-frame directly observed slit or bank_slit, valid optical scissors and tissue; at least 6 slit pixels. A memory candidate, stale fix, unseen cutter or unqualified exposure is UNKNOWN.",
+    "banks": "In plane coordinates from that same frame, require at least 3 distinct adjacent 2/3 transition pixel pairs per signed bank within 1.0 mm lateral of the current slit line. Each pair has finite positive tissue depth, depth difference <= 2 mm, and passes the original colour and mask thresholds.",
+    "local": "Each bank's median signed longitudinal difference (row-9 boundary minus directly observed slit front) lies between -0.35 and +0.35 mm. The local interval is a pre-registered half-bin optical comparison, not a tolerance adjustment to the <0.5 mm position criterion.",
+    "output": "Only a passive candidate flag and per-bank pixel support; no modification to CutPerception, front, sweep guard, closing, withdrawing or parking."
+  },
+  "screen": "Seal predictions from optical-only records and RGB-D first. Then independently score every observation at actual length 0-8 mm as negative and every post-third-closure nominal observation at 9 mm as positive. Require zero sub-9 positives, at least two consecutive same-view positive post-closure ticks at 9, and valid directly seen scissors for each. If any length cannot be observed, report UNKNOWN rather than inferring from truth. A passed development screen only permits a separate registered controller trial; it does not pass M5.",
+  "scoring": "Keep original 9-10 mm structural score, six-axis ready and closed-jaw readback, faults, tears, zero beyond 10 mm, every bite fresh reacquisition and strict truth isolation. Frozen prior runs are immutable."
+}

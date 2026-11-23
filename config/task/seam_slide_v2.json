@@ -1,0 +1,20 @@
+{
+  "id": "seam_slide_v2_contact_veto",
+  "parent": "config/task/ruler_endpoint_v1.json",
+  "seam_parent": "config/task/surface_seam_pilot_v1.json",
+  "seam_parent_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+  "fixture_protocol_sha256": "516bd1186df397e8013e17d87a886951ce2c61d7a7444b777cde93618a40de6c",
+  "prior_failed_selection_sha256": "3b6ef6bfc60a52ff2cd49725ab33ca46fe81f1b7dbf447aab079743950c1a03d",
+  "reader_sha256": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+  "veto_sha256": "5bca077d38a823040a98be9cee898be4ab06877498272ad13bf8a9f23e18a0db",
+  "change": "Identical mechanics, camera, grasps, cuts, targets and gates as seam_slide_v1. Its development negative at real 4x exposed false row-0 gap transects across exterior silhouette while left and right row-0 inks were in contact. The new reader ONLY demotes a previously authorized observation to UNKNOWN when ANY 8-neighbour contact between same-row opposite inks contradicts its open_rows. Never promote an old UNKNOWN. Synthetic separated 8/9 mm must retain BELOW/STOP and an opaque shutter must remain UNKNOWN before opening the new development run. The repeated pull is development, not independent confirmation.",
+  "development_runs": [
+    {"id":"pull","goal_mm":9,"cap_mm":3,"pull_only":true},
+    {"id":"a","goal_mm":8,"cap_mm":3},
+    {"id":"b","goal_mm":8.5,"cap_mm":3},
+    {"id":"c","goal_mm":9,"cap_mm":3},
+    {"id":"d","goal_mm":8,"cap_mm":2},
+    {"id":"e","goal_mm":9,"cap_mm":2}
+  ],
+  "gate": "Fresh complete guarded captures, work not park, unchanged 8/9, noisy, safety and return-to-ready requirements from seam_slide_v1. Do not alter the development criterion or use confirmation on failure."
+}
