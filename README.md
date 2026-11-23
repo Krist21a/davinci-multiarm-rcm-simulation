@@ -1,8 +1,8 @@
 # 达芬奇式多臂手术机器人仿真：多臂协同视觉伺服切割（研究仿真）
 
-> **2026-11-17 修复版入口**：`scenes/davinci_si_articulated_verified.ttt` 增加独立腕部 yaw，区分 RCM 杆轴摆角与末端 roll/pitch/yaw/grip；包含本轮 P0 修复。原 `davinci_si_instruments.ttt` 和下文历史演示保留，不代表修复版自动验收。修复、测试与模型边界见 `docs/SI_KINEMATICS_AND_SAFETY_zh.md`；P1–P4 阶段门槛见 `docs/DEVELOPMENT_ROADMAP_zh.md`。
+> **2026-11-24 进度：** 严格视觉停刀仍未通过；剪刀尖端 RGB-D 离线训练方案已冻结，尚未执行。现行场景是 `scenes/davinci_si_articulated_verified.ttt`。旧场景与早期演示保留，不代表当前版本验收。
 
-这个项目在 CoppeliaSim 里搭了一台达芬奇式多臂手术机器人，从脚端对接到一具成年男性解剖模型上。它包含三条持器械臂（PSM）和一条内窥镜臂（ECM）。四条臂都用软件 RCM 绕腹壁穿刺点运动。系统在内窥镜引导下完成三臂协同任务：牵拉组织、剪开组织、保持视野。
+这个 CoppeliaSim 研究基准包含三条持器械臂（PSM）和一条内窥镜臂（ECM），使用软件 RCM、可动腕部和带守卫的任务状态机。切割目标是仿真中的**非解剖测试片**；场景背景不构成解剖定位或临床有效性的证据。
 
 ![系统总览：三条 PSM、ECM、分腿手术台和 BodyParts3D 人体](docs/overview_si_instruments.png)
 
@@ -17,7 +17,35 @@
 
 ---
 
-## 当前目标与进度（2026-11-20）
+## 最新进展：从视觉停刀诊断到尖端定位
+
+| 方向 | 当前状态 | 结果与证据 |
+|---|---|---|
+| RGB-D 数据采集 | Phase A 完成 | **300 条开发轨迹 / 35,046 帧**（含高清及辅助视角），248 完成、52 失败；均为**真值控制**，失败未剔除。[采集报告](validation/task/learned_perception_v1/dev.json) |
+| 严格 M5 视觉停刀 | 未通过，暂不扩采 | 原生高清在新开发队列首次达到 9/10 mm 时 **0/18** 检出；同口闭合后的 3 mm 回看中，9 张图均弃权。[高清配对结果](validation/task/learned_perception_v1/phase_a_native_hd_eval_v1.json) · [闭合回看结果](validation/task/learned_perception_v1/phase_a_closed_look_eval_v1.json) |
+| 剪刀尖端定位 | **方案已冻结；待跑基线和训练** | 659 张抽查帧中，635 张满足标记与深度证据筛选，24 张尖端受挡。按轨迹冻结 **270 训练 / 30 验证 / 64 预留独立评估**；独立集尚未采集。[方案](config/learn/learned_tip_v1.json) · [轨迹与种子](config/learn/learned_tip_v1_episodes.json) |
+| 可见切口前沿 | 暂缓训练 | 切后 295 张通过粗深度筛选，其中 92 张缺双侧几何支撑；通过几何筛选也不等于能辨认裂缝末端。[标注抽查](validation/task/learned_perception_v1/keypoint_annotation_audit_v1.json) · [人工复核](validation/task/learned_perception_v1/keypoint_visual_spotcheck_v1.json) |
+
+![同一开发回合的内窥镜图像：左为未遮挡，右为遮挡；刀杆标记仍在，尖端被挡住](docs/learned_tip_occlusion_pair.png)
+
+*同一开发回合的两张实际 640×480 ECM 图像局部，等比例放大，无真值叠图。左：TCP 投影通过图像证据筛选；右：前景球挡住尖端，仍有刀杆标记可见。不能根据标记可见就宣称尖端无遮挡。*
+
+```mermaid
+flowchart LR
+    I[ECM RGB-D] --> B[三标记几何基线]
+    I --> M[尖端模型训练与弃权]
+    B --> E[同帧离线对比]
+    M --> E
+    E --> G{开发门槛通过?}
+    G -->|是| H[锁定模型后采集独立评估]
+    G -->|否| R[保留失败结果]
+```
+
+模型不读取仿真真值、帧序号或运动状态。真值只用于标签与离线评分。原始数据集、缓存和权重不入 Git；仓库保留方案、清单、报告及少量说明图。**当前没有新的 M5、M6 或 M7 验收，也没有将模型接入控制。** 复现入口：[M5 端点记录](docs/M5_ENDPOINT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
+
+---
+
+## 历史进展：M5 端点与光学开发（截至 2026-11-20）
 
 **当前主任务是视觉自主停刀并撤回，尚未通过。** 目标是机器人从未切状态出发，每刀都由当前 RGB-D 引导，在实际结构切长 9–10 mm 时自行决定撤刀；不是数刀数，也不是真值控制。最近的完整视觉尝试在标称和 0.5 mm 噪声下均停在 5 mm。
 
@@ -202,7 +230,7 @@ stateDiagram-v2
 
 **离线测试**：在 `scripts/task/` 下运行 `python -m unittest test_cut_fsm`。15 个场景，13 个状态全部到达，共 23 种转移。
 
-**CoppeliaSim 运行**：
+**历史 CoppeliaSim 真值控制演示（不是 M5 视觉验收）**：
 
 | 模式 / 场景 | 状态路径 | 结果 |
 |---|---|---|

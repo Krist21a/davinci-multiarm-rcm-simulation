@@ -1,0 +1,376 @@
+{
+  "criteria": {
+    "id": "m5_local_hd_dev_v1",
+    "scope": "Development only. A necessary local observability test on a non-anatomical simulation sheet, not an authorization to cut or withdraw, an independent confirmation, or M5 acceptance.",
+    "scene": "scenes/davinci_si_articulated_verified.ttt",
+    "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "initial_view": [
+      4.5,
+      0.0,
+      0.08
+    ],
+    "sheet": {
+      "seam_mode": "surface",
+      "guide_band_m": 0.0001,
+      "ruler_print": true
+    },
+    "optics": {
+      "size": [
+        1280,
+        960
+      ],
+      "horizontal_fov_deg": 70,
+      "depth_noise_m": 0.0005,
+      "ray_marker_fit": true
+    },
+    "runs": [
+      {
+        "name": "pull",
+        "goal_mm": 9,
+        "pull_only": true
+      },
+      {
+        "name": "a",
+        "goal_mm": 8
+      },
+      {
+        "name": "b",
+        "goal_mm": 8.5
+      },
+      {
+        "name": "c",
+        "goal_mm": 9
+      }
+    ],
+    "truth_reference": "Run full nominal on the default unmodified sheet with the marked v1.10 optics and same view, recording the trace, without creating or reusing a holdout. Compare every (tick, nodes_sha256, cut_length_m) against validation/task/m5b_v1_10_marked_truth.json, not merely final length. Require DONE, 10 mm, no fault or tear and physical ready/closed confirmation. Report any mismatch separately from optical performance; no implicit baseline replacement.",
+    "capture": "Use only the development 3 mm advance cap. Same original fixture location, slide lanes and immutable left/right 1 mm inks; the four un-sided broad bands alone do not identify opposite banks. Truth-controlled acquisition. Record the loaded sheet, the traction-only negative, every closed work frame including intermediate lengths, and one closed 3 mm back-off from the final work state per cut trajectory, before final park. Restore native optics after every actual 1280x960 exposure, without stepping. Angle, resolution, RGB-D, simulation time, TCP and structural state must verify. Do not substitute resized images. Check that the look-back did not cut, tear, lose a grasp, or exceed the guard; verify the terminal park. Keep requested and independently measured lengths separate.",
+    "reader": "One development module, connected_ruler. Distinguish a full connected prefix from a local front observation. For each local row use the inner pixel of each differently labelled bank at the entry and exit transitions, sampled on the same row on both sides. Both flanks must be physically valid and each transition must have local support. OPEN requires a single connected path of positive behind-flank depth (>2 mm) crossing each transect with at least two gap pixels, connecting both transects inside that row. Current visible contact contradicts OPEN. INTACT requires contiguous sided near-depth ink across both transects; conflicting/covered/undersampled rows are UNKNOWN. The local front is the unique transition from OPEN to INTACT in adjacent rows. Multiple observed transitions or an observed break contradicting a prefix veto it. Local evidence is not proof that an unseen upstream bridge is absent. A local candidate never enters the controller.",
+    "synthetic": "Check fully opened 3,6,8,9,10 rows, uncut and 11 (outside budget), a bridge, a partial target cell of each orientation, foreground, unusable flank depth and whole shutter. No unsafe STOP or BELOW. The historical connected reader must distinguish fully separated 8 vs 9 vs 10 without an index offset. Do not infer that this fixes the physical endpoint.",
+    "gate": "Check the local ordinal and the existing rigid three-marker scissors fit on the SAME raw RGB-D exposure and its 0.5 mm Gaussian noisy depth (seed from raw depth bytes). Seal predictions before joining independent structural prefix and farthest affected row. Every measured 8,9,10 mm checkpoint must have a correct local row count (absolute error <0.5 mm) and valid scissors in both depth variants at work or its single qualified non-park look. Require all three lengths on the prescribed trajectories, report ALL failures/intermediate frames, reject a false numeric candidate at ANY length or a numeric candidate on uncut/pull/shutter. At 3 and 6 mm require same-frame correct local progress when present, report missing coverage. Check structure, pose, jaws, grasps and safety; do not substitute parked data. Only if this screen passes may a separately preregistered causal contiguous-prefix/half-cell/bridge test and independent confirmation be undertaken. Do not tune on confirmation; do not change any motion or safety limits."
+  },
+  "registration_sha256": "d94b4117f0905aef8af0683e4fd9a4626ed58b31210bd6f231186c4325ee72cb",
+  "predictions_sha256": "2586e72446cb1f7ae0b15044472692cf843d5cb8e68f1f4a79b840006ba5cbe6",
+  "coverage_mm": [
+    3,
+    6,
+    8,
+    9,
+    10
+  ],
+  "issues": [
+    "a/bite1: no joint observation at 3 mm",
+    "a/bite2: no joint observation at 6 mm",
+    "a/bite3: no joint observation at 8 mm",
+    "b/bite1: no joint observation at 3 mm",
+    "b/bite2: no joint observation at 6 mm",
+    "b/bite3: no joint observation at 9 mm",
+    "c/bite1: no joint observation at 3 mm",
+    "c/bite2: no joint observation at 6 mm",
+    "c/bite3: no joint observation at 10 mm"
+  ],
+  "rows": [
+    {
+      "case": "pull",
+      "phase": "loaded",
+      "bite": 0,
+      "mm": 0,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "pull",
+      "phase": "pulled",
+      "bite": 0,
+      "mm": 0,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "loaded",
+      "bite": 0,
+      "mm": 0,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "work",
+      "bite": 1,
+      "mm": 3,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "work",
+      "bite": 2,
+      "mm": 6,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "work",
+      "bite": 3,
+      "mm": 8,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "look",
+      "bite": 3,
+      "mm": 8,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "a",
+      "phase": "park",
+      "bite": 3,
+      "mm": 8,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "loaded",
+      "bite": 0,
+      "mm": 0,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "work",
+      "bite": 1,
+      "mm": 3,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "work",
+      "bite": 2,
+      "mm": 6,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "work",
+      "bite": 3,
+      "mm": 9,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "look",
+      "bite": 3,
+      "mm": 9,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "b",
+      "phase": "park",
+      "bite": 3,
+      "mm": 9,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "loaded",
+      "bite": 0,
+      "mm": 0,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "work",
+      "bite": 1,
+      "mm": 3,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "work",
+      "bite": 2,
+      "mm": 6,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "work",
+      "bite": 3,
+      "mm": 10,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        false,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "look",
+      "bite": 3,
+      "mm": 10,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    },
+    {
+      "case": "c",
+      "phase": "park",
+      "bite": 3,
+      "mm": 10,
+      "local_mm": [
+        null,
+        null
+      ],
+      "scissors": [
+        true,
+        true
+      ],
+      "joint_ok": false
+    }
+  ],
+  "passed": false,
+  "control_enabled": false,
+  "confirmation_used": false
+}

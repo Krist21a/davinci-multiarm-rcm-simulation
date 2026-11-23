@@ -1,0 +1,16 @@
+{
+  "scope": "Single-reviewer visual spot check; not adjudicated training labels or evidence of M5a acceptance.",
+  "audit": "keypoint_annotation_audit_v1.json",
+  "audit_sha256": "8d25bce42287c92bc3076e147a4be9d53271029b3eb0313e3eff1b35aa10ae69",
+  "plates": "F:/davinci_m5_learn/learned_perception_v1/keypoint_review_v1_1/",
+  "procedure": "Review the unmarked images before crosshair overlays. Record unresolved visible slit ends as unknown without clicking the scorer's projected structural midpoint. This was not a blinded multi-reviewer study.",
+  "observations": [
+    {"panels": [1, 2], "ids": ["ep00277/tick_001", "ep00022/tick_001"], "note": "No pink test sheet. The central marked cutter is still present. No front target."},
+    {"panels": [3, 4], "ids": ["ep00277/tick_002", "ep00022/tick_002"], "note": "Pink sheet present and no discernible slit apex; do not label the entry projection as an optical front."},
+    {"panels": [5, 6], "ids": ["ep00277/tick_011", "ep00022/tick_016"], "note": "Both pass the bank geometry screen. Before the overlays, the reviewer could not identify an unambiguous slit end beside the jaw. Retain the structural coordinate separately; no optical positive is certified."},
+    {"panels": [7, 8], "ids": ["ep00277/tick_013", "ep00022/tick_018"], "note": "Front uncertain; an optical click was not recorded."},
+    {"panels": [9, 10], "ids": ["ep00022/tick_006", "ep00126/tick_006"], "note": "Foreground sphere covers the projected TCP. Fiducial colours are visible on the shaft above the occluder, which is not direct tip visibility. Both frames precede positive cut growth."}
+  ],
+  "missing_category": "No sampled post-cut front met the strict nine-pixel depth-blocked rule. The shutter appeared before growth in the reviewed examples; no blocked-front coverage is demonstrated by this cohort.",
+  "decision": "Tip labels can support a baseline and trainability pilot after a tip-only recipe is frozen. Front geometry candidates are not yet optical labels. Obtain independently marked visible slit ends and post-cut occlusion examples before joint supervised training."
+}

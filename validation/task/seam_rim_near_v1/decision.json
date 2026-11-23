@@ -1,0 +1,351 @@
+{
+  "criteria": {
+    "parent": "config/task/ruler_endpoint_v1.json",
+    "seam_parent": "config/task/surface_seam_pilot_v1.json",
+    "reader_sha256": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+    "certificate_sha256": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+    "seam_parent_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+    "print_sha256": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d",
+    "scope": "One additional development acquisition on the unchanged 20-degree planar-rim specimen solely because the registered five trials covered 9 and 10 but never an actual 8. Not a replacement, confirmation set or reader requalification.",
+    "development_runs": [
+      {
+        "id": "near",
+        "goal_mm": 7.5,
+        "cap_mm": 3
+      }
+    ],
+    "preflight": "Identical fully-intact optical requirement, full-mode grips, genuine pull, no cut, no tear, calibrated 30 degree 2560x1920 camera, unchanged optics restoration and seeded noise as seam_wide_cell_v1. Verify both signed far-row offsets (-2.5, +0.5 mm) relative to the original outer-edge centre. A 3 mm wide strip centred at zero would NOT qualify. Stop on failed preflight without any cutting acquisition.",
+    "work": "Inherit the same five fixed development trajectories, strict raw/noisy working evidence and per-bite length/park safety gates. No independent samples or vision control until they pass.",
+    "inherits": "config/task/seam_wide_cell_v1.json",
+    "change": "Move only the destructible LEFT print host to -2.5 mm. Keep the original right host at +0.5 mm (positive-u side unchanged), entry, overall width, far/near rows and all safety thresholds. The new central cell spans 3 mm laterally but 1 mm longitudinally. Left eleven side intervals share nine mm; right intervals retain 1 mm pitch. No tuning after viewing this specimen.",
+    "eligibility": "The narrower reference and proposed asymmetric specimen must settle in offline Lua without tears; the previous symmetric specimen must reproduce its startup tear count. This is only a prerequisite for live uncut preflight, not a mechanical or optical pass.",
+    "asym_spec_sha256": "8decfa79217de5304b7e8e2171aea839fbd5227a6e2fed7176269e112114e40a",
+    "parent_spec_sha256": "a947927cbea90d182bc2f44edf9dceb3ddfb44d776dadcfc060dde2c5b2ebe06",
+    "settle_sha256": "fccb92f153afc044198d103c7280bde9b8ee8f1fb8163df7a646814235a7664b",
+    "rest_amendment": {
+      "id": "seam_asymmetric_rest_v1",
+      "inherits": "config/task/seam_asymmetric_cell_v1.json",
+      "correction": "Keep the 3-mm asymmetric coupon exactly as built, including its -1 mm transverse midpoint relative to the old symmetric lane. Longitudinal row pitch remains 1 mm. Correct only transverse model strain: per row divide measured separation by THAT Lua spring's original rest length, not by the 1 mm longitudinal grid spacing times (1-pretension). At creation read all 14 solver rest lengths; require each matches 0.003*(1-pretension). Determine only the same median of eligible material rows, excluding the actual cut prefix plus two and the final anchor. Readback is not optical information. It remains under the existing tension_until_m6 purpose; the cutter may not use it for endpoint length.",
+      "prior_check": "On the archived asymmetric no-cut preflight, retain the original failed outcome. For each pre-tear observed number the equivalent correct fixed-geometry value is (reported+1)/3-1. Confirm the direction of EXPOSE's tension correction before and after. Do not claim this arithmetic rescues the trajectory; a fresh live run is required.",
+      "gates": "Same PBD tear threshold, grasp/strain band, budgets, scene and guarded actuation; same mandatory loaded/pulled sensor-only evidence and all 8/9/10 working gate requirements as the asymmetric registration. No cut unless the corrected complete preflight passes. Guard failures and optical refusals remain failures."
+    },
+    "amendment_sha256": "c0f8bd9da6aa0cd9f5abe247c6a214f33a5b67733c7e7932229af65b94920372",
+    "uncorrected_fixture_sha256": "af9da98b313bdc34e1daeefa34f07a0efb006e64d33e68a9f2eba622ff524138",
+    "prior_units": {
+      "source_sha256": "39d5c5c2fedecf8fefd0a00b330e49a1a37c2235d19ba43fa476d092d881e290",
+      "not_a_rescored_trajectory": true,
+      "observations": [
+        {
+          "tick": 2,
+          "state": "LOCALIZE",
+          "recorded": 2.0488365263507937,
+          "true_equivalent": 0.016278842116931314
+        },
+        {
+          "tick": 3,
+          "state": "GRASP",
+          "recorded": 2.0488365263507937,
+          "true_equivalent": 0.016278842116931314
+        },
+        {
+          "tick": 4,
+          "state": "EXPOSE",
+          "recorded": 2.0540078600916742,
+          "true_equivalent": 0.01800262003055808
+        },
+        {
+          "tick": 5,
+          "state": "EXPOSE",
+          "recorded": 2.051381593144496,
+          "true_equivalent": 0.017127197714831954
+        },
+        {
+          "tick": 6,
+          "state": "EXPOSE",
+          "recorded": 2.044443204821418,
+          "true_equivalent": 0.014814401607139205
+        },
+        {
+          "tick": 7,
+          "state": "EXPOSE",
+          "recorded": 2.042889360049598,
+          "true_equivalent": 0.014296453349865956
+        },
+        {
+          "tick": 8,
+          "state": "EXPOSE",
+          "recorded": 2.043635018269326,
+          "true_equivalent": 0.01454500608977538
+        },
+        {
+          "tick": 9,
+          "state": "EXPOSE",
+          "recorded": 2.0412043201681302,
+          "true_equivalent": 0.013734773389376675
+        }
+      ]
+    },
+    "rim_spec": {
+      "id": "seam_planar_rim_v1",
+      "inherits": "config/task/seam_asymmetric_rest_v1.json",
+      "fixture": "Opt-in change to one boundary condition only: after the existing bank slab projection in every distance-constraint sweep, project the 26 unpinned material vertices in columns 11 and 12, rows 0..12, normally to the initial sheet plane. Each rim point can still move freely in its two in-plane directions, independently of the opposite bank. Add no spring across the opening, no in-plane anchor, outline mesh, marker floating off a face, visibility override or actual hardware contact claim. Preserve all existing safety parameters and real printed materials.",
+      "unchanged": "Same asymmetric transverse spacing, measured Lua rest per row, true pretension, actual optics, negative-control motion and complete-face coverage gates as seam_asymmetric_rest_v1. Keep its failed optical selection unchanged. No cutting if the new uncut loaded/pulled preflight is unqualified."
+    },
+    "rim_sha256": "75c2c1bb0da85e13fd46b7182f8a4196285a68bdb439bc1d0b57bb02fd576a3e",
+    "baseline_sha256": "30fd7a3666616f7f4c3eff27d2db7373c2445d29b8f3d5566eaa2d76c22040b0",
+    "id": "seam_rim_near_v1",
+    "zoom_amendment": {
+      "id": "seam_rim_zoom_v1",
+      "baseline": "validation/task/seam_planar_rim_v1/registration.json",
+      "change": "Same physical planar-rim and per-row-rest specimen. Change only real diagnostic optics from a 30-degree to a 20-degree perspective angle at 2560x1920 during an exposure; use actual calibrated focal length in the image-only certificate, restore verified native optics after each exposure. The reference far-right corner at 30 degrees did not have four connected pixels; no change to patch requirement, specimen, code colours, strain limits, or commands. A clipped required mark, even at an image border, is a refusal.",
+      "gate": "Retain the complete intact-face/28-corner preflight in both loaded and pulled images, native and noisy depth. If this passes, collect all five registered full mechanical cases on this specimen, independently scored. All 8-mm work states must be BELOW, all 9/10-mm work states STOP raw AND noisy, all mechanical trajectories must be successful and safe, threshold cases must actually exist. Do not relabel requested length or permit positive STOP from absent ink. No formal confirmation or controller changes if any condition fails."
+    },
+    "zoom_amendment_sha256": "e6e88929511a3844b897aeee0006c2825457104c9c1a0ef5ffad7dc90402f385",
+    "rim_registration_sha256": "542989a0f7341d57374cc3f6acb881ee69655308f318a128a2f11fead1191666",
+    "entry": {
+      "id": "near",
+      "goal_mm": 7.5,
+      "cap_mm": 3
+    },
+    "criteria": "Use the original development advance cap, same preflight and immutable reader, guard goal+1 mm (<=8.5), retain ALL work samples. Only if independent scoring reports an actual 8-mm work frame call it an 8-mm negative. Stop after one attempt regardless of result. Pair it with previously acquired 9-mm case b and 10-mm case c to diagnose depths on work vs park. Report actual blind verdicts separately from ideal-geometry per-face screen; oracle vertex positions or face life are never supplied to the reader. Original development gate remains failed and confirmation stays closed.",
+    "base_registration_sha256": "2c2f39833e83ee56fd97dfc0e5504b66294b6f0d75410ee946407a9888cff210",
+    "frozen_failed_gate_sha256": "b337006f696240945777d173ad373bdd1be1cf9e516cc315217dd96ee691374a"
+  },
+  "old_development_sha256": "b337006f696240945777d173ad373bdd1be1cf9e516cc315217dd96ee691374a",
+  "near": {
+    "case": "near",
+    "run_id": "cfcad84a8f3f48fda840edc9f9040640",
+    "controller": "4af2af2da33785b5110a6d0201a3403ef5496dc14d0625fdf706fa81b3435cf5",
+    "state": "DONE",
+    "reason": "cut length 8.0 mm reached; scissors retracted",
+    "mechanics_ok": true,
+    "issues": [],
+    "oracle_sha256": "7de62156298de689af5ab62296844cde67fa99e97aa9a5c5438b6fa75923add3",
+    "rows": [
+      {
+        "key": "c887567974c24329b4b211f2e9bd5456",
+        "phase": "loaded",
+        "tick": 9,
+        "actual_mm": 0,
+        "farthest_mm": 0,
+        "decisions": [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        "optical_ok": true,
+        "sha256": "6880d2f469f1dc3c6d1aaa980a68163043acf4d5695b89c486b1c882e97acede"
+      },
+      {
+        "key": "6a80c5dd11f8426ab6baccfe29429054",
+        "phase": "work",
+        "tick": 12,
+        "actual_mm": 3,
+        "farthest_mm": 3,
+        "decisions": [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        "optical_ok": true,
+        "sha256": "788667534985ba00bda2168cc7d4cb44f6150195fe1508b4909252441ebfa168"
+      },
+      {
+        "key": "61490dfc67054ff5b5d6ef60647e48e2",
+        "phase": "work",
+        "tick": 14,
+        "actual_mm": 6,
+        "farthest_mm": 6,
+        "decisions": [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        "optical_ok": true,
+        "sha256": "df81edf857c04d9d805d39e5f055bb2723caa081a99c24bd8a4e286931a359b7"
+      },
+      {
+        "key": "25bbfd271d7647829b197dc5332940c8",
+        "phase": "work",
+        "tick": 16,
+        "actual_mm": 8,
+        "farthest_mm": 8,
+        "decisions": [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        "optical_ok": false,
+        "sha256": "175e8ca2c2add665c7a5c01a9fb5f60dcef5191fa16a12368462f75be76094e1"
+      },
+      {
+        "key": "3b485ee10b7f4f989e3aff51f60d5057",
+        "phase": "park",
+        "tick": 18,
+        "actual_mm": 8,
+        "farthest_mm": 8,
+        "decisions": [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        "optical_ok": true,
+        "sha256": "e647eeacf00bc50cb2fde93e752c14e4b578ed058d9e771b926078940bf2a9fa"
+      }
+    ],
+    "park": {
+      "error_mm": 2.641310112776044e-05,
+      "error_deg": 0.00119122934359526,
+      "closed": true
+    },
+    "pull_motion_m": {}
+  },
+  "blind_sha256": "ef6d8519062e88b9a57d4c5181fc92f0d7a232ca0def259cd1c7be9665c82248",
+  "comparisons": [
+    {
+      "case": "near",
+      "phase": "work",
+      "mm": 8,
+      "mechanical": true,
+      "sensor_sha256": "3875db18fbafe71a421eb2587cdd3cc977f9531a56ef2cff4f23822f8a539002",
+      "struct_sha256": "5cf88dae8b48adeeda7e8df13e78fc332820e0256506b3b3dd7abce71d89d44e",
+      "target_cell8_faces": [
+        0,
+        1
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "BELOW",
+      "ideal_zero_block_rows": []
+    },
+    {
+      "case": "near",
+      "phase": "park",
+      "mm": 8,
+      "mechanical": true,
+      "sensor_sha256": "7c0407b76d6f680d1b8fc4e7df5c5112305277d1c3c5d8ab6bdd3b91f3083957",
+      "struct_sha256": "a9626d2919e80adf1eb4716a495faee67827bc0504b7a6336f6ca6ae3a631985",
+      "target_cell8_faces": [
+        0,
+        1
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "BELOW",
+      "ideal_zero_block_rows": []
+    },
+    {
+      "case": "b",
+      "phase": "work",
+      "mm": 9,
+      "mechanical": true,
+      "sensor_sha256": "8b5cf3f7d340b197b89cee85ac102ebb7184e684ef5aa65ef05d1d67db341c03",
+      "struct_sha256": "df1b9c9d92a57120307311d43f4f96abcb36b956315a3c0ae7d8a6f458ffdfa1",
+      "target_cell8_faces": [
+        0,
+        0
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14
+      ],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "STOP",
+      "ideal_zero_block_rows": []
+    },
+    {
+      "case": "b",
+      "phase": "park",
+      "mm": 9,
+      "mechanical": true,
+      "sensor_sha256": "9e709bd53a553872fb0f9ec2bab8a24d269e95127ef900bf9ac488e6b80165ea",
+      "struct_sha256": "7dae3b6d5bedfad07afdd6bd73c742a8e0776398b282ce95543471ad4c6d0ba0",
+      "target_cell8_faces": [
+        0,
+        0
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "STOP",
+      "ideal_zero_block_rows": []
+    },
+    {
+      "case": "c",
+      "phase": "work",
+      "mm": 10,
+      "mechanical": true,
+      "sensor_sha256": "d1001852bc1632805e7f2d8210e8764dd0e87826cf6a7db423589139e3c721b5",
+      "struct_sha256": "6c8973f7795308b77f684406200f4971d3c698d59f58b6e23fc80b6291d819d1",
+      "target_cell8_faces": [
+        0,
+        0
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16
+      ],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "STOP",
+      "ideal_zero_block_rows": []
+    },
+    {
+      "case": "c",
+      "phase": "park",
+      "mm": 10,
+      "mechanical": true,
+      "sensor_sha256": "3117ffbecb26fd62cc9d87d491b9a563185bfd3a82ff3fd4d6a1775710d0d553",
+      "struct_sha256": "e30b7cc83cf115eb7dd1a2d3ed455de069fc145a129e9fe2ea549b9b64ea093b",
+      "target_cell8_faces": [
+        0,
+        0
+      ],
+      "hostless_corner_ids": [],
+      "not_visible_corner_ids": [],
+      "predictions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "ideal_geometry_only": "STOP",
+      "ideal_zero_block_rows": []
+    }
+  ],
+  "has_safe_work_8": true,
+  "visual_control": false,
+  "confirmation": false
+}

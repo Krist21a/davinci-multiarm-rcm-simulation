@@ -1,0 +1,1510 @@
+{
+  "plan": {
+    "parent": "config/learn/learned_perception_v1_roi_dev.json",
+    "scope": "Development diagnostic only. No H1/H2, formal candidate freeze, controller, gate/status change or Phase B.",
+    "training": {
+      "arms": [
+        "roi640",
+        "native384"
+      ],
+      "updates_per_arm": 1800,
+      "batch_size": 8,
+      "seed": 20261123,
+      "recipe": "Same scratch four-channel ResNet-18, clean depth and row/uniform objective as roi_dev. Same shuffled eligible exposures, 270 frozen Phase A train episodes. Use the clean 640 tip estimate, same pixel center and field of view; keep the native 384x384 HD crop without pooling. Fail if native and 640 eligibility differ from the previous Phase A cache."
+    },
+    "cohort": {
+      "tag": "dev_native_hd_matched_v1",
+      "start": 312,
+      "blocks": 6,
+      "condition_names": [
+        "below",
+        "near",
+        "within",
+        "above_candidate"
+      ],
+      "advance_um": [
+        3000,
+        3500,
+        4000,
+        2000
+      ],
+      "target_um": [
+        8000,
+        8000,
+        10000,
+        10000
+      ],
+      "scenario": "nominal",
+      "pose": "Each consecutive block of four new dev indices uses the parent sampler's initial ECM target from its first index. All four keep their own seeds, use only registered cap/target values, native HD twin enabled, no auxiliary deltas.",
+      "boundary": "The conditions select registered parameters, not structural outputs. The labels are the observed structural rows. No reruns or force-to-label. Retain refusals and FAILED, including any budget-detected overcuts. Unmodified truth controller and guards. Initial and per-frame ECM camera pose matching is audited, not assumed. Cutter trajectory, deformation and number of bites need not match."
+    },
+    "validation": {
+      "confidence_cutoffs": [
+        0.0,
+        0.5,
+        0.75,
+        0.9,
+        0.95,
+        0.99
+      ],
+      "frozen_dev_rule": "For each arm predict the maximum probability row only above the largest false endpoint confidence among localizable frames on the old 30 Phase A validation trajectories; if none, accept every localizable image. New cohort only applies this rule; never select a confidence on the new cohort. Uncalibrated probabilities, clean depth only.",
+      "report": "Report all exposures and first localizable-or-not occurrence of each observed 8/9/10/11/12 mm row per trajectory (never select by localization). Also report support and endpoint outcomes by matched camera block. Missing phase labels do not become negative exposures; preserve pre-sheet rules. Force abstention for invalid locator. No formal acceptance call."
+    }
+  },
+  "provenance": {
+    "index_sha256": "3b96b814322868b3ea1e2027f9e048b87a73a4ddf58cbed8079f5d0808fdf3b5",
+    "old_layout_sha256": "83743a197f91e985d4a774f8de8144e765f576fbab038afa704e4d4232d80b8f",
+    "native_layout_sha256": "dda20f343dd43440e840de2000fda4869ebf1bd638ad0b9342babbab19f53764",
+    "old_validation_ids": [
+      116,
+      179,
+      253,
+      252,
+      192,
+      87,
+      134,
+      3,
+      278,
+      238,
+      160,
+      255,
+      16,
+      8,
+      46,
+      234,
+      283,
+      281,
+      188,
+      210,
+      81,
+      29,
+      157,
+      9,
+      102,
+      23,
+      204,
+      258,
+      139,
+      6
+    ],
+    "eligible_train": 5162,
+    "eligible_old_val": 559,
+    "plan_sha256": "e4ee22e0deede9817956e5026305a0d21d9d2960ae49ae8fe45a085ceb1875f4",
+    "script_sha256": "c05db9a85231aafb478caed453a48425d884b7dac089432b4273a1145cb7b751",
+    "torch": "2.9.1+cu126",
+    "device": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "arms": {
+    "roi640": {
+      "training": {
+        "draws": 14400,
+        "mean_loss": 0.7358495541475714
+      },
+      "seconds": 58.68311700000049,
+      "old_development": {
+        "max_false_endpoint_confidence": 0.5298373699188232,
+        "fixed": {
+          "0.0": {
+            "false_endpoints": 3,
+            "endpoint_hits": 9,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.25,
+            "wrong": 117,
+            "numeric_sheet_frames": 529,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.22117202268431002,
+            "exact_8_9": 18,
+            "numeric_8_9": 50,
+            "accuracy_8_9": 0.36,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 0,
+              "numeric_non_endpoint": 30,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 283,
+                "exact": 278,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 17,
+                "exact": 10,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 11,
+                "exact": 8,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 20,
+                "exact": 13,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 60,
+                "exact": 50,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 13,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 19,
+                "exact": 7,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 25,
+                "exact": 5,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 23,
+                "exact": 14,
+                "endpoint_calls": 3
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 27,
+                "exact": 4,
+                "endpoint_calls": 4
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 9,
+                "exact": 1,
+                "endpoint_calls": 5
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 20,
+                "exact": 20,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.5": {
+            "false_endpoints": 1,
+            "endpoint_hits": 2,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.05555555555555555,
+            "wrong": 63,
+            "numeric_sheet_frames": 450,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.14,
+            "exact_8_9": 4,
+            "numeric_8_9": 12,
+            "accuracy_8_9": 0.3333333333333333,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 283,
+                "exact": 278,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 17,
+                "exact": 10,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 11,
+                "exact": 8,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 20,
+                "exact": 13,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 54,
+                "exact": 50,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 12,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 13,
+                "exact": 4,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 8,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 4,
+                "exact": 2,
+                "endpoint_calls": 1
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 8,
+                "exact": 2,
+                "endpoint_calls": 2
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 18,
+                "exact": 18,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.75": {
+            "false_endpoints": 0,
+            "endpoint_hits": 0,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.0,
+            "wrong": 20,
+            "numeric_sheet_frames": 344,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.05813953488372093,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 276,
+                "exact": 275,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 6,
+                "exact": 5,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 11,
+                "exact": 9,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 36,
+                "exact": 35,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 7,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 4,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.9": {
+            "false_endpoints": 0,
+            "endpoint_hits": 0,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.0,
+            "wrong": 7,
+            "numeric_sheet_frames": 296,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.02364864864864865,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 275,
+                "exact": 275,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 2,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 4,
+                "exact": 4,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 8,
+                "exact": 8,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 6,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 1,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.95": {
+            "false_endpoints": 0,
+            "endpoint_hits": 0,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.0,
+            "wrong": 7,
+            "numeric_sheet_frames": 280,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.025,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 272,
+                "exact": 272,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 1,
+                "exact": 1,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 6,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 1,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.99": {
+            "false_endpoints": 0,
+            "endpoint_hits": 0,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.0,
+            "wrong": 0,
+            "numeric_sheet_frames": 270,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.0,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 270,
+                "exact": 270,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          }
+        },
+        "in_sample_zero_false_reference": {
+          "false_endpoints": 0,
+          "endpoint_hits": 2,
+          "true_endpoints": 36,
+          "endpoint_recall": 0.05555555555555555,
+          "wrong": 57,
+          "numeric_sheet_frames": 440,
+          "sheet_frames": 538,
+          "valid_but_wrong": 0.12954545454545455,
+          "exact_8_9": 3,
+          "numeric_8_9": 10,
+          "accuracy_8_9": 0.3,
+          "pre_sheet": {
+            "frames": 30,
+            "abstain": 30,
+            "numeric_non_endpoint": 0,
+            "false_endpoints": 0
+          },
+          "by_true_mm": {
+            "0": {
+              "frames": 285,
+              "numeric": 283,
+              "exact": 278,
+              "endpoint_calls": 0
+            },
+            "1": {
+              "frames": 17,
+              "numeric": 15,
+              "exact": 10,
+              "endpoint_calls": 0
+            },
+            "2": {
+              "frames": 11,
+              "numeric": 10,
+              "exact": 7,
+              "endpoint_calls": 0
+            },
+            "3": {
+              "frames": 22,
+              "numeric": 20,
+              "exact": 13,
+              "endpoint_calls": 0
+            },
+            "4": {
+              "frames": 61,
+              "numeric": 53,
+              "exact": 49,
+              "endpoint_calls": 0
+            },
+            "5": {
+              "frames": 14,
+              "numeric": 12,
+              "exact": 2,
+              "endpoint_calls": 0
+            },
+            "6": {
+              "frames": 21,
+              "numeric": 10,
+              "exact": 3,
+              "endpoint_calls": 0
+            },
+            "7": {
+              "frames": 25,
+              "numeric": 7,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "8": {
+              "frames": 24,
+              "numeric": 2,
+              "exact": 1,
+              "endpoint_calls": 0
+            },
+            "9": {
+              "frames": 27,
+              "numeric": 8,
+              "exact": 2,
+              "endpoint_calls": 2
+            },
+            "10": {
+              "frames": 9,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "11": {
+              "frames": 20,
+              "numeric": 18,
+              "exact": 18,
+              "endpoint_calls": 0
+            },
+            "12": {
+              "frames": 2,
+              "numeric": 2,
+              "exact": 0,
+              "endpoint_calls": 0
+            }
+          }
+        }
+      }
+    },
+    "native384": {
+      "training": {
+        "draws": 14400,
+        "mean_loss": 0.7503911803838693
+      },
+      "seconds": 93.23904430000039,
+      "old_development": {
+        "max_false_endpoint_confidence": 0.9224562048912048,
+        "fixed": {
+          "0.0": {
+            "false_endpoints": 42,
+            "endpoint_hits": 36,
+            "true_endpoints": 36,
+            "endpoint_recall": 1.0,
+            "wrong": 103,
+            "numeric_sheet_frames": 529,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.1947069943289225,
+            "exact_8_9": 14,
+            "numeric_8_9": 50,
+            "accuracy_8_9": 0.28,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 0,
+              "numeric_non_endpoint": 30,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 283,
+                "exact": 283,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 17,
+                "exact": 14,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 11,
+                "exact": 5,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 20,
+                "exact": 15,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 60,
+                "exact": 58,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 13,
+                "exact": 7,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 19,
+                "exact": 6,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 25,
+                "exact": 7,
+                "endpoint_calls": 10
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 23,
+                "exact": 3,
+                "endpoint_calls": 20
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 27,
+                "exact": 11,
+                "endpoint_calls": 27
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 9,
+                "exact": 9,
+                "endpoint_calls": 9
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 20,
+                "exact": 8,
+                "endpoint_calls": 12
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.5": {
+            "false_endpoints": 30,
+            "endpoint_hits": 26,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.7222222222222222,
+            "wrong": 68,
+            "numeric_sheet_frames": 469,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.14498933901918976,
+            "exact_8_9": 7,
+            "numeric_8_9": 30,
+            "accuracy_8_9": 0.23333333333333334,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 283,
+                "exact": 283,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 16,
+                "exact": 13,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 7,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 18,
+                "exact": 14,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 58,
+                "exact": 56,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 6,
+                "exact": 5,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 10,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 12,
+                "exact": 2,
+                "endpoint_calls": 8
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 13,
+                "exact": 1,
+                "endpoint_calls": 12
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 17,
+                "exact": 6,
+                "endpoint_calls": 17
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 9,
+                "exact": 9,
+                "endpoint_calls": 9
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 18,
+                "exact": 8,
+                "endpoint_calls": 10
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.75": {
+            "false_endpoints": 5,
+            "endpoint_hits": 14,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.3888888888888889,
+            "wrong": 14,
+            "numeric_sheet_frames": 343,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.04081632653061224,
+            "exact_8_9": 0,
+            "numeric_8_9": 8,
+            "accuracy_8_9": 0.0,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 282,
+                "exact": 282,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 3,
+                "exact": 2,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 37,
+                "exact": 37,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 2
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 6,
+                "exact": 0,
+                "endpoint_calls": 6
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 8,
+                "exact": 8,
+                "endpoint_calls": 8
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 3,
+                "exact": 0,
+                "endpoint_calls": 3
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.9": {
+            "false_endpoints": 2,
+            "endpoint_hits": 9,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.25,
+            "wrong": 5,
+            "numeric_sheet_frames": 296,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.016891891891891893,
+            "exact_8_9": 0,
+            "numeric_8_9": 4,
+            "accuracy_8_9": 0.0,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 281,
+                "exact": 281,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 1,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 3,
+                "exact": 3,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 2
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 2,
+                "exact": 0,
+                "endpoint_calls": 2
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 7,
+                "exact": 7,
+                "endpoint_calls": 7
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.95": {
+            "false_endpoints": 0,
+            "endpoint_hits": 6,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.16666666666666666,
+            "wrong": 1,
+            "numeric_sheet_frames": 286,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.0034965034965034965,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 279,
+                "exact": 279,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 1,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 6,
+                "exact": 6,
+                "endpoint_calls": 6
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          },
+          "0.99": {
+            "false_endpoints": 0,
+            "endpoint_hits": 4,
+            "true_endpoints": 36,
+            "endpoint_recall": 0.1111111111111111,
+            "wrong": 0,
+            "numeric_sheet_frames": 270,
+            "sheet_frames": 538,
+            "valid_but_wrong": 0.0,
+            "exact_8_9": 0,
+            "numeric_8_9": 0,
+            "accuracy_8_9": null,
+            "pre_sheet": {
+              "frames": 30,
+              "abstain": 30,
+              "numeric_non_endpoint": 0,
+              "false_endpoints": 0
+            },
+            "by_true_mm": {
+              "0": {
+                "frames": 285,
+                "numeric": 266,
+                "exact": 266,
+                "endpoint_calls": 0
+              },
+              "1": {
+                "frames": 17,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "2": {
+                "frames": 11,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "3": {
+                "frames": 22,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "4": {
+                "frames": 61,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "5": {
+                "frames": 14,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "6": {
+                "frames": 21,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "7": {
+                "frames": 25,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "8": {
+                "frames": 24,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "9": {
+                "frames": 27,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "10": {
+                "frames": 9,
+                "numeric": 4,
+                "exact": 4,
+                "endpoint_calls": 4
+              },
+              "11": {
+                "frames": 20,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              },
+              "12": {
+                "frames": 2,
+                "numeric": 0,
+                "exact": 0,
+                "endpoint_calls": 0
+              }
+            }
+          }
+        },
+        "in_sample_zero_false_reference": {
+          "false_endpoints": 0,
+          "endpoint_hits": 6,
+          "true_endpoints": 36,
+          "endpoint_recall": 0.16666666666666666,
+          "wrong": 1,
+          "numeric_sheet_frames": 288,
+          "sheet_frames": 538,
+          "valid_but_wrong": 0.003472222222222222,
+          "exact_8_9": 0,
+          "numeric_8_9": 0,
+          "accuracy_8_9": null,
+          "pre_sheet": {
+            "frames": 30,
+            "abstain": 30,
+            "numeric_non_endpoint": 0,
+            "false_endpoints": 0
+          },
+          "by_true_mm": {
+            "0": {
+              "frames": 285,
+              "numeric": 281,
+              "exact": 281,
+              "endpoint_calls": 0
+            },
+            "1": {
+              "frames": 17,
+              "numeric": 1,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "2": {
+              "frames": 11,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "3": {
+              "frames": 22,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "4": {
+              "frames": 61,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "5": {
+              "frames": 14,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "6": {
+              "frames": 21,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "7": {
+              "frames": 25,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "8": {
+              "frames": 24,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "9": {
+              "frames": 27,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "10": {
+              "frames": 9,
+              "numeric": 6,
+              "exact": 6,
+              "endpoint_calls": 6
+            },
+            "11": {
+              "frames": 20,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            },
+            "12": {
+              "frames": 2,
+              "numeric": 0,
+              "exact": 0,
+              "endpoint_calls": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "scope": "Thresholds saved before any new cohort frames are loaded; diagnostic only"
+}
