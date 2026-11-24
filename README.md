@@ -1,6 +1,6 @@
 # 达芬奇式多臂手术机器人仿真：多臂协同视觉伺服切割（研究仿真）
 
-> **2026-11-24 进度：** 严格视觉停刀仍未通过；剪刀尖端 RGB-D 离线训练方案已冻结，尚未执行。现行场景是 `scenes/davinci_si_articulated_verified.ttt`。旧场景与早期演示保留，不代表当前版本验收。
+> **2026-11-24 进度：** 可见切缝分割已完成首轮 RGB-D 训练；三标记尖端定位加固定深度弃权规则通过独立离线确认；严格视觉停刀仍未通过。现行场景是 `scenes/davinci_si_articulated_verified.ttt`。旧场景与早期演示保留，不代表当前版本验收。
 
 这个 CoppeliaSim 研究基准包含三条持器械臂（PSM）和一条内窥镜臂（ECM），使用软件 RCM、可动腕部和带守卫的任务状态机。切割目标是仿真中的**非解剖测试片**；场景背景不构成解剖定位或临床有效性的证据。
 
@@ -17,31 +17,48 @@
 
 ---
 
-## 最新进展：从视觉停刀诊断到尖端定位
+## 最新进展：可见切缝分割与尖端定位
 
 | 方向 | 当前状态 | 结果与证据 |
 |---|---|---|
-| RGB-D 数据采集 | Phase A 完成 | **300 条开发轨迹 / 35,046 帧**（含高清及辅助视角），248 完成、52 失败；均为**真值控制**，失败未剔除。[采集报告](validation/task/learned_perception_v1/dev.json) |
-| 严格 M5 视觉停刀 | 未通过，暂不扩采 | 原生高清在新开发队列首次达到 9/10 mm 时 **0/18** 检出；同口闭合后的 3 mm 回看中，9 张图均弃权。[高清配对结果](validation/task/learned_perception_v1/phase_a_native_hd_eval_v1.json) · [闭合回看结果](validation/task/learned_perception_v1/phase_a_closed_look_eval_v1.json) |
-| 剪刀尖端定位 | **方案已冻结；待跑基线和训练** | 659 张抽查帧中，635 张满足标记与深度证据筛选，24 张尖端受挡。按轨迹冻结 **270 训练 / 30 验证 / 64 预留独立评估**；独立集尚未采集。[方案](config/learn/learned_tip_v1.json) · [轨迹与种子](config/learn/learned_tip_v1_episodes.json) |
-| 可见切口前沿 | 暂缓训练 | 切后 295 张通过粗深度筛选，其中 92 张缺双侧几何支撑；通过几何筛选也不等于能辨认裂缝末端。[标注抽查](validation/task/learned_perception_v1/keypoint_annotation_audit_v1.json) · [人工复核](validation/task/learned_perception_v1/keypoint_visual_spotcheck_v1.json) |
+| RGB-D 数据采集 | Phase A 完成 | **300 条开发轨迹 / 35,046 帧**（含高清及辅助视角），248 完成、52 失败；均为真值控制，失败未剔除。[采集报告](validation/task/learned_perception_v1/dev.json) |
+| 可见切缝分割 | **U-Net 已完成 6 轮训练** | 学习在单帧高清 RGB-D 上标出可见裂口，不读切长。开发集弱标签像素 IoU **78.2%**。[训练报告与复现命令](docs/VISIBLE_SLIT_TRAINING_zh.md) |
+| 剪刀尖端定位 | 固定深度规则通过独立离线确认 | 端到端尖端模型未通过开发门槛；三标记保留三维坐标，固定深度规则负责拒绝遮挡，学习门控在开发集未显示额外收益。[尖端训练](validation/task/learned_perception_v1/tip_training_v1/model_report.json) · [门控对比](validation/task/learned_perception_v1/tip_training_v1/marker_gate_dev_report.json) · [固定规则独立结果](validation/task/learned_perception_v1/tip_training_v1/marker_gate_confirmation_report.json) |
+| 严格 M5 视觉停刀 | 未通过 | 原生高清在新开发队列首次达到 9/10 mm 时 **0/18** 检出；闭刀后退 3 mm 的 9 张回看图均弃权。[高清配对结果](validation/task/learned_perception_v1/phase_a_native_hd_eval_v1.json) · [闭合回看结果](validation/task/learned_perception_v1/phase_a_closed_look_eval_v1.json) |
 
-![同一开发回合的内窥镜图像：左为未遮挡，右为遮挡；刀杆标记仍在，尖端被挡住](docs/learned_tip_occlusion_pair.png)
+### 可见切缝：训练过程与画面
 
-*同一开发回合的两张实际 640×480 ECM 图像局部，等比例放大，无真值叠图。左：TCP 投影通过图像证据筛选；右：前景球挡住尖端，仍有刀杆标记可见。不能根据标记可见就宣称尖端无遮挡。*
+从 Phase A 的同位姿 **1280×960** 彩色和深度图中固定裁取 **384×384**，不缩小像素。按轨迹划分 **270 条训练 / 30 条开发验证**，不按帧混分。训练标签同时要求裂口后方的实测深度证据和两侧可见的试样支撑；被挡或不确定的像素不进入损失。仿真网格只用于生成候选标签，模型只读 RGB-D。
 
 ```mermaid
 flowchart LR
-    I[ECM RGB-D] --> B[三标记几何基线]
-    I --> M[尖端模型训练与弃权]
-    B --> E[同帧离线对比]
-    M --> E
-    E --> G{开发门槛通过?}
-    G -->|是| H[锁定模型后采集独立评估]
-    G -->|否| R[保留失败结果]
+    A[Phase A 同位姿高清 RGB-D] --> B[固定原生像素裁剪]
+    B --> C[图像证据约束的弱标签]
+    C --> D[按轨迹划分 270 / 30]
+    D --> E[RGB-D U-Net 训练 6 轮]
+    E --> F[离线切缝叠图]
 ```
 
-模型不读取仿真真值、帧序号或运动状态。真值只用于标签与离线评分。原始数据集、缓存和权重不入 Git；仓库保留方案、清单、报告及少量说明图。**当前没有新的 M5、M6 或 M7 验收，也没有将模型接入控制。** 复现入口：[M5 端点记录](docs/M5_ENDPOINT.md) · [M5 实跑记录与复现命令](docs/M5_LIVE_DEVELOPMENT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
+![六张开发帧的三列对照：实际内窥镜 RGB、青色弱标签、橙色模型预测](docs/visible_slit_weak_v1_predictions.png)
+
+*左：实际仿真内窥镜局部；中：青色为有证据支持的弱标签；右：橙色为模型输出。模型能圈出切缝的大致位置，但通常画得更宽。示例来自有正标签的开发帧，不代表整个数据集。*
+
+| 开发集像素指标（只计有标签区域） | 结果 |
+|---|---:|
+| 切缝弱标签召回 | 3,596 / 3,596（100%） |
+| 已知背景被误标为切缝 | 1,001 像素 |
+| 精确率 / IoU | 78.2% / 78.2% |
+| 未知区域内的预测 | 22,085 像素；不计对错 |
+
+六轮约 **9.3 分钟**（RTX 4060 Laptop GPU），峰值显存约 **1.64 GiB**。这只说明模型在已标注像素上学到了定位，**不等于真实切缝边界精度**，不能推导裂缝末端、结构切长或停刀许可。[登记协议](config/learn/visible_slit_weak_v1.json) · [机器可读训练结果](validation/task/learned_perception_v1/visible_slit_weak_v1/report.json)
+
+### 尖端：三标记定位与遮挡弃权
+
+![同一开发回合的内窥镜图像：左为未遮挡，右为遮挡；刀杆标记仍在，尖端被挡住](docs/learned_tip_occlusion_pair.png)
+
+在另采的 **40 条独立仿真轨迹**中，固定规则在 48 张明确遮挡帧上均弃权（原始及 0.5 mm 噪声深度），保留了基线已输出的全部受支持坐标。覆盖率为 **96.5% / 95.6%**，三维误差中位数为 **0.29 / 0.42 mm**。这是固定规则的结果，不是端到端学习模型通过；原先留给尖端学习研究的 64 条轨迹未采集。
+
+原始 RGB-D、缓存和权重不入 Git；仓库保留代码、协议、报告和说明图。**控制器未改，未新增 M5、M6 或 M7 验收。** 复现入口：[切缝训练](docs/VISIBLE_SLIT_TRAINING_zh.md) · [M5 端点记录](docs/M5_ENDPOINT.md) · [M5 实跑记录与复现命令](docs/M5_LIVE_DEVELOPMENT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
 
 ---
 
