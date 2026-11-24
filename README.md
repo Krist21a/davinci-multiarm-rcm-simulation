@@ -1,386 +1,468 @@
-# 达芬奇式多臂手术机器人仿真：多臂协同视觉伺服切割（研究仿真）
+<div align="center">
 
-> **2026-11-24 进度：** 可见切缝分割已完成首轮 RGB-D 训练；三标记尖端定位加固定深度弃权规则通过独立离线确认；严格视觉停刀仍未通过。现行场景是 `scenes/davinci_si_articulated_verified.ttt`。旧场景与早期演示保留，不代表当前版本验收。
+# 达芬奇式多臂手术机器人协同视觉伺服仿真基准
 
-这个 CoppeliaSim 研究基准包含三条持器械臂（PSM）和一条内窥镜臂（ECM），使用软件 RCM、可动腕部和带守卫的任务状态机。切割目标是仿真中的**非解剖测试片**；场景背景不构成解剖定位或临床有效性的证据。
+**Da Vinci–Style Multi-Arm Surgical Robot Simulation & Perception-Driven Cooperative Cutting Benchmark**
+
+![Simulator](https://img.shields.io/badge/Simulator-CoppeliaSim_Edu_4.10-blue)
+![Architecture](https://img.shields.io/badge/Architecture-3%C3%97PSM_%2B_1%C3%97ECM_(6--DOF_EndoWrist)-teal)
+![Offline Tests](https://img.shields.io/badge/Offline_Regressions-428_Passed-brightgreen)
+![Dataset](https://img.shields.io/badge/RGB--D_Dataset-300_Ep_%2F_35%2C046_Frames-orange)
+![Scope](https://img.shields.io/badge/Scope-Research_Simulation_(Non--Clinical)-lightgrey)
+
+[工程工作量](#工程工作量与项目演进) · [系统架构](#系统架构) · [核心工程模块](#核心工程模块) · [视觉闭环与深度学习](#视觉伺服m5-视觉闭环与深度学习感知) · [里程碑与科研边界](#里程碑看板与科研边界) · [快速开始](#快速开始与复现) · [仓库目录](#仓库目录结构) · [来源与许可](#数据来源与署名)
+
+</div>
+
+本项目是一个面向多臂手术机器人自主感知与安全控制的 **CoppeliaSim 可复现研究仿真平台**，围绕 **3 条器械臂（PSM1–PSM3）+ 1 条内窥镜臂（ECM）** 构建了从机械建模、软件远心运动点（RCM）求解、6 自由度 EndoWrist 腕部控制、碰撞与能力安全护栏、位置动力学（PBD）软组织剪切、14 状态监督状态机到真值隔离视觉伺服与深度学习感知的完整技术栈。
+
+> [!IMPORTANT]
+> - **当前主入口场景**：[`scenes/davinci_si_articulated_verified.ttt`](scenes/davinci_si_articulated_verified.ttt)（各历史演进场景及验证数据完整保留于仓库中以供溯源）。
+> - **最新研发进度（2026-11-24）**：已完成 **Phase A 300 轨迹 / 35,046 帧高清多视角 RGB-D 数据采集**、**U-Net 可见切缝首轮 RGB-D 训练**（开发集有标签像素 IoU **78.2%**）以及 **三标记 Kabsch + 固定深度遮挡弃权规则独立确认**（48/48 明确遮挡帧全部拒接，3D 中位误差 0.29 / 0.42 mm）；**M5 严格 9–10 mm 自主视觉停刀尚未通过**。
+> - **科研仿真边界声明**：切割目标为仿真中的**非解剖合成测试片（PBD Sheet）**；关节限位、穿刺点规则与组织参数均为探索性仿真设定，**未经真机或临床数据标定，不构成任何解剖定位、神经保护或临床有效性声明**。
 
 ![系统总览：三条 PSM、ECM、分腿手术台和 BodyParts3D 人体](docs/overview_si_instruments.png)
 
-| 臂 | 角色 | 器械（da Vinci Si，8 mm EndoWrist） |
-|---|---|---|
-| PSM1 | 主牵拉 | 420172 Maryland Bipolar Forceps |
-| PSM2 | 切割 | 420179 Monopolar Curved Scissors |
-| PSM3 | 辅助牵拉、交接 | 420093 ProGrasp Forceps |
-| ECM | 视野保持 | 30° 斜视内窥镜（640×480，水平视角 70°） |
-
-> 这是研究用的运动学仿真，不是临床系统。关节限位、穿刺点规则、组织模型都是探索性的仿真设定，没有和真机或临床数据标定过。
+| 机械臂 | 任务角色 | 装配器械（da Vinci Si 8 mm EndoWrist） | 几何认证能力（Geometry-Verified Capabilities） |
+|---|---|---|---|
+| **PSM1** | 主牵拉 (`retract_primary`) | `420172` Maryland Bipolar Forceps | `grasp`, `grasp_tissue`, `retract_tissue`, `bipolar_energy`, `blunt_dissection` |
+| **PSM2** | 切割 (`cut`) | `420179` Monopolar Curved Scissors | `cut`, `monopolar_energy`, `blunt_dissection` |
+| **PSM3** | 辅助牵拉与交接 (`retract_assist`) | `420093` ProGrasp Forceps | `grasp`, `grasp_tissue`, `retract_tissue` |
+| **ECM** | 内窥镜视野保持 (`view`) | 30° 斜视内窥镜（主相机 640×480 / 配对高清 1280×960，HFOV 70°） | `view` |
 
 ---
 
-## 最新进展：可见切缝分割与尖端定位
+## 工程工作量与项目演进
 
-| 方向 | 当前状态 | 结果与证据 |
+在 `55` 次递进提交中，项目从零构建了完整的几何建模、运动学安全控制、任务状态机、光学诊断与深度学习感知工程体系：
+
+| 工程维度 | 仓库实测规模 | 说明与代表资产 |
 |---|---|---|
-| RGB-D 数据采集 | Phase A 完成 | **300 条开发轨迹 / 35,046 帧**（含高清及辅助视角），248 完成、52 失败；均为真值控制，失败未剔除。[采集报告](validation/task/learned_perception_v1/dev.json) |
-| 可见切缝分割 | **U-Net 已完成 6 轮训练** | 学习在单帧高清 RGB-D 上标出可见裂口，不读切长。开发集弱标签像素 IoU **78.2%**。[训练报告与复现命令](docs/VISIBLE_SLIT_TRAINING_zh.md) |
-| 剪刀尖端定位 | 固定深度规则通过独立离线确认 | 端到端尖端模型未通过开发门槛；三标记保留三维坐标，固定深度规则负责拒绝遮挡，学习门控在开发集未显示额外收益。[尖端训练](validation/task/learned_perception_v1/tip_training_v1/model_report.json) · [门控对比](validation/task/learned_perception_v1/tip_training_v1/marker_gate_dev_report.json) · [固定规则独立结果](validation/task/learned_perception_v1/tip_training_v1/marker_gate_confirmation_report.json) |
-| 严格 M5 视觉停刀 | 未通过 | 原生高清在新开发队列首次达到 9/10 mm 时 **0/18** 检出；闭刀后退 3 mm 的 9 张回看图均弃权。[高清配对结果](validation/task/learned_perception_v1/phase_a_native_hd_eval_v1.json) · [闭合回看结果](validation/task/learned_perception_v1/phase_a_closed_look_eval_v1.json) |
-
-### 可见切缝：训练过程与画面
-
-从 Phase A 的同位姿 **1280×960** 彩色和深度图中固定裁取 **384×384**，不缩小像素。按轨迹划分 **270 条训练 / 30 条开发验证**，不按帧混分。训练标签同时要求裂口后方的实测深度证据和两侧可见的试样支撑；被挡或不确定的像素不进入损失。仿真网格只用于生成候选标签，模型只读 RGB-D。
+| **核心源代码规模** | **41,504 行** | **`243` 个 Python 脚本（`38,697` 行）** 覆盖 8 大子目录 + **`21` 个场景内嵌 Lua 模块（`2,807` 行）** |
+| **仿真场景与资产** | **5 个自包含场景（`72.4 MB`）** | 5 个递进式 `.ttt` 场景，含同步 URDF、dVRK Si 器械/套管网格与 BodyParts3D 人体解剖模型 |
+| **预注册协议与实证** | **109 份协议 + 544 份报告** | `config/` 下 109 份 JSON 协议配置；`validation/` 与 `docs/` 共保存 544 份 JSON 报告与 `657` 张过程诊断图 |
+| **自动化安全回归** | **428 项全通过（0 失败 / 0 跳过）** | 横跨 `40` 个测试脚本；通过 `lua.dll` 直接运行控制器原码，并包含 `nodes_sha256` 轨迹确定性与真值隔离审计 |
+| **RGB-D 数据与训练** | **300 轨迹 / 35,046 帧（51.1 GB）** | 4 进程并行 CoppeliaSim 采集（`15,086 帧/小时`），支撑离线 U-Net 切缝分割与 40 轨迹独立尖端确认 |
 
 ```mermaid
 flowchart LR
-    A[Phase A 同位姿高清 RGB-D] --> B[固定原生像素裁剪]
-    B --> C[图像证据约束的弱标签]
-    C --> D[按轨迹划分 270 / 30]
-    D --> E[RGB-D U-Net 训练 6 轮]
-    E --> F[离线切缝叠图]
+    S1["阶段 1：软件 RCM 与脚端对接"] --> S2["阶段 2：ECM 与内窥镜 PBVS"]
+    S2 --> S3["阶段 3：Si 器械与 6-DOF 腕部"]
+    S3 --> S4["阶段 4：14 状态安全状态机与 M3 审计"]
+    S4 --> S5["阶段 5：M5 视觉闭环与学习感知"]
 ```
 
-![六张开发帧的三列对照：实际内窥镜 RGB、青色弱标签、橙色模型预测](docs/visible_slit_weak_v1_predictions.png)
+<details>
+<summary>查看 5 个演进场景与源码模块详细清单</summary>
 
-*左：实际仿真内窥镜局部；中：青色为有证据支持的弱标签；右：橙色为模型输出。模型能圈出切缝的大致位置，但通常画得更宽。示例来自有正标签的开发帧，不代表整个数据集。*
+| 场景文件 | 体积 | 核心增量与里程碑定位 | 参考媒体 |
+|---|---:|---|---|
+| [`scenes/davinci_three_arm_rcm.ttt`](scenes/davinci_three_arm_rcm.ttt) | 8.42 MB | 无人体三臂软件 RCM 求解与四视图漂移验证 | [三臂 RCM 演示](docs/three_arm_rcm_demo.mp4) |
+| [`scenes/davinci_foot_docking_rcm.ttt`](scenes/davinci_foot_docking_rcm.ttt) | 14.87 MB | 脚端中央对接、20° 头低脚高分腿体位、腹壁 RCM 与 2,046 对网格碰撞预检 | [24 秒双视图演示](docs/foot_docking_rcm_demo.mp4) |
+| [`scenes/davinci_endoscope_task.ttt`](scenes/davinci_endoscope_task.ttt) | 15.02 MB | 接入 ECM 软件 RCM、30° 斜视内窥镜相机与 PBVS 拾取放置闭环 | [视觉伺服视角](validation/endoscope/endoscope_view.png) |
+| [`scenes/davinci_si_instruments.ttt`](scenes/davinci_si_instruments.ttt) | 16.90 MB | 换装 dVRK Si 器械与套管、RBF 气腹穹顶、多约束穿刺点优化与 PBD 组织模型 | [器械与套管布局](docs/ports_si_instruments.png) |
+| [`scenes/davinci_si_articulated_verified.ttt`](scenes/davinci_si_articulated_verified.ttt) | 17.22 MB | **当前主场景**：串联独立 `wrist_yaw` 4-DOF 腕部、6-DOF `tool_pose` 控制与全量 P0 安全护栏 | [腕部验证报告](validation/safety/articulation_verified.json) |
 
-| 开发集像素指标（只计有标签区域） | 结果 |
-|---|---:|
-| 切缝弱标签召回 | 3,596 / 3,596（100%） |
-| 已知背景被误标为切缝 | 1,001 像素 |
-| 精确率 / IoU | 78.2% / 78.2% |
-| 未知区域内的预测 | 22,085 像素；不计对错 |
-
-六轮约 **9.3 分钟**（RTX 4060 Laptop GPU），峰值显存约 **1.64 GiB**。这只说明模型在已标注像素上学到了定位，**不等于真实切缝边界精度**，不能推导裂缝末端、结构切长或停刀许可。[登记协议](config/learn/visible_slit_weak_v1.json) · [机器可读训练结果](validation/task/learned_perception_v1/visible_slit_weak_v1/report.json)
-
-### 尖端：三标记定位与遮挡弃权
-
-![同一开发回合的内窥镜图像：左为未遮挡，右为遮挡；刀杆标记仍在，尖端被挡住](docs/learned_tip_occlusion_pair.png)
-
-在另采的 **40 条独立仿真轨迹**中，固定规则在 48 张明确遮挡帧上均弃权（原始及 0.5 mm 噪声深度），保留了基线已输出的全部受支持坐标。覆盖率为 **96.5% / 95.6%**，三维误差中位数为 **0.29 / 0.42 mm**。这是固定规则的结果，不是端到端学习模型通过；原先留给尖端学习研究的 64 条轨迹未采集。
-
-原始 RGB-D、缓存和权重不入 Git；仓库保留代码、协议、报告和说明图。**控制器未改，未新增 M5、M6 或 M7 验收。** 复现入口：[切缝训练](docs/VISIBLE_SLIT_TRAINING_zh.md) · [M5 端点记录](docs/M5_ENDPOINT.md) · [M5 实跑记录与复现命令](docs/M5_LIVE_DEVELOPMENT.md) · [阶段路线图](docs/DEVELOPMENT_ROADMAP_zh.md) · [学习环境依赖](requirements-learn.txt)。
+</details>
 
 ---
 
-## 历史进展：M5 端点与光学开发（截至 2026-11-20）
+## 系统架构
 
-**当前主任务是视觉自主停刀并撤回，尚未通过。** 目标是机器人从未切状态出发，每刀都由当前 RGB-D 引导，在实际结构切长 9–10 mm 时自行决定撤刀；不是数刀数，也不是真值控制。最近的完整视觉尝试在标称和 0.5 mm 噪声下均停在 5 mm。
+系统严格分离**底层动力学与安全控制**、**世界抽象与真值边界**、**多模态视觉感知**和**任务状态机决策**四层职责，并通过 `GroundTruth` 用途标签与确定性哈希校验保证所有视觉控制实验“零作弊”。
 
-**四步计划：第 1 步完成，第 2 步已补齐同印色广角样本，但读数未过关；未进入第 3、4 步。** 修过的 `cell_certificate` 从同侧印色边界定位可见角点，区分“局部前沿”和“入口到前沿连续剪通”。在实际 20° 闭刀回退图上，8、9、10 mm 的局部读数首次在原始和加噪深度下全部正确；入口仍被挡住，三张都没有报告可停刀。见[工作位/回退位对照图](validation/task/cell_certificate_v2_dev/working_vs_look.png)及[盲读结果](validation/task/cell_certificate_v2_dev/decision.json)。随后在 **70°、1280×960** 采了同款角标测试片的 0 mm 加载/牵拉和 3、6、8、9、10 mm 各一对工作/回退图：十张切后图均未给出局部切长。8、9、10 mm 的六张广角图中，单个角标最多只有 **1 个可辨色像素**。两种光学的六个检查点逐一核对，测试片节点、剪刀位姿和原始参考帧相同，不是另一刀剪出了不同结果。[广角判定](validation/task/cell_certificate_v2_hd_dev/decision.json) · [匹配和像素数](validation/task/cell_certificate_v2_hd_dev/sampling_diagnostic.json)。
+```mermaid
+flowchart TB
+    subgraph SIM["1. 仿真与底层安全控制层 (CoppeliaSim + src/ Lua)"]
+        RCM["软件 RCM 求解器 (rcm_controller.lua)"]
+        ART["独立 4-DOF EndoWrist 腕部 (articulation.lua)"]
+        GUARD["2,100+ 网格对碰撞守卫 + 几何能力护栏 (capability_guard.lua)"]
+        TISSUE["PBD 可变形可剪切组织与实时渲染重建 (tissue.lua)"]
+        RCM --> ART --> GUARD
+    end
 
-**当前入口：[M5 运行与判定边界](docs/M5_ENDPOINT.md)。** 主控制器现在核验两片刀的实际闭合和归位误差；中央表面切缝、滑动导向和固定印色可在同一夹具配置启用，不再逐层改写 Lua。原片真值基线仍为 10 mm，[17 帧节点轨迹与历史一致](validation/task/m5_local_hd_dev_v1/truth_reference_check.json)。修正读尺行号后，合成 8/9/10 mm 能分开；但 [70°、1280×960 实拍开发盲读](validation/task/m5_local_hd_dev_v1/decision.json) 未过：三条真值轨迹实际剪至 8/9/10 mm 并闭刀归位，9 张切后工作图和 3 张闭刀回退图均未能读出局部切长，原始和加噪深度结果相同。尤其是 10 mm 回退时，[第十格的一个已断三角面在投影内没有一个像素中心](validation/task/m5_local_hd_dev_v1/terminal_rays.json)。不把分辨率翻倍当作解决方案。未使用独立确认集，未将读数接入视觉闭环。
+    subgraph WORLD["2. 世界抽象与真值隔离层 (scripts/task/)"]
+        SIMW["在线仿真适配器 (sim_world.py)"]
+        FAKEW["离线运动学桩 (fake_world.py)"]
+        GT["用途标签真值边界 (ground_truth.py)"]
+    end
 
-**此前：修正模型应变后，能抓、能剪、能撤，仍不能凭视觉决定停刀。** 测试片中央横向连接由 1 mm 改为 3 mm 后，旧公式仍用 1 mm 网格归一化；新小样直接读各行弹簧的静息长度（2.76 mm）。同一布置在抓持后的应变从误报的 2.054 变为 0.018，两臂各向外拉约 0.20 mm，无撕裂。约束边缘翘起后，20° 实际成像下的未切、只牵拉两张图均能识别全部 28 个角标、26 个完整面。六条**真值控制**开发轨迹有实际 8、9、10 mm 并闭合撤回；20 张闭剪工作图的盲读仍全为 UNKNOWN。另从三个配对检查点闭刀后退 3 mm，三者仍不能停刀。对能看见三个角标的已断面，保留实测深度、只在事后给出精确二维角点，32/32 出现所需的穿透像素块；反过来只给精确顶点深度是 0/32。这个诊断不能给控制器答案。独立确认未启用。[实图](validation/task/seam_rim_look_v1/work_vs_look.png) · [盲读与逐面归因](validation/task/seam_rim_look_v1/decision.json) · [真实 8/9/10 mm 对照](validation/task/seam_rim_near_v1/decision.json)。
+    subgraph PERC["3. 多模态感知与学习层 (scripts/vision/ & scripts/learn/)"]
+        TIP["三标记 Kabsch 刀尖 + 固定深度遮挡弃权"]
+        SLIT["双侧色度与编码材料坐标估计"]
+        UNET["离线 RGB-D U-Net 可见切缝分割"]
+    end
 
-**滑动导向小样：工作位仍不能自主停刀。** 保留原入口、抓点和剪刀路径后，真实四倍分辨率能看到左右终段刻度；五条真值采集轨迹均通过机械和撤回检查，但冻结的读尺程序对 18 张闭剪后工作图全部拒绝（原始深度和 0.5 mm 噪声）。在真正的 8/9 mm 状态各闭刀后退 3 mm，第 9 条刻线呈现不同的裂缝证据，剪刀仍未到停放位。实际 8 mm 时尚存的中央半片，在工作位只能提供 2 个相连的新增墨色像素，后退后有 24 个（只计深度完全未变的像素）。9 mm 时看不见该墨色不能单独证明剪够。连续裂缝候选在完整剪开 9 行的合成对照上误判为未到，不得用于控制。独立确认、视觉闭环和用户验收均未启动或改变。[工作位与观察位](validation/task/seam_work_observability_v1/work_and_backoff.png) · [实测与限制](validation/task/seam_work_observability_v1/decision.json) · [合成反例](validation/task/seam_connected_evidence_v1/decision.json)。
+    subgraph CTRL["4. 任务决策与安全监督层 (scripts/task/cut_fsm.py)"]
+        FSM["14 状态任务状态机 + 5 级优先级监督器"]
+        CHECK["合刀前二次视觉复核与保守停刀守卫"]
+        FSM --> CHECK
+    end
 
-**单层中央切割带小样（2026-11-22）**：保留原入口和抓点，只让仍有片面支撑的中央连接传递牵拉；未切时没有预制裂口。五条真值采集轨迹都能剪开、闭合撤刀；单独的只牵拉对照没有剪开。原镜位的 18 张闭剪后工作图，在原始深度和 0.5 mm 噪声下全部无法判读，包括实际 8 mm 和 9 mm 的工作位对照。事后按片面追踪视线，在一张 8 mm 状态中，第 8 行本身遮住了左侧第 9 行的大部分采样点；移开剪刀不能单独解决这个镜位的问题。[工作图](validation/task/surface_seam_pilot_v1/working_pair.png) · [独立机械评分及盲读](validation/task/surface_seam_pilot_v1/decision.json) · [视线诊断](validation/task/surface_seam_pilot_v1/first_hits.json)。未启用独立确认集，未接入视觉控制，不是 M5b 完成。
+    SIM <-->|"RGB-D / 关节读回 / 原子命令"| WORLD
+    WORLD -->|"仅传递 RGB-D 与允许信号"| PERC
+    PERC -->|"估计刀尖 / 切缝前沿 / 遮挡弃权"| CTRL
+    CTRL -->|"6-DOF 腕部与 RCM 目标"| WORLD
+    GT -.->|"控制流误读直接抛出 TruthReadInControl"| CTRL
+    GT -->|"仅用于离线评分与轨迹哈希对比"| SCORE["离线评分与验证报告 (validation/)"]
+```
 
-**刻度测试片实测**：新增印花只改变原三角面的颜色，不改变切割模型。开发集和单独补采中，实际切至 7、8、9、10 mm 的撤刀帧各两张。冻结读尺程序对这八张图在原始深度及 0.5 mm 噪声下全部拒绝判定；没有接入闭剪或停刀控制。两种合法镜位、真实 2560×1920 采集也没有在 8/10 mm 对照上同时核实切口两侧的局部刻度。看实际图：[8/9/10 mm 裁切对照](validation/task/ruler_v1_actual_8_9_10.png)、[原始与高分辨率对照](validation/task/ruler_optics_v1_comparison.png)。评分与拒绝原因：`validation/task/ruler_v1_threshold_development.json`、`validation/task/ruler_optics_v1_summary.json`。真值采集不是视觉成功；独立确认轨迹仍未启用。
+- **真值强制隔离（`scripts/task/ground_truth.py`）**：所有仿真真值（组织节点、内部约束状态）必须附带明确用途标签（`score` / `safety_monitor` / `truth_control`）；当 `control_source = vision` 时任何控制代码试图读取真值都会直接触发 `TruthReadInControl` 异常并中止。
+- **双世界镜像与确定性重放**：同一套 `CutTaskFSM` 逻辑可无缝运行于高保真 CoppeliaSim（`sim_world.py`）和毫秒级离线测试桩（`fake_world.py`）；引入 `--trace` 后，相同指令序列在多次运行中产生完全一致的 `nodes_sha256` 节点哈希，确保“只改观测、不扰动控制”的可证伪性。
 
-两种新夹具也做了真值可行性检查。绕测试片中线倾斜 45° / 60° 时，四次都未定位到入口；改为绕原入口倾斜 45° 后，入口可见，两臂均抓住，但剪刀未对准。冻结首个对准状态试了九个求解起点，都返回“杆部逆解或碰撞拒绝”，没有实际下剪。不能据此断言所有安装位都不可行。**结论：下一步应在改控制器前，联合验证镜头能看见两条终段刻度、剪刀同时有合法工作路径；只满足其中一项不够。** 汇总：`validation/task/ruler_endpoint_v1_decision.json`。306 项离线回归通过，不能替代视觉实跑验收。
+---
 
-**已完成的单独任务：「两刀后收刀」**。两次闭剪前都必须看清；每刀后都要重新看到新切口，第二刀后闭合撤回起始位。模拟器事后按测试片结构逐刀评分，不用真实切长决定何时收刀。它**不代替**下方 M5b 的 9–10 mm 自主停刀验收。
+## 核心工程模块
 
-| 两刀任务的实跑 | 结果 |
+### 3.1 软件 RCM、6-DOF EndoWrist 腕部与几何能力护栏
+
+1. **高精度软件 RCM 与 2,100+ 对网格碰撞保护**
+   - 3 条 PSM 与 1 条 ECM 均通过软件 RCM 约束器械杆穿过固定腹壁穿刺点。在 24 秒（481 控制步）连续演示中，RCM 数值残差 **`< 2×10⁻⁹ m`**，IK 求解失败 `0` 次，碰撞回退 `0` 次。
+   - 候选指令提交前对约 **2,100 对网格**（含人体器官、骨骼、手术台、邻臂与套管）进行表面相交检查，仅豁免器械杆在穿刺点 45 mm 半径内的斜向腹壁穿越；任何越界或碰撞立即原子拒绝并回滚状态。
+2. **独立 4-DOF EndoWrist 串联关节升级（P0 + M2a）**
+   - 针对旧场景缺少独立 `wrist yaw` 自由度的问题，在 `davinci_si_articulated_verified.ttt` 中为三条 PSM 显式串联 `<arm>_wrist_yaw_joint`，独立解耦 `roll`、`wrist pitch`、`wrist yaw` 与 `jaw opening`，使默认切割对准升级为 **6-DOF 器械位姿控制（`cut.align_mode = tool_pose`）**。
+   - 腕部指令按 `≤ 0.02 rad` 步长做逐增量碰撞预检与失败恢复（[腕部验证报告](validation/safety/articulation_verified.json) · [运动学与安全记录](docs/SI_KINEMATICS_AND_SAFETY_zh.md)）。
+3. **基于 dVRK 网格实测的两处关键运动学修正**
+   - **弯剪转轴修正（420179）**：[`scripts/build/measure_jaw_pivot.py`](scripts/build/measure_jaw_pivot.py) 从刀片网格提取共用销孔位于 dVRK 局部 `y = 2.45 mm`，修正原 xacro 绕 `y = 0` 旋转导致张开 1 rad 时销孔错开 `2.4 mm` 的结构失真。
+   - **ProGrasp 联动铰点（420093）**：新增从属棱柱关节 `psm3_jaw_hinge_slide`，随总开口角度按 `-2.1 mm/rad` 线性后移（限 `0–60°`）。
+4. **只看几何、不信标签的器械能力护栏**
+   - [`scripts/build/instrument_guard.py`](scripts/build/instrument_guard.py) 直接比对场景钳口与腕部表面网格和候选 dVRK 模型的平均距离（阈值 `0.5 mm`，实测与次候选间距 `0.68–1.40 mm`），再由 [`src/instruments/capability_guard.lua`](src/instruments/capability_guard.lua) 放行权限——在旧持针钳场景运行时三条 PSM 全被拒绝；剪刀调用抓持、抓钳调用剪切均被运行时拦截。
+
+![软件 RCM 精度四视图验证：三条 PSM 器械杆稳定穿过固定橙色 RCM 圆环](docs/rcm_preview.png)
+
+![三种 da Vinci Si 8 mm EndoWrist 器械尖端：左为闭合，右为张开 0.5 rad](docs/si_instrument_tips.png)
+
+### 3.2 穿刺点多约束重规划、dVRK Si 套管与气腹穹顶建模
+
+针对原始穿刺点下 PSM1 需摆角 `7.3°`（超出 `±1°` 演示窗）的问题，项目通过 [`scripts/build/plan_psm_ports.py`](scripts/build/plan_psm_ports.py) 与 [`scripts/build/access.py`](scripts/build/access.py) 完成了穿刺点优化与解剖通道建模（配置：[`port_plan.json`](config/instruments/port_plan.json) · [`access.json`](config/instruments/access.json)）：
+
+- **体表多约束穿刺点搜索**：在体表网格 6 mm 间隔点上联合求解 PSM1/PSM3 新穿刺点与零空间无碰撞臂姿，强制满足：穿刺点间距 `≥ 60 mm`、与 PSM2 杆夹角 `25–80°`、不挡内窥镜视线（`≥ 7 mm`）、6 mm 柱体走廊不碰骨骼/器官、工作动作包络无意外接触。最终 **PSM1 移动 `2.3 mm`**（至抓点 `127 mm`，夹角 `62°`），**PSM3 移动 `23.4 mm`**（至抓点 `148 mm`，夹角 `31°`）。
+- **dVRK Si 套管与 RBF 气腹穹顶**：装配 dVRK Si 8 mm 套管（内径 `8.7 mm`、外径 `12.7 mm`、管长 `125 mm`，RCM 环距管顶 `95 mm`，新增 `226` 对套管碰撞检查），并以径向基函数（RBF）将腹壁皮肤平滑抬升最高 **`22.5 mm`** 成气腹穹顶，同时生成腹膜内表面使各 RCM 点位于皮肤下 `13.5–15 mm`。
+
+| 通路与气腹安全核验项目 | 实测结果 |
 |---|---|
-| 标称 / 0.5 mm 深度噪声 | 均实际增长 3 + 2 mm，均两次重获并收刀；未撕裂，无 RCM 故障。 |
-| 推进后完全盖住相机输入 | 三次换镜仍看不见，未闭剪，实际增长 0 mm。是拒剪对照通过，不是切割成功。 |
-| 第一刀后放置局部遮挡物，比较四种策略 | 同一初态下，两个允许换镜的策略均完成第二刀；两个固定镜头的策略均停在 3 mm。 |
-| 第一刀后两侧抓持各向内松 0.5 mm | 四组均停在 3 mm；失去可靠的前沿坐标，恢复预算耗尽，未发出自适应牵拉请求。不能据此判断牵拉是否有效。 |
+| 腹膜与内脏、骨骼表面相交 | **0** |
+| 家位全机碰撞（钳口闭合 / 张开 1.0 rad） | **0 / 0** |
+| 器械杆穿壁接触区距 RCM 点 | **26–32 mm**（低于 45 mm 穿刺点豁免半径） |
+| 24 秒连续演示求解失败 / 碰撞回退 | **0 / 0** |
 
-协议和完整结果：`config/task/two_bite_v1.json`、`validation/task/two_bite_v1_verified_summary.json`、`config/task/two_bite_pair_v1.json`、`validation/task/two_bite_pair_v1_summary.json`。后一组是**单一种子的八次配对试跑**，不是多种子结论。300 项离线回归报告：`validation/safety/regressions_two_bite_v1.json`。
+![气腹穹顶抬升与 dVRK Si 套管穿刺布局](docs/ports_si_instruments.png)
 
-复现：使用已启动的**专用** CoppeliaSim 实例，准备已存在的 ASCII 暂存目录；每次选新的输出文件。下例运行一组标称和一组局部遮挡实验（PowerShell）。
+### 3.3 PBD 可变形可剪切组织模型 (`src/tissue/tissue.lua`)
 
-```powershell
-.\.venv\Scripts\python.exe scripts/task/run_two_bite.py --case nominal --port 23000 --stage-dir C:/Temp --out validation/task/my_two_bite_nominal.json
-.\.venv\Scripts\python.exe scripts/task/run_two_bite_pair.py --disturbance view --strategy camera --port 23000 --stage-dir C:/Temp --out validation/task/my_view_camera.json
-```
+组织测试片采用基于位置动力学（PBD）的节点与距离约束网络，每个仿真步重新构建三角面片以支持内窥镜真实深度与色彩观测，并在同一夹具框架下支持动态切换表面切缝、滑动导向及分段编码纹理。
 
-两刀入口的另外两种工况是 `noise` 和 `blocked`。配对入口以已核验的标称原始报告校验配置和源码，工况为 `view` / `creep`，策略为 `fixed` / `camera` / `traction` / `both`。`DONE` 只表示控制器结束，是否通过以独立评分为准。下方保留原严格任务的发展记录。
-
-**目标**：在现有场景 `scenes/davinci_si_articulated_verified.ttt` 上做一个可复现、有安全防护、由视觉驱动的多臂切割基准：三条 PSM（PSM1 主牵拉、PSM2 切割、PSM3 辅助牵拉）加 ECM。路线是 M5 视觉闭环切割，M6 多臂协同（按视觉张力代理牵拉、内窥镜视野跟随），M7 多种子配对评估。组织是放在剪刀前的非解剖测试片。**本项目结果不能描述为前列腺邻近、筋膜切割、保护神经血管束或有临床意义。**
-
-**规则**：判据先写死再评估；不放宽阈值、碰撞包络、关节限位和预算；失败如实报告；`config/task/fascia_benchmark.json` 的 gate 状态只由用户签署。
-
-| 里程碑 | 状态 | 关键数字 / 文件 |
+| 操作与物理规则 | 触发前提 | 模型行为与验证基线（`scripts/tissue/tissue_cut_demo.py`） |
 |---|---|---|
-| M1/M2 基础加固、6 自由度器械位姿控制 | 完成 | 默认 `cut.align_mode = tool_pose` |
-| M3 解剖定位 | **阻塞**（用户已接受不可行） | `docs/DEVELOPMENT_ROADMAP_zh.md` |
-| 复核现有场景 nominal | 通过（`8e54b6e`） | DONE，切口 10.0 mm，轨迹可复现 |
-| M5a 感知修正 v3 | 报错门槛全过；8 项前沿可用率未过，用户已点名接受（`8ec3193`） | 刀尖误差中位 0.31 mm；前沿"有效但错"率 0；可用率 0.22–0.72（门槛 ≥ 0.8） |
-| M5b v1 切割臂视觉闭环 | B2、B8 未过；按条文 B5 也未过（`e1d5835`） | 4 个场景完成 0/4，噪声 1/4；控制路径零真值读取；零撕裂零超切 |
-| M5a v4 方向修正 | 代码完成（`f21e865`），开发集已重评，留出集未评 | 方向以首次方向为锚、5° 锥、低通 0.6；开发集报错门槛全过，可用率仍是原 4 项未过 |
-| M5b v1.1 恢复路径修正 | 代码完成（`f21e865`），实跑未做 | 视觉模式下"恢复/遮挡"且看得见剪刀和组织 → 让开观察 |
-| 审查修复：M5a v5 / M5b v1.2.1 | 未验收 | 离线回归 252 项通过；真值标称 17 拍轨迹一致；v5 合计 48/66 项通过 |
-| M5b v1.2.1 开发实跑 | 未通过 | 11 次运行完成；主场景 `DONE` 0/4，噪声 `DONE` 0/4；一次超切、一次注入松弛后的撕裂 |
-| M5a v6 / M5b v1.3.1 | 遮挡覆盖补齐；视觉闭环仍未通过 | 10 项原缺证据门槛通过，8 项前沿可用率仍未过；3 次视觉实跑均在首次闭剪前停止 |
-| ECM 镜位验证 | 两端可见；闭环仍未通过 | 13 个候选，9 个持续保持镜位且两端可见，0 个通过材料坐标资格；噪声复跑切至 8.0 mm、4/5 次闭剪后重获 |
-| M5b v1.4 审查修复 | 离线回归通过；视觉闭环仍未通过 | 274 项离线测试；真值基线 10.0 mm、17 拍轨迹一致；默认镜位两次视觉实跑均未闭剪 |
-| M5b v1.5 光学材料坐标 | 受载未切时可核验；闭环尚未验收 | 受载未切 7/7 帧建立坐标；标称切至 3.0 mm，噪声运行未闭剪 |
-| M5b v1.6 局部材料区间 | 验证缺内部边界时能重获；闭环尚未验收 | 标称闭剪后 1/1 次重获，仍停在 3.0 mm；噪声运行未闭剪 |
-| M5b v1.7 前沿重获 | 修复记忆覆盖当前裂缝；闭环尚未验收 | 标称重获后进入对准，但对准动作后失去前沿；噪声三次换镜均未能恢复闭剪证据 |
-| M5b v1.8 动作前视线预测 | 预测未改善闭环 | 35/35 次选了首选位姿；仅 3 次在下一帧同时确认前沿、材料进度和剪刀；两组轨迹与 v1.7 相同 |
-| M5b v1.9 标记光学修复 | 标称完成了有效第二刀；两场景均未到终点 | 源 URDF 的透明 TCP 标记不再挡住内窥镜；真值仍为 10 mm / 17 拍，标称 5 mm、噪声 3 mm。v1.9.1 额外换镜实验没有再提升。 |
-| M5b v1.10 刀尖测量实验 | 标称及 0.5 mm 噪声均完成第二刀，均未到终点 | 两次视觉运行均切至 5 mm，两刀后均重获前沿；真值 10 mm / 17 拍。默认模式未换用实验拟合。 |
-| M6 多臂协同 | 未开始 | — |
-| M7 配对评估 | 未开始 | — |
+| **组织抓持 (`tissueGrasp`)** | 器械具备 `grasp_tissue` 能力 | 钳口 `1.5 mm` 邻域节点跟随尖端运动；PSM1 成功抓拉 **84** 个节点（0 撕裂）；PSM2 剪刀请求被拒绝 |
+| **楔形扫掠剪切** | 器械具备 `cut` 且刀刃张角 `≥ 0.15 rad` | 依前后实际刃角计算扫掠扇区（步长 `≤ 0.05 rad`）剪断约束；PSM2 四次开合剪断 **66** 个约束、切深 **10 mm**；抓钳开合剪断 **0** 个 |
+| **过载撕裂保护** | 任意仿真步 | 任一距离约束拉伸至 **`1.5×`** 静息长度即断裂并记录撕裂（tear）；上述基线测试撕裂 **0** |
 
-**下一步**：
-1. `validation/perception/m5a_eval_holdout_v5.json` 已核验两个新镜位贯穿测试片阶段。v3 被归零覆盖的两个镜位数据集仅保留为历史结果；其余两个 v3 留出集是复用，不是全新留出集。
-2. v5 合计 48 项通过，8 项前沿可用率不达标，10 项因无对应遮挡帧而缺证据。两个新镜位的前沿可用率为 50.0% / 56.25%（门槛 80%）。v3 的接受不沿用。
-3. `validation/task/m5b_v1_2_1_summary.json`：B0/B1/B6/B7 通过，B2/B4/B5/B8 不通过；B3 没有视觉 `DONE` 样本。v1.2.1 只修正开合轴与既有 IK 的符号约定，不改 5° 容差。该轮为开发诊断，不是验收。
-4. `validation/perception/m5a_eval_holdout_v6_m5b131.json`：5 组各补 3 帧，经深度核验每帧遮住前沿和刀尖。10 项遮挡门槛通过；人工遮挡帧不计入普通准确性或可用率。历史数据为复用，补采不是独立泛化验证。
-5. `validation/task/m5b_v1_3_1_summary.json`：新增视觉刀刃扫掠上界，并禁止闭剪后用记忆前沿直接恢复。真值基线仍是 10.0 mm、17 拍轨迹一致；当时 3 次视觉运行均在首次闭剪前耗尽恢复预算。
-6. `validation/task/m5b_ecm_view_study_v1_selection.json`：`+4.5° / 0° / 80 mm` 在 16/16 张测试片帧中核验两端，但抓持后对应列的两端直线距离仅 10.04–10.75 mm，低于材料坐标判据的 11.05 mm。换镜位不能解决这个形变与固定长度先验的冲突。
-7. `validation/task/m5b_ecm_view_optical_diagnostic_v1_summary.json`：从该镜位出发，标称运行未闭剪；`0.5 mm` 噪声运行闭剪 5 次、重获 4 次，切至 8.0 mm，无超切或撕裂，但未完成。最后一次闭剪后第 74 拍有新裂缝却没有材料坐标；第 76–77 拍有材料坐标却只有旧前沿。下一步应以两个实际观测到的边界建立可处理变形的材料坐标，并保持闭剪后必须重获新裂缝的条件。
-8. `validation/task/m5b_v1_4_verified_summary.json`：修复推进距离、开刃撤刀、恢复计数、坐标系和控制器回滚；未放宽门槛。默认镜位的标称和 `0.5 mm` 噪声运行均在首次闭剪前耗尽恢复预算，另有 8 个场景未跑。`validation/perception/m5a_eval_dev_m5b_v1_4.json` 重放现有开发帧：33 项通过、5 项失败（4 项前沿可用率、1 项旋转扰动下的相对定位误差）；28 项留出门槛未跑。不据此更新镜位资格或进入 M6。
-9. `validation/task/m5b_v1_5_material_coordinate_summary.json`：测试片的四条编码带随网格一起变形；在切线两侧用同帧 RGB-D 核验两端和三个内部边界，再分段换算材料进度。固定诊断镜位下，双臂抓持且未切的 7/7 帧均建立坐标，真值投影跨度为 10.04–10.23 mm；全部 16 张测试片帧中 11 张可建立坐标，轴向边界最大误差 1.41 mm。同镜位真值控制的 17 拍轨迹与无编码记录一致。视觉标称闭剪一次、切至 3.0 mm；出现新裂缝时一侧 9 mm 内部边界不可核验，未重获。`0.5 mm` 深度噪声场景多数帧有材料坐标，但推进后的前沿反复失效，未闭剪。两次均未超切、未撕裂，也均未完成。
+![PSM2 弯剪四次剪切组织片：上为近景对照，下为内窥镜同步画面](docs/tissue_cut_demo.png)
 
-10. `validation/task/m5b_v1_6_material_coordinate_summary.json`：两端仍须在同一帧、两侧可核验；只用相邻可见材料行定位前沿。上限落在缺测区时，将扫掠限制在较早的可见行，不作跨缺测插值。标称第 14 拍缺少 9 mm 行，仍用 0–3 mm 区间重获新裂缝，估计进度 2.79 mm；下一拍只有记忆前沿，最终没有第二次闭剪。0.5 mm 深度噪声场景有 286/289 次有效图表、198/289 次可映射前沿，仍在闭剪前耗尽恢复预算。两次均无超切、无撕裂，也均未完成；真值 17 拍轨迹仍相同。
-11. `validation/task/m5b_v1_7_material_coordinate_summary.json`：用同轨迹 RGB-D 对照查明，第 15 拍仍有直接观测到的裂缝，但被略靠前的记忆候选覆盖；新版本不再用亚 bin 的差异压过当前观测。标称复跑第 14–16 拍均有当前前沿，重获后进入 `ALIGN`，对准动作后又失去前沿，最终切长 3.0 mm。0.5 mm 噪声场景推进后三次保持剪刀不动、守卫换镜，均未恢复同帧闭剪证据，切长 0 mm。两次均无超切、无撕裂，真值 17 拍轨迹保持一致；M6 不启动。
+### 3.4 14 状态安全监督任务状态机 (`scripts/task/cut_fsm.py`)
 
-12. `validation/task/m5b_v1_8_material_coordinate_summary.json`：对准和推进前，先投影张开刀刃和末端外壳的简化几何，检查前沿及前方共 25 条视线。两次实跑都未选中替代位姿：标称只闭剪一次并重获，停在 3.0 mm；0.5 mm 噪声未闭剪。`validation/task/m5b_v1_8_view_pairs.json` 逐次配对预测和下一帧的直接观测；噪声运行的 21 次推进预测全部放行，下一帧均缺少闭剪证据。仅对匹配的旧 RGB-D 采样前缀作像素对照，不把几何预测算成视觉观测或验收。
-
-13. **工作位姿配对诊断**（未改控制器或场景）：从标称第 16 拍和噪声第 29 拍分别重放 3 次，动作前核对节点、位姿与 RGB-D，只执行一次原动作或替代动作，不再闭剪。标称 1/1.5/2 mm 对准退距都未保住当帧裂缝；噪声 3/1.5 mm 推进后不可见，0.75 mm 推进后可见，但估计刀尖仍在前沿后 0.50 mm。冻结原动作结束时的画面，逐一隐藏 PSM2 形状作事后光学归因：单独隐藏绿色 `psm2_tool_tip_visual`，保持刀刃、物理状态和估计器噪声不变，两帧分别恢复 2.82 mm 的当前裂缝和 0 mm 的未切起点。不能由此把它认定为非物理标记或授权隐藏它。下一步应核对该网格的来源和渲染职责，不应优先调闭剪阈值或预测器。图像与数据：`validation/task/m5b_workpose_pair_v1_capture/{align_pairs.png,advance_pairs.png,pairs.json}`；逐形状归因在两组的 `00/shape_attribution.json`。
-
-预注册文件：`config/perception/m5a_gates.json`、`config/task/m5b_protocol.json` 及其版本修订。v1.8 离线验证报告：`validation/safety/regressions_m5_v1_8_verified.json`（288 项）。
-
-**后续验证**：`models/davinci_foot_docking.urdf` 明确把 `psm2_tool_tip` 定义为透明绿色球形标记，而非任一刀刃。v1.9 仅在暂存的已核验场景设置其光学可见性，保留句柄和全部非渲染属性。当前标记测试片默认协议为 `config/task/m5b_protocol_v1_9.json`；v1.9.1 的末次换镜为可选实验。标称闭剪后真值依次为 3、5 mm，均重获；噪声运行闭剪一次并重获。均未超出 10 mm、未撕裂、未完成。两次恢复最终均耗尽预算。详见 `validation/task/m5b_v1_9_1_verified_summary.json`，最终回归 290 项通过。
-
-终点不只是换镜问题。对标称失败帧、噪声失败帧、已撤刀的 10 mm 真值参考帧，各从同一状态比较原镜位和六个候选；同时有直接前沿和材料进度的镜位分别为 1/7、0/7、0/7。最后一组 **7/7 看到了裂缝**，但两侧材料行不满足同一张坐标图的要求。局部深度曲面离线试算给终点 **7.94 mm**，未接入控制。另有冻结模型反例：只在离线约束表中恢复一条不属于渲染三角形的对角约束，交给渲染器的 562 个三角形、颜色与顶点均不变，原结构评分却可由 10 mm 变为 8 mm。它说明**单帧不能唯一证明这个结构标签**，不是第二条可达轨迹，也不是“视觉永远不能完成”的证明。见 `validation/task/m5b_v19_frozen_label_ambiguity.json`、`validation/task/m5b_v19_local_surface_replay.json`。未修改原评分定义；M6 继续暂停。
-
-**v1.10 开发实跑**：先过原三标记刚体拟合检查，再沿像素视线拟合标记球的前表面并按相同 RMS 门槛复核。噪声旧轨迹的 25 帧全部可配对，刀尖误差中位数 0.80 → 0.47 mm，P95 为 1.49 → 0.82 mm；标称少接受 3/30 帧，故不替换默认模式。新噪声运行第 14、22 拍闭剪，第 17、25 拍重获；切长从 0 到 3 再到 5 mm。标称结果仍为 5 mm；均因恢复预算耗尽停止，无超切、无撕裂。详见 `validation/task/m5b_v1_10_verified_summary.json`。
-
-**剩余阻塞**：标称第 26 拍和噪声第 34 拍都能看到裂缝，却不能核验材料进度。评分侧对同一批近端边界采样点作对照：实际轴向分散为 0.89 / 0.76 mm，投到整片拟合平面后为 1.63 / 1.52 mm，RGB-D 实测均约 1.53 mm，超过 1.50 mm 门槛。10 mm 撤刀参考帧同样从实际 0.96 mm 变为投影 1.94 mm。逐边界局部深度拟合也没有通过四个预定检查点，未接入控制。见 `validation/task/m5b_v1_10_entry_skew.json` 和 `validation/task/m5b_v1_10_boundary_depth.json`。没有修改端点验收或放宽两侧一致性检查。
-
-**终点材料坐标的离线判别**：把每侧已识别的编码行分别延伸到当前尖端，在两个 5 mm 检查点读到 4.61 / 5.11 mm，但都未通过物理边界检查；实际 10 mm 的两张撤刀帧上，一侧只读到 6.59–6.71 mm，另一侧 7.89–8.01 mm。四个检查点均不满足进入实跑的条件。没有改控制器，也没有把评分用的网格交给视觉控制。见 `validation/task/m5b_v1_10_verified_bank_transects.json`。
-
-直接观察裂缝像素是否接触 9–13 mm 终段色带：同一次撤刀后的两帧均有接触，39 张实际切长 3–6 mm 的直接裂缝帧均未误报。然而在两张终点帧中，被归为横向正侧的 6 个色带像素全部也被计为负侧，不能证明两个独立裂缝边缘都已越过 9 mm。缺少 7–8 mm 的近阈值反例和独立的终点轨迹；这只是光学线索，不是闭剪或停刀依据。见 `validation/task/m5b_v1_10_terminal_band_contact.json`。下一项有判别力的检查是用独立的近终点轨迹核验色带与两条实际裂缝边缘的对应，而不是继续微调远处边界的外推。
-
-> 下文是更早阶段的功能介绍，保留原样。其中"前列腺"相关的定位目标见 M3：目前不成立。
-
----
-
-## 亮点
-
-- **软件 RCM**：每条臂的器械杆始终穿过固定的腹壁穿刺点。24 秒演示中 RCM 漂移 < 2×10⁻⁹ m，求解失败 0 次。
-- **带碰撞保护的控制器**：每个候选姿态提交前，先检查约 2100 对网格的相交。越界或会碰撞的指令被拒绝并回退。
-- **按几何认器械，标签无效**：系统从场景里的钳口和腕部网格认出每条臂上装的是什么器械，再按这个器械的能力放行角色。抓钳不能靠改角色名变成剪刀，剪刀也不能去抓东西。
-- **可抓、可剪的组织**：基于位置动力学（PBD）的组织片。抓钳能抓住并牵拉它，剪刀合上时剪断两片刀片之间的部分，拉得过紧会撕裂。
-- **13 状态任务状态机**：内含监督器，处理遮挡、滑脱、张力异常、视野偏移和故障。离线 15 个场景覆盖了全部状态。在 CoppeliaSim 中，三臂协同切割在正常、短暂遮挡、持续遮挡三种场景下都完成了。
-- **穿刺点重新规划**：在体表网格上搜索 PSM1 和 PSM3 的新穿刺点，并求出无碰撞的手臂姿态。
-
----
-
-## 器械
-
-![三种器械的尖端：左为闭合，右为张开](docs/si_instrument_tips.png)
-
-网格和腕部、钳口几何取自开源的 [jhu-dvrk/dvrk_model](https://github.com/jhu-dvrk/dvrk_model)，使用固定提交（MIT 许可）。腕部和钳口的限位数值取自 [sawIntuitiveResearchKit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit) 的器械文件，只引用了数值。每种器械有一个描述文件 `config/instruments/<型号>.json`，写着它的能力，比如 `grasp`、`grasp_tissue`、`retract_tissue`、`cut`。
-
-安装时还修正了两处：
-
-- **弯剪转轴**：两片刀片网格共用的销孔位于 dVRK 钳口坐标 y = 2.45 mm。dVRK 原 xacro 绕 y = 0 旋转，张开时两个销孔会错开。现在改为绕销孔旋转。
-- **ProGrasp 铰点**：按 dVRK 的线性规律，张开时铰点后移，每 rad 钳口约 2.1 mm。场景用一个随 `setGrip` 联动的棱柱关节实现。
-
-**角色检查**：角色在 `config/instruments/roles.json` 里只写“需要哪些能力”。`scripts/build/instrument_guard.py` 只看几何来认器械。在旧场景（三把持针钳）上运行时，三条 PSM 全被拒绝：持针钳没有 `cut` / `retract_tissue`，且与声明的型号不符。
-
----
-
-## 组织模型与切割
-
-![PSM2 弯剪剪开组织片：上为近景，下为内窥镜画面](docs/tissue_cut_demo.png)
-
-组织片的实现在 `src/tissue/tissue.lua`。它是一张节点网格，节点之间用距离约束相连，有预张力，每步重建成网格形状，所以内窥镜看得见。
-
-| 动作 | 条件 | 效果 |
-|---|---|---|
-| `tissueGrasp` | 器械有 `grasp_tissue` | 钳口附近的节点跟随钳口 |
-| 剪刀合上 | 器械有 `cut`，且刀片先张开 ≥ 0.15 rad | 剪断两片刀片扫过的楔形区里的约束 |
-| 约束被拉到 1.5 倍静长 | 任何时候 | 断开，计为撕裂 |
-
-`scripts/tissue/tissue_cut_demo.py` 的检查结果：抓钳开合，剪断 0 个约束；剪刀抓取被拒绝；剪刀张开、前进、合上 4 次后，切口深 10 mm，撕裂 0。
-
----
-
-## 任务状态机
+任务控制核心由 **14 状态分层状态机** 与 **每拍 5 级优先级安全监督器** 构成，覆盖正常作业流与遮挡、失抓、张力失配、视野偏移等全套异常恢复路径：
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 初始化
-    初始化 --> 视觉定位: 角色检查通过
-    视觉定位 --> 建立抓持
-    建立抓持 --> 组织暴露: PSM1/PSM3 抓住
-    组织暴露 --> 切割对准: 切割线张力进带
-    切割对准 --> 切割执行: 刀线对准
-    切割执行 --> 完成: 达到切口长度
+    [*] --> INIT
+    state "初始化 (INIT)" as INIT
+    state "视觉定位 (LOCALIZE)" as LOCALIZE
+    state "建立抓持 (GRASP)" as GRASP
+    state "组织暴露 (EXPOSE)" as EXPOSE
+    state "切割对准 (ALIGN)" as ALIGN
+    state "切割执行 (CUT)" as CUT
+    state "遮挡暂停 (OCCLUDED)" as OCCLUDED
+    state "让开观察 (CLEAR_VIEW)" as CLEAR_VIEW
+    state "相机调整 (CAMERA_ADJUST)" as CAMERA_ADJUST
+    state "牵拉调整 (RETRACT_ADJUST)" as RETRACT_ADJUST
+    state "重新定位 (RELOCALIZE)" as RELOCALIZE
+    state "恢复执行 (RESUME)" as RESUME
+    state "完成 (DONE)" as DONE
+    state "失败停止 (FAILED)" as FAILED
 
-    切割执行 --> 遮挡暂停: 看不见切割点或剪刀
-    遮挡暂停 --> 恢复执行: 视野恢复
-    遮挡暂停 --> 相机调整: 遮挡持续
-    相机调整 --> 恢复执行: 重新看清
-    切割执行 --> 牵拉调整: 张力出带
-    牵拉调整 --> 恢复执行
-    切割执行 --> 重新定位: 抓持丢失
-    重新定位 --> 恢复执行: 重抓或 PSM3 接手
-    恢复执行 --> 切割对准: 先重新对准再合刀
+    INIT --> LOCALIZE: 角色校验与归位通过
+    INIT --> FAILED: 角色不符或硬件异常
+    LOCALIZE --> GRASP: 双臂协同模式
+    LOCALIZE --> EXPOSE: 只剪固定模式
+    GRASP --> EXPOSE: PSM1/PSM3 抓持稳固
+    GRASP --> FAILED: 抓持不可达或失败
+    EXPOSE --> ALIGN: 切割线应变入带
+    ALIGN --> CUT: 6-DOF 刀线对准且二次复核通过
+    CUT --> DONE: 达目标切长并安全闭合撤刀
 
-    初始化 --> 失败停止
-    建立抓持 --> 失败停止
-    切割执行 --> 失败停止: 撕裂、碰撞、超限
-    相机调整 --> 失败停止: 调整用尽
+    CUT --> OCCLUDED: 切割点或剪刀不可见
+    CUT --> CLEAR_VIEW: 视觉模式锋面受遮
+    CUT --> RELOCALIZE: 牵拉抓持滑脱
+    CUT --> RETRACT_ADJUST: 切割线张力出带
+    CUT --> CAMERA_ADJUST: 目标偏离视野中心
+
+    OCCLUDED --> RESUME: 视野即时恢复
+    OCCLUDED --> CLEAR_VIEW: 让开遮挡观察
+    OCCLUDED --> CAMERA_ADJUST: 持续遮挡转调镜
+    CLEAR_VIEW --> RESUME: 重获有效观察
+    CAMERA_ADJUST --> RESUME: ECM 调镜看清
+    RETRACT_ADJUST --> RESUME: 牵拉补偿到位
+    RELOCALIZE --> RESUME: 原臂重抓或交接成功
+    RESUME --> EXPOSE: 恢复牵拉暴露
+    RESUME --> ALIGN: 重建对准后再合刀
+
+    ALIGN --> FAILED: 撕裂、碰撞或预算耗尽
+    CUT --> FAILED: 撕裂、超切或故障
+    CLEAR_VIEW --> FAILED: 恢复预算耗尽
+    CAMERA_ADJUST --> FAILED: 调镜预算耗尽
+    RETRACT_ADJUST --> FAILED: 牵拉预算耗尽
+    RELOCALIZE --> FAILED: 重抓与交接均失败
+
+    DONE --> [*]
+    FAILED --> [*]
 ```
 
-图中只画了切割执行时的中断。组织暴露、切割对准等状态也会按同样规则中断。
+- **5 级监督优先级（每拍检测）**：`① 故障/RCM 漂移 > 0.5 mm/撕裂 → FAILED` > `② 切点或剪刀不可见 → OCCLUDED/CLEAR_VIEW` > `③ 抓持丢失 → RELOCALIZE（原臂重抓或 PSM3 接手）` > `④ 切割线中位应变出带 → RETRACT_ADJUST` > `⑤ 视野偏心 → CAMERA_ADJUST`。合刀前强制再检一次，任何中断恢复后一律先回 `ALIGN` 重新对准再合刀。
+- **离线完备性与实机基线**：
+  - 离线测试（`scripts/task/test_cut_fsm.py`）：**`28` 个测试场景到达全部 `14/14` 状态、覆盖 `34` 种状态转移**（[覆盖报告](validation/task/fsm_unit_coverage.json)）。
+  - CoppeliaSim 真值控制演示（非 M5 视觉验收）：三臂协同在正常、短暂遮挡、持续遮挡（ECM 转 `3°` 绕开灰球）与滑脱重抓下均稳定完成 `10 mm` 切割（`0` 撕裂，17 拍 `nodes_sha256` 轨迹跨次完全一致）。在 `slip_handover` 工况下，因当前穿刺布置导致 PSM2/PSM3 近端连杆几何碰撞、对侧交接机械不可行，状态机诚实判停为 `FAILED`。
 
-决策都在 `scripts/task/cut_fsm.py` 里，感知和动作由 World 提供。World 有两种：`sim_world.py` 接 CoppeliaSim，`fake_world.py` 是测试用的运动学模型。监督器每拍按优先级检查：
-
-1. 故障或撕裂 → 失败停止。
-2. 看不见切割点或剪刀 → 遮挡暂停，所有臂先停住。
-3. 抓持丢失 → 重新定位。原来的臂重抓；不行就由 PSM3 接手主牵拉点。
-4. 切割线张力出带 → 牵拉调整。
-5. 切割点偏离画面中心 → 相机调整。
-
-剪刀合上前会再看一次，看不见就不合。中断的切割一律先重新对准，再合刀。
-
-**离线测试**：在 `scripts/task/` 下运行 `python -m unittest test_cut_fsm`。15 个场景，13 个状态全部到达，共 23 种转移。
-
-**历史 CoppeliaSim 真值控制演示（不是 M5 视觉验收）**：
-
-| 模式 / 场景 | 状态路径 | 结果 |
-|---|---|---|
-| 三臂 / 正常 | 定位 → 抓持 → 暴露 → 对准 → 切割 → 完成 | 切口 10 mm，撕裂 0 |
-| 三臂 / 短暂遮挡 | … → 遮挡暂停 → 恢复 → … → 完成 | 完成 |
-| 三臂 / 持续遮挡 | … → 遮挡暂停 → 相机调整 → 恢复 → … → 完成 | ECM 转 3° 后完成 |
-| 只剪（组织两侧固定）/ 上面三种 | 跳过抓持 | 都完成，切口 9 mm |
-
-![三臂协同，持续遮挡：灰球贴近镜头，ECM 调整后继续](docs/fsm_full_occlusion_persistent.png)
+![三臂协同持续遮挡恢复全过程：灰球遮挡触发遮挡暂停与 ECM 主动调镜，恢复后完成 10 mm 切割](docs/fsm_full_occlusion_persistent.png)
 
 ---
 
-## 穿刺点规划
+## 视觉伺服、M5 视觉闭环与深度学习感知
 
-![四个穿刺点，橙色圆环为 RCM 点](docs/ports_si_instruments.png)
+### 4.1 基础视觉伺服：内窥镜引导 PBVS 拾取放置
 
-用原来的穿刺点和家位，PSM1 要摆 7.3° 才够到组织，但它只能摆 ±1°。`scripts/build/plan_psm_ports.py` 在体表网格上为 PSM1 和 PSM3 搜索新穿刺点，PSM2 和 ECM 不动。候选点要满足：离其他穿刺点 ≥ 60 mm，和 PSM2 的杆夹角 25–80°，不挡内窥镜视线，到抓点的直线不碰骨头和器官。然后用逆解求手臂姿态，要求初始位置和任务动作中都没有意外接触。
+在 [`scenes/davinci_endoscope_task.ttt`](scenes/davinci_endoscope_task.ttt) 上，[`scripts/vision/visual_servo_task.py`](scripts/vision/visual_servo_task.py) 仅读取内窥镜 RGB-D 与相机内参（颜色分割 + 球面/圆环几何拟合 + 相机系 PBVS 积分控制），完成全流程自主拾取放置：
+- **6/6 测试全部成功**（1 次标称 + 5 次注入 `2° + 3 mm` 相机位姿标定误差及 `σ = 0.5 mm` 深度噪声），珠子到目标环中心真值误差 **`0.18–0.58 mm`**，指令拒绝与意外接触均为 `0`，PSM2 RCM 残差 `< 10⁻⁷ m`（[验证汇总](validation/endoscope/visual_task_summary.json)）。
 
-| 臂 | 穿刺点移动 | 到抓点距离 | 和 PSM2 夹角 |
+![30° 斜视内窥镜视野下的视觉伺服拾取放置任务](validation/endoscope/endoscope_view.png)
+
+### 4.2 M5 严格视觉闭环切割与光学可观测性研究
+
+**核心科学挑战**：从完全未切状态出发，每一步决策严格仅由实时 RGB-D 驱动（`cut.control_source = vision`，禁止读真值），要求在真实结构切长达到 **`9–10 mm`** 时由视觉自主认证并闭刀撤回——绝不靠数刀数，绝不偷看网格连通性，绝不放宽安全阈值。
+
+#### 全流程视觉闭环实跑结果（5 种工况对比）
+
+在保持相同严格评分标准与真值隔离的前提下，我们对比了固定工作位回看（`Same-Bite`）与主动闭刀后退调镜（`Active-Look`）两套视觉控制策略（[Same-Bite 报告](validation/task/m5_live_same_bite_v1/five_scenarios.json) · [Active-Look 报告](validation/task/m5_live_active_look_v1/five_scenarios.json) · [实跑文档](docs/M5_LIVE_DEVELOPMENT.md)）：
+
+| 测试工况（从零未切出发） | Same-Bite 最终切长 | Active-Look 最终切长 | Active-Look 闭剪 / 直接重获次数 | 撕裂 / 超切 |
+|---|---:|---:|---:|---:|
+| **Nominal（标称）** | 9 mm | **9 mm** | 4 / 4 | 0 / 0 |
+| **0.5 mm 深度噪声** | 5 mm | **8 mm** | 3 / 3 | 0 / 0 |
+| **Transient Occlusion（短暂遮挡）** | 0 mm | **5 mm** | 2 / 2 | 0 / 0 |
+| **Slip & Regrasp（滑脱重抓）** | 3 mm | **3 mm** | 1 / 1 | 0 / 0 |
+| **Relaxation（张力松弛）** | 6 mm | **6 mm** | 2 / 1 | 0 / 0 |
+
+> **关键诚实发现**：Active-Look 在标称工况下第 3 刀后结构切长已达 **9 mm**，每刀均成功重获切口；但该时刻单目斜视内窥镜的实时光学读数仅为 **7.72 mm**（后续第 4 刀未再增长结构长度，最高读到 **8.54 mm**）。系统严格遵循“无确凿视觉终点证据不得签发停刀许可”的原则安全停机，未作虚假通过声明。
+
+![M5 Active-Look 标称视觉闭环轨迹：真实结构切长 0→3→5→9 mm 与实时光学读数及第 31 拍内窥镜实拍对照](validation/task/m5_live_active_look_v1/nominal_live.png)
+
+#### 为什么终段视觉判停如此困难？（系统化光学瓶颈定位）
+
+为彻底查清 `7.72 mm vs 9.0 mm` 背后的物理与成像根因，项目围绕材料坐标编码、URDF 透明 `psm2_tool_tip` 绿色标记球自遮挡排查（v1.9）、球面视线拟合修正（v1.10）、被动编码测试片（`cell_certificate_v2`）及宽视场像素采样密度开展了十余组对照实验（详见 [M5 端点文档](docs/M5_ENDPOINT.md)）：
+- **20° 窄视场 vs 70° 原生广角**：在 `20°` 闭刀后退 3 mm 回看图上，`cell_certificate_v2` 在原始和 `0.5 mm` 噪声深度下首次准确读出 **`8 / 9 / 10 mm`** 局部前沿（0 误报，但入口受遮挡故未认证连续前缀，[结果](validation/task/cell_certificate_v2_dev/decision.json)）；而在任务真实工作的 **`70°、1280×960`** 广角视野下，8/9/10 mm 单个终段角标最多仅占 **`1` 个可辨色像素**，10 mm 终段已断三角面在投影平面上甚至出现**零像素中心覆盖**（[广角验证](validation/task/cell_certificate_v2_hd_dev/decision.json) · [高清筛查](validation/task/m5_local_hd_dev_v1/decision.json)）。
+
+![被动编码测试片 cell_certificate v2 在 20° 视角下的工作位与闭刀后退 3 mm 回看对照（8 / 9 / 10 mm）](validation/task/cell_certificate_v2_dev/working_vs_look.png)
+
+<details>
+<summary>已归档中间基线：「两刀视觉闭环任务」（two_bite_v1）</summary>
+
+在不更改严格 M5 9–10 mm 主入口的前提下，单独实现了 `scripts/task/run_two_bite.py` 与 `run_two_bite_pair.py`（协议：[`two_bite_v1.json`](config/task/two_bite_v1.json) · [`two_bite_pair_v1.json`](config/task/two_bite_pair_v1.json)），要求两刀闭剪前均看清视野、每刀后重新观测新切口，第二刀后闭剪安全返回准备位：
+- 标称与 `0.5 mm` 深度噪声均完成 `3 + 2 mm` 实际切长增长并安全收刀（0 撕裂、0 RCM 故障）；全遮挡对照实现 0 mm 安全拒剪；
+- 局部遮挡 8 次配对试跑表明允许主动调镜的策略均可完成第二刀，固定镜头策略均停在 3 mm。该基线仅证明多刀重获闭环能力，**不替代 M5 9–10 mm 自主停刀验收**。
+
+</details>
+
+### 4.3 Phase A 多视角 RGB-D 数据管道与深度学习感知（2026-11-24 最新进展）
+
+针对传统几何光学读数在遮挡、形变与广角低像素采样下的局限，项目构建了全自动多进程 RGB-D 数据采集与深度学习感知研究管线：
+
+1. **高吞吐并行 RGB-D 数据集（Phase A 完成）**：
+   - [`scripts/learn/collect.py`](scripts/learn/collect.py) 调度 **4 个并行 CoppeliaSim Worker**，以 **`15,086 帧/小时`** 的吞吐率在 2.32 小时内采集 **`300` 条开发轨迹 / `35,046` 帧（`51.1 GB`）**，包含主相机、4 路 RCM 辅助视角及同位姿 **`1280×960` 原生高清双生帧**；248 条完成、52 条失败轨迹全部保留不剔除（[采集报告](validation/task/learned_perception_v1/dev.json)）。
+   - 同步验证了直接分类模型在原生高清首次到达 9/10 mm（0/18 检出）及闭刀后退 3 mm 回看（9/9 弃权）上的不足（[高清配对](validation/task/learned_perception_v1/phase_a_native_hd_eval_v1.json) · [闭合回看](validation/task/learned_perception_v1/phase_a_closed_look_eval_v1.json)），从而将感知攻关精准拆分为**可见切缝分割**与**尖端遮挡判别**两个独立子任务。
+
+2. **子任务 A：可见切缝 RGB-D U-Net 分割（首轮 6 轮训练完成）**
+
+```mermaid
+flowchart LR
+    A["Phase A 同位姿高清 RGB-D (1280×960)"] --> B["原生像素固定裁剪 (384×384)"]
+    B --> C["实测深度 + 双侧支撑保守弱标签"]
+    C --> D["按轨迹严格划分 (270 训练 / 30 验证)"]
+    D --> E["RGB-D U-Net 训练 (6 轮 BF16)"]
+    E --> F["离线开发集切缝叠图评估"]
+```
+
+- **严防泄漏与标签构建**：严格按轨迹（非按帧）划分 **270 条训练（5,273 帧）/ 30 条开发验证（568 帧）**；仿真网格只用于生成须同时满足“裂口后方实测深度证据 + 两侧可见试样支撑”的弱标签，模糊或被遮挡像素不进入损失，模型推理**仅读取单帧 RGB-D**（[协议](config/learn/visible_slit_weak_v1.json) · [训练报告](docs/VISIBLE_SLIT_TRAINING_zh.md)）。
+- **训练效率与结果**：在单张 RTX 4060 Laptop GPU 上以 CUDA BF16 完成 6 轮训练与出图耗时约 **9.3 分钟**（峰值显存 **1.64 GiB**，平均批次损失由 `0.075210` 降至 `0.000806`）。在开发集有标签区域上（[JSON 报告](validation/task/learned_perception_v1/visible_slit_weak_v1/report.json)）：
+  - 切缝弱标签召回率：**`3,596 / 3,596`（100%）**
+  - 已知背景误报像素：`1,001` 像素
+  - 有标签区域精确率 / IoU：**`78.2% / 78.2%`**
+  - 无可用标签的未知区域预测：`22,085` 像素（不计对错）
+- **定位说明**：网络已学到从单帧 RGB-D 提取可见切缝粗区域，预测轮廓通常比保守标签略宽，目前作为离线视觉表征研究，尚未接入在线停刀许可或控制器。
+
+![六张开发帧的可见切缝 U-Net 分割三列对照：原始内窥镜 RGB、青色保守弱标签、橙色模型输出](docs/visible_slit_weak_v1_predictions.png)
+
+3. **子任务 B：剪刀尖端定位与遮挡弃权（固定深度规则通过独立离线确认）**
+
+当灰球等遮挡物挡住剪刀尖端而刀杆上的三个视觉标记依然可见时，基线 Kabsch 刚体拟合会盲目输出被遮挡的尖端坐标，给闭环带来安全隐患。我们在 **`40` 条独立确认轨迹（837 帧：789 帧正常可见 + 48 帧明确深度遮挡）** 上开展了系统对比：
+
+| 尖端定位方案 | 评估集与深度条件 | 正例覆盖率 | 3D 误差中位数 / P95 | `> 2 mm` 大误差占比 | 明确遮挡帧误接受率 | 结论 |
+|---|---|---:|---:|---:|---:|---|
+| **端到端学习尖端模型** | 开发集 568 帧（原始 / 0.5 mm 噪声） | 38.1% / 38.1% | 0.60 / 2.70 mm · 0.61 / 2.67 mm | 10.8% | **0 / 9** | 未达开发门槛 |
+| **基线三标记 Kabsch** | 独立确认 837 帧（原始 / 0.5 mm 噪声） | 96.5% / 95.6% | 0.29 / 0.45 mm · 0.42 / 0.95 mm | 0.0% | **48 / 48** · **46 / 48** | 遮挡必误报 |
+| **三标记 Kabsch + 固定深度弃权** | 独立确认 837 帧（原始 / 0.5 mm 噪声） | **96.5% / 95.6%** | **0.29 / 0.45 mm · 0.42 / 0.95 mm** | **0.0%** | **0 / 48 (0.0%)** | **独立确认全过** |
+
+- **科学取舍**：开发集对比显示学习门控相比固定深度弃权规则未带来额外收益（`learned_development_benefit = false`），因此项目依预注册判据果断保留更简洁、可解释且在原始与 0.5 mm 噪声下 **100% 拒绝全部 48 帧遮挡、100% 保留基线受支持坐标**的固定规则（[独立确认报告](validation/task/learned_perception_v1/tip_training_v1/marker_gate_confirmation_report.json) · [门控对比](validation/task/learned_perception_v1/tip_training_v1/marker_gate_dev_report.json) · [端到端模型](validation/task/learned_perception_v1/tip_training_v1/model_report.json)）。
+
+![同一开发回合的内窥镜对比：左为未遮挡，右为尖端被灰球遮挡但刀杆三标记仍可见](docs/learned_tip_occlusion_pair.png)
+
+---
+
+## 里程碑看板与科研边界
+
+### 项目里程碑状态总览
+
+| 里程碑 | 内容与目标 | 当前状态 | 关键指标 / 证据 |
 |---|---|---|---|
-| PSM1 | 2.3 mm | 127 mm | 62° |
-| PSM3 | 23.4 mm | 148 mm | 31° |
+| **M1 / M2a / M2b** | 基础加固、6-DOF 腕部控制 (`tool_pose`)、腕部可达性 | **已完成** | `davinci_si_articulated_verified.ttt`；RCM 残差 `< 2×10⁻⁹ m`；428 项回归全过 |
+| **M3** | 前列腺邻近解剖定位可行性研究 | **阻塞（已严谨证伪）** | 见下方可达性分析与 [开发路线图](docs/DEVELOPMENT_ROADMAP_zh.md) |
+| **M4** | 影子视觉感知与传感器退化基准 | **已完成** | 零副作用全帧导出；深度噪声与位姿扰动退化曲线 |
+| **M5a / M5b** | 非解剖测试片严格 9–10 mm 视觉闭环自主停刀 | **研发中（未验收）** | 真值基线 10 mm 稳定复现；视觉闭环已达 9 mm（标称）/ 8 mm（噪声），停刀尚未过关 |
+| **Phase A 学习感知** | 35,046 帧 RGB-D 数据集、切缝 U-Net 与尖端遮挡门控 | **阶段完成** | 切缝弱标签 IoU 78.2%；三标记固定深度规则通过 40 轨迹独立确认 |
+| **M6** | 基于视觉张力代理的自适应牵拉与主动视野协同 | **未开始** | 待 M5 视觉停刀解决或显式签署后启动 |
+| **M7** | 多种子配对消融评估（固定 vs 视野 vs 牵拉 vs 联合） | **未开始** | 实验对照设计与护栏已预写入 [开发路线图](docs/DEVELOPMENT_ROADMAP_zh.md) |
 
----
+### 代表性负向研究发现：M3 前列腺邻近定位可达性证伪
 
-## 套管与气腹
+面对“多臂是否真的能从当前体位与穿刺点在不删除膀胱的前提下安全到达前列腺侧方切口”这一关键问题，项目拒绝“删掉遮挡器官凑结果”的做法，在 `validation/feasibility/` 中先后完成 3 版递进几何可行性扫描：
+1. **保留膀胱且计入腕部弯折**：8 个前列腺侧方目标中 **0 / 8** 可同时实现三臂安全到达（[`prostate_access_wrist.json`](validation/feasibility/prostate_access_wrist.json)）。
+2. **预设膀胱刚体牵开（0–60 mm）**：即使放宽至外推 60 mm 牵开，在纳入器械间距 `≥ 12 mm`、穿刺点 `±2°` 摆动与代理切口动作行程（v2/v3 协议）后，**25–60 mm 仍全组不可行**，瓶颈源于剪刀无法走完整段切口行程（[`bladder_retraction.json`](validation/feasibility/bladder_retraction.json)）。
+3. **学术诚实原则**：据此团队将 M3 正式标记为 `blocked`，坚持在非解剖 PBD 测试片上诚实开展 M5 感知—控制基础研究，绝不把当前成果夸大为“前列腺筋膜切割”或“神经血管束（NVB）保护”。
 
-![四个套管（trocar），腹壁已抬高](docs/ports_si_instruments.png)
+![膀胱牵开 0–60 mm 探索性几何可行性扫描](docs/feasibility_bladder_retraction.png)
 
-`scripts/build/access.py` 在建场景时做两件事，参数在 `config/instruments/access.json`。
+### 预注册工程纪律与已知模型局限
 
-**套管**：PSM 用 [jhu-dvrk/dvrk-cannulas](https://github.com/jhu-dvrk/dvrk-cannulas) 的 Si 8 mm 套管（MIT）。它的内径 8.7 mm，外径 12.7 mm，管长 125 mm，RCM 标记在管顶下 95 mm。ECM 用同一 OpenSCAD 轮廓旋转生成，内径按场景里的镜子来定。套管装在带插入关节的那一节手臂上。软件 RCM 下，RCM 点在这一节的坐标系里不动，所以套管上的 RCM 标记带始终落在 RCM 点上。套管参与碰撞检查，对象是器官、骨头、手术台、别的臂和别的套管，共 226 对。它穿过的腹壁不算碰撞。
+- **科研纪律**：先预注册协议（与源文件哈希绑定）再采集与评估；绝不放宽碰撞包络、关节限位、误差门槛或恢复预算；留出集一旦审阅失败即降级开发集永不复用；历史报告原地封存，新版本另行落盘。
+- **已知仿真边界**：
+  1. 软件 RCM 采用 CAD 等效串联运动学链，未标定真机闭链机械耦合、绳驱回差与厂商限位。
+  2. PBD 组织模型为无质量、无重力、无出血、无器械接触力的纯运动学测试片；PBD 应变是模型几何量，不等于临床测力。
+  3. 解剖人体为静态刚体网格，无呼吸运动或器官软组织随牵拉形变；气腹仅抬高体表穹顶并生成腹膜，未仿真腹压导致的器官下沉。
+  4. 场景内窥镜 CAD 杆径 14–20 mm，故 ECM 套管内径设为 20.8 mm，粗于临床 Si 12 mm 内窥镜。
+  5. 能量器械（单极电凝/双极止血）电热效应未予仿真。
 
-**气腹**：穿刺点上方的腹部皮肤抬成一个穹顶，最高抬 22.5 mm。抬升量用径向基函数解出，保证每个 RCM 点都在新皮肤下 15 mm（13.5–15 mm）。手臂和 RCM 点都不动。皮肤下面加了一层腹壁内表面（腹膜）。它和皮肤合成一个形状 `Patient_Skin`，所以原有的碰撞检查和穿刺点豁免对两层都有效。
+<details>
+<summary>查看仓库全部 8 份专题技术文档索引 (docs/*.md)</summary>
 
-| 检查 | 结果 |
+| 文档 | 主题与内容说明 |
 |---|---|
-| 腹膜与器官、骨头相交 | 0 |
-| 家位碰撞（钳口闭合 / 张开） | 0 / 0 |
-| 器械杆与腹壁接触区离 RCM 点 | 26–32 mm（豁免半径 45 mm） |
-| 24 秒演示 | 求解失败 0，碰撞回退 0 |
-| 三臂切割（正常、短暂遮挡、持续遮挡） | 都完成，切口 10 mm |
+| [`docs/VISIBLE_SLIT_TRAINING_zh.md`](docs/VISIBLE_SLIT_TRAINING_zh.md) | Phase A 同位姿高清 RGB-D 弱标签切缝分割 U-Net 训练细节与复现命令 |
+| [`docs/M5_ENDPOINT.md`](docs/M5_ENDPOINT.md) | M5 9–10 mm 自主视觉停刀主入口、光学编码对照与全部边界约束 |
+| [`docs/M5_LIVE_DEVELOPMENT.md`](docs/M5_LIVE_DEVELOPMENT.md) | Same-Bite 与 Active-Look 五工况实跑记录与复现命令 |
+| [`docs/M5_ROW9_CONTACT_DEV_V1.md`](docs/M5_ROW9_CONTACT_DEV_V1.md) | 第 9 行终端接触视觉线索开发诊断（非停刀许可） |
+| [`docs/M5_VISIBLE_FRACTURE_DEV_V1.md`](docs/M5_VISIBLE_FRACTURE_DEV_V1.md) | 可见裂口形态检测开发实验（非验收） |
+| [`docs/SI_KINEMATICS_AND_SAFETY_zh.md`](docs/SI_KINEMATICS_AND_SAFETY_zh.md) | 独立 `wrist_yaw` 4-DOF EndoWrist 升级、P0 安全护栏与 FK 校验细节 |
+| [`docs/DEVELOPMENT_ROADMAP_zh.md`](docs/DEVELOPMENT_ROADMAP_zh.md) | P0→P4 分阶段路线图、BodyParts3D 资产审计流程、M3 阻塞依据与 M7 对照设计 |
+| [`docs/DETAILS_zh.md`](docs/DETAILS_zh.md) | 脚端对接、内窥镜 PBVS 场景、Si 换装及穿刺点规划早期完整技术笔记 |
 
-试验中调整过两处：
-
-1. 第一次把腹壁做成满 30 mm 厚。内表面伸到 RCM 下 15 mm，PSM3 钳口去抓的时候碰到了它。这个模型的工作空间就在原皮肤下面不远，所以腹膜改为不低于原皮肤。现在穿刺点上方的腹壁约 15 mm 厚，RCM 在腹壁内侧。
-2. 器械杆是斜着穿过腹壁的，接触区比杆粗得多。原来 16 mm 的穿刺点豁免半径不够，改为 45 mm。
-
----
-
-## 更早的阶段
-
-| 场景 | 内容 |
-|---|---|
-| `scenes/davinci_three_arm_rcm.ttt` | 无人体的三臂 RCM |
-| `scenes/davinci_foot_docking_rcm.ttt` | 脚端对接、分腿体位、腹壁 RCM（[24 秒演示](docs/foot_docking_rcm_demo.mp4)） |
-| `scenes/davinci_endoscope_task.ttt` | 加入 ECM 和 30° 内窥镜，PSM2 用视觉伺服做拾取放置 |
-| `scenes/davinci_si_instruments.ttt` | **当前**：Si 器械、组织模型、新穿刺点、任务状态机 |
-
-内窥镜场景的视觉伺服（PBVS）跑了 6 次，全部成功：1 次标称，5 次加入相机位姿误差 2° + 3 mm 和深度噪声 σ = 0.5 mm。珠子到目标环中心的真值误差为 0.18–0.58 mm。
-
-![内窥镜视角](validation/endoscope/endoscope_view.png)
-
-各阶段的详细说明、验证数据和已知问题见 [docs/DETAILS_zh.md](docs/DETAILS_zh.md)。
+</details>
 
 ---
 
-## 快速开始
+## 快速开始与复现
 
-**只看场景**：用 CoppeliaSim Edu 4.10 打开 `scenes/davinci_si_instruments.ttt`，点播放。场景自带网格和 Lua 控制器，不需要 Python。RCM 面板可以选臂，调 yaw、pitch、insertion 和钳口开合。
+### 1. 零依赖场景预览（无需 Python）
 
-**运行任务和检查**：需要一个专用的 CoppeliaSim 实例，端口不要与其他实例重复。
+使用 **CoppeliaSim Edu 4.10** 直接打开 [`scenes/davinci_si_articulated_verified.ttt`](scenes/davinci_si_articulated_verified.ttt) 并点击播放即可演示。场景内已嵌入全部网格与 Lua RCM / 腕部控制器，右侧 UI 面板支持交互切换臂号、调节 `yaw / pitch / insertion / grip` 及切换人体解剖透视层。
+
+### 2. 离线自动化回归测试（428 项，无需启动 CoppeliaSim）
 
 ```powershell
 python -m pip install -r requirements-build.txt
-& "C:\Program Files\CoppeliaRobotics\CoppeliaSimEdu\coppeliaSim.exe" -h -GzmqRemoteApi.rpcPort=23170
-
-cd scripts/task
-python -m unittest test_cut_fsm                                                # 离线状态机测试
-python run_cut_task.py --port 23170 --mode full --scenario nominal --sheet     # 三臂协同切割
-python run_cut_task.py --port 23170 --mode full --scenario occlusion_persistent --sheet
-python ../tissue/tissue_cut_demo.py --port 23170                               # 组织抓取与剪切检查
-python ../build/instrument_guard.py --port 23170 --scene ../../scenes/davinci_si_instruments.ttt --out check.json
+python scripts/tests/run_regressions.py --out validation/safety/my_regressions.json
 ```
 
-CoppeliaSim 4.10 的 Remote API 处理不了中文路径。场景文件会先复制到一个 ASCII 临时目录再加载，可以用 `--stage-dir` 指定这个目录。
+> [!NOTE]
+> 在 Windows 上该套件会自动加载 CoppeliaSim 安装目录的 `lua.dll` 实际执行原版 Lua 控制器源码；PowerShell 若因 stderr 包装返回非零退出码，请以输出中的 `OK` 及生成报告的 `"success": true` 为准。
 
-**重建当前场景**：
+### 3. 在线 CoppeliaSim 任务运行（Windows PowerShell）
+
+需启动一个**专用端口**的 CoppeliaSim 实例；由于 CoppeliaSim 4.10 Remote API 无法处理非 ASCII 路径，请通过 `--stage-dir` 指定纯英文临时暂存目录：
+
+```powershell
+# 启动专用无头 CoppeliaSim 实例（端口不与其他实例冲突）
+& "C:\Program Files\CoppeliaRobotics\CoppeliaSimEdu\coppeliaSim.exe" -h -GzmqRemoteApi.rpcPort=23170
+
+# A. 运行默认主场景的三臂协同切割基线（支持 --trace 验证确定性哈希）
+python scripts/task/run_cut_task.py --port 23170 --stage-dir C:/Temp/sim_stage --mode full --scenario nominal --trace
+python scripts/task/run_cut_task.py --port 23170 --stage-dir C:/Temp/sim_stage --mode full --scenario occlusion_persistent
+
+# B. 运行已归档「两刀视觉任务」与局部遮挡配对实验
+python scripts/task/run_two_bite.py --case nominal --port 23170 --stage-dir C:/Temp/sim_stage --out validation/task/my_two_bite_nominal.json
+python scripts/task/run_two_bite_pair.py --disturbance view --strategy camera --port 23170 --stage-dir C:/Temp/sim_stage --out validation/task/my_view_camera.json
+
+# C. 运行 M5 Active-Look 视觉开发实跑（--out 须为尚不存在的新目录）
+python scripts/task/run_active_look.py --case nominal --out validation/task/my_active_look_01 --port 23170 --stage-dir C:/Temp/sim_stage
+```
+
+### 4. 离线深度学习训练复现（CUDA）
+
+切缝 U-Net 训练与尖端实验依赖固定于 [`requirements-learn.txt`](requirements-learn.txt)（PyTorch 2.9.1 + CUDA 12.6）。原始 `51.1 GB` RGB-D 帧与 `.pt` 模型权重未入 Git 仓库；制备或指定 Phase A 本地数据索引后，可直接按 [`docs/VISIBLE_SLIT_TRAINING_zh.md`](docs/VISIBLE_SLIT_TRAINING_zh.md) 中的 PowerShell 命令复现弱标签生成与 6 轮训练。
+
+<details>
+<summary>展开查看场景从零重建与几何校验脚本命令</summary>
 
 ```powershell
 cd scripts/build
-python fetch_dvrk_instruments.py               # dVRK 器械网格（已提交，可跳过）
-python fetch_dvrk_cannulas.py                  # dVRK Si 套管（已提交，可跳过）
-python install_instruments.py --port 23170     # 内窥镜场景 → Si 器械场景；应用 config/instruments/port_plan.json
-python plan_psm_ports.py --port 23170          # 重新规划 PSM1/PSM3 穿刺点（读取当前器械场景）
-python install_instruments.py --port 23170     # 应用新计划后再装一次
+python fetch_dvrk_instruments.py               # 拉取固定提交 dVRK 器械网格（已入库可跳过）
+python fetch_dvrk_cannulas.py                  # 拉取固定提交 dVRK Si 套管（已入库可跳过）
+python install_instruments.py --port 23170     # 换装 Si 器械并生成气腹/套管与 port_plan
+python plan_psm_ports.py --port 23170          # 可选：重规划 PSM1/PSM3 穿刺点与臂姿
+python upgrade_si_articulation.py --port 23170 # 升级至独立 wrist_yaw 并输出 verified 场景与校验报告
+python instrument_guard.py --port 23170 --scene ../../scenes/davinci_si_articulated_verified.ttt --out ../../validation/instruments/my_guard_check.json
+python ../tissue/tissue_cut_demo.py --port 23170
 ```
 
-内窥镜场景本身的重建步骤见 [docs/DETAILS_zh.md](docs/DETAILS_zh.md)。
+更早期的内窥镜场景（`davinci_endoscope_task.ttt`）重建步骤见 [`docs/DETAILS_zh.md`](docs/DETAILS_zh.md)。
+
+</details>
 
 ---
 
-## 目录
+## 仓库目录结构
 
-| 路径 | 内容 |
-|---|---|
-| `scenes/` | CoppeliaSim 场景 |
-| `src/` | 场景内 Lua：RCM 控制器、面板、能力检查、组织模型 |
-| `scripts/build/` | 场景构建、穿刺点和对接规划、器械识别、渲染 |
-| `scripts/task/` | 任务状态机、World 适配器、测试、运行入口 |
-| `scripts/vision/` | 内窥镜视觉伺服拾取放置 |
-| `config/` | RCM、碰撞对、器械描述、角色、穿刺点计划、任务阈值 |
-| `models/` | URDF、CAD 与器械网格、BodyParts3D 解剖模型 |
-| `validation/` | 每一步的验证记录（JSON、PNG） |
-| `docs/` | 图片、视频、详细说明 |
-
----
-
-## 局限
-
-- 关节限位、穿刺点规则和任务阈值都是仿真设定，没有和真机标定过。软件 RCM 用的是 CAD 等效的串联链，不是真实的闭链机构。
-- 组织是运动学片：没有质量、重力、接触力、出血。器械不和组织碰撞。组织片是放在剪刀前面的测试片，不是解剖结构。
-- 解剖模型是静态的：没有器官形变和呼吸。气腹只是把腹壁的形状抬起来，没有压力，也没有让器官下沉，腹腔内部空间没有变大。
-- ECM 镜子的 CAD 是 14–20 mm 粗的圆柱，所以 ECM 套管内径 20.8 mm，比真实的 Si 12 mm 镜子粗。
-- 切割长度来自组织约束，不是视觉测量。能量器械（单极、双极）不仿真。
-- 穿刺点只按一个工作区规划，不是整个前列腺周围的工作空间。
+```text
+davinci-multiarm-rcm-simulation/
+├── scenes/                        # 5 个递进式自包含 CoppeliaSim 场景（主入口：davinci_si_articulated_verified.ttt）
+├── src/                           # 场景内嵌 Lua 控制器与物理模块（21 文件，2,807 行）
+│   ├── rcm_*.lua / patient_panel.lua
+│   ├── endoscope/                 # ECM 软件 RCM 与相机面板控制
+│   ├── instruments/               # 4-DOF 腕部解算与运行时几何能力护栏
+│   ├── tissue/                    # PBD 组织节点网格、楔形剪切、编码打印与归档版本
+│   └── legacy/                    # 早期三臂演示控制器留档
+├── scripts/                       # Python 核心工程代码（243 文件，38,697 行）
+│   ├── authoring/                 # 18 个文件：脚端对接、分腿体位调整与早期规划工具
+│   ├── build/                     # 20 个文件：dVRK 资产拉取、套管/气腹构建、穿刺点规划与腕部升级
+│   ├── tissue/                    # 1 个文件：PBD 组织抓拉与剪切独立验证入口
+│   ├── task/                      # 44 个文件：14 状态 FSM、真值隔离层、两刀/M5 在线运行与评分器
+│   ├── vision/                    # 19 个文件：PBVS 拾取放置、三标记刀尖拟合、切缝/编码识别与离线重放
+│   ├── analysis/                  # 76 个文件：M3 可达性扫描、光学采样诊断、BodyParts3D 资产审计等
+│   ├── learn/                     # 24 个文件：Phase A 多进程 RGB-D 采集、弱标签构造、U-Net 训练与尖端确认
+│   └── tests/                     # 40 个文件：离线回归套件（428 项测试，含 lua.dll 实跑与真值隔离测试）
+├── config/                        # 109 份 JSON：RCM 参数、2,100+ 碰撞对、器械能力、预注册实验协议
+├── models/                        # 机器人 URDF、CAD 网格、dVRK Si 器械/套管、BodyParts3D 解剖模型
+├── validation/                    # 544 份机器可读 JSON 报告与过程诊断截图（安全/任务/感知/可行性）
+├── docs/                          # 8 份专题技术文档、21 张汇总图及演示视频
+├── AGENTS.md                      # 仓库工程规范、开发上下文与科研边界备忘
+└── requirements*.txt              # 基础运行、场景构建（requirements-build.txt）与深度学习（requirements-learn.txt）依赖
+```
 
 ---
 
 ## 数据来源与署名
 
-- 解剖模型：BodyParts3D, © The Database Center for Life Science, licensed under CC Attribution 4.0 International（[许可](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html) · [下载](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html)）。使用了官方 `isa_BP3D_4.0_obj_99.zip` 中选出的模型，做了单位换算、体位调整、体表筛选和分腿姿态处理。
-- 器械网格：[jhu-dvrk/dvrk_model](https://github.com/jhu-dvrk/dvrk_model)，MIT，许可副本在 `models/meshes/instrument/dvrk/LICENSE`。
-- 套管：[jhu-dvrk/dvrk-cannulas](https://github.com/jhu-dvrk/dvrk-cannulas)，MIT，许可副本在 `models/meshes/cannula/dvrk/LICENSE`。
-- 器械限位数值：[jhu-dvrk/sawIntuitiveResearchKit](https://github.com/jhu-dvrk/sawIntuitiveResearchKit)，cisst 许可。只引用了数值，未复制文件。
-- 机器人 CAD 和原持针钳：用户提供的项目资产，许可与上面几项分开处理。
+- **解剖模型**：BodyParts3D, © The Database Center for Life Science, licensed under **CC Attribution 4.0 International**（[许可声明](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html) · [官方下载](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html)）。从官方 `isa_BP3D_4.0_obj_99.zip` 筛选器官与体表模型，完成单位换算、体位调整及分腿姿态处理。
+- **器械网格**：[`jhu-dvrk/dvrk_model`](https://github.com/jhu-dvrk/dvrk_model)（MIT License，副本见 [`models/meshes/instrument/dvrk/LICENSE`](models/meshes/instrument/dvrk/LICENSE)）。
+- **套管模型**：[`jhu-dvrk/dvrk-cannulas`](https://github.com/jhu-dvrk/dvrk-cannulas)（MIT License，副本见 [`models/meshes/cannula/dvrk/LICENSE`](models/meshes/cannula/dvrk/LICENSE)）。
+- **器械关节限位数值**：[`jhu-dvrk/sawIntuitiveResearchKit`](https://github.com/jhu-dvrk/sawIntuitiveResearchKit)（cisst License，仅引用数值参数，未复制源码）。
+- **机器人本体 CAD 与原始持针钳**：用户提供之项目资产，许可与上述开源部分独立管理。
