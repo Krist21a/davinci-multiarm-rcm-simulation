@@ -14,6 +14,13 @@ PLAN = REPO / 'config/learn/m5_temporal_coded_capture_v1.json'
 REFERENCE = REPO / 'validation/task/m5_level0_v1/nominal.json'
 
 
+def capture_source_matches(name, pin):
+    raw = (REPO / name).read_bytes()
+    # The original Windows capture hashed this source before Git normalized it to LF.
+    return sha(raw) == pin or (name == 'scripts/learn/capture_m5_temporal_coded.py'
+                               and b'\r' not in raw and sha(raw.replace(b'\n', b'\r\n')) == pin)
+
+
 def read_view(root, row, field, optic, tcp):
     saved = row['views'][field]
     name = saved['file']
@@ -120,7 +127,7 @@ def main():
     registration_raw = (args.data / 'registration.json').read_bytes()
     capture, registration = map(json.loads, (capture_raw, registration_raw))
     if (capture['registration_sha256'] != sha(registration_raw) or registration['protocol'] != plan
-            or any(sha((REPO / name).read_bytes()) != pin for name, pin in registration['sources'].items())):
+            or any(not capture_source_matches(name, pin) for name, pin in registration['sources'].items())):
         raise ValueError('capture source or registration mismatch')
     reference_raw = REFERENCE.read_bytes()
     reg = dict(protocol=plan, capture_sha256=sha(capture_raw), acquisition_registration_sha256=sha(registration_raw),

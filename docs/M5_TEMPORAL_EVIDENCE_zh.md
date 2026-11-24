@@ -36,6 +36,8 @@
 & '.\.venv\Scripts\python.exe' scripts/learn/replay_m5_temporal_coded.py --data 'F:\davinci_m5_learn\learned_perception_v1\m5_temporal_coded_capture_v1' --out validation/task/m5_temporal_coded_replay_02
 ```
 
+原采集和回放封存记录不改写。历史 Windows 采集脚本使用 CRLF；检出后的 LF 源码只有在还原 CRLF 后与原注册哈希完全一致，才允许复用该采集。原回放源码保留在提交 `e0bf5bc`。
+
 ## `VERIFY_ENDPOINT` 接入边界
 
 - 广角阶段使用 70°、1280×960 的工作曝光。光学累积落在 8–10 行时，离线原型请求与该刀绑定的一次窄视场复核；请求不触发运动。
