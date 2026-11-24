@@ -1,0 +1,11 @@
+{
+  "scope": "Passive same-ECM-pose HD development negative at actual 8 mm on the physical row-8 bridge sheet. Native/passive-HD work views both left three physical bridges short of 5px, while the v4 nominal 9 mm active view gives a four-frame positive. No vision policy, threshold, motion guard or structural scorer is changed.",
+  "parent": "config/task/m5_visible_fracture_dev_v4.json",
+  "parent_sha256": "e3be9d62818792c60a7bfd586c8f2f867516d75cce30fe23e4f924e260afb14a",
+  "preflight": "The first launcher call refused before creating any run report or image: the view runner assumed the historical protocol key reference rather than this protocol's parent. The runner now validates either registered parent key; no optical data or thresholds were changed before acquisition.",
+  "view": [0, 4.5, 0.088],
+  "optics": [1280, 960, 70],
+  "case": "depth_noise_0p5",
+  "acquire": "Run the existing 0.5 mm noisy FSM with bridge_print=true from uncut through exactly three commanded closures, then freeze the cutting policy. Verify the pre-view closure prefix against the archived bridge_print run. With jaws closed move the ECM via its guarded command to the v4 nominal positive pose, and acquire two separate same-exposure RGB-D/optical-estimator frames. Do not resume the controller from this development checkpoint. Seal predictions before inspecting independent structural labels.",
+  "gate": "Use byte-identical bridge_observer.py, no threshold changes. Both 8 mm same-pose captures must be fully supported NOT_STOP with scissors visible and a direct slit, with the existing sealed 9 mm v4 nominal two-frame STOP. UNKNOWN is not a negative. No M5 acceptance or control integration from this checkpoint alone."
+}

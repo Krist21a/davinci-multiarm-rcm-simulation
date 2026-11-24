@@ -5,7 +5,7 @@ if sim.getBoolParam(sim.boolparam_headless) then return end
 simUI=require('simUI')
 local function sliderXml(id,callback) return '<hslider id="'..id..'" minimum="-100" maximum="100" value="0" on-change="'..callback..'"/>' end
 function sysCall_init()
-    controller=sim.getObject('/RCMController');selected=1;sliders={0,0,0}
+    controller=sim.getObject('/RCMController');selected=1;sliders={0,0,0};wristSliders={0,0,0}
     endoCamera=sim.getObject(ENDOSCOPE.camera)
     camera=sim.getObjectsInTree(sim.handle_scene,sim.sceneobject_camera,0)[1]
     overview=sim.getObjectMatrix(camera,sim.handle_world)
@@ -26,6 +26,10 @@ function sysCall_init()
     <label id="7" text="Yaw"/>]]..sliderXml(2,'yawChanged')..[[
     <label id="8" text="Pitch"/>]]..sliderXml(3,'pitchChanged')..[[
     <label id="9" text="Insertion"/>]]..sliderXml(4,'insertChanged')..[[
+    <label id="13" text="Wrist roll (separate from shaft yaw/pitch)"/>]]..sliderXml(10,'rollChanged')..[[
+    <label id="14" text="Wrist pitch"/>]]..sliderXml(11,'wristPitchChanged')..[[
+    <label id="15" text="Wrist yaw"/>]]..sliderXml(12,'wristYawChanged')..[[
+    <label id="16" text="Wrist controls require an articulated Si scene."/>
     <label id="5" text="Start simulation to enable constrained controls."/>
     <label id="6" text="RCM residuals will appear here."/>
     <label text="Exploratory CAD joint ranges; no clinical validation."/>
@@ -40,8 +44,8 @@ function values()
 end
 function updateLabels()
     local yaw,pitch,ins=values();local a=arm()
-    simUI.setLabelText(ui,7,string.format('Yaw %.2f deg (limit %.2f)',yaw,a.yaw_deg),true)
-    simUI.setLabelText(ui,8,string.format('Pitch %.2f deg (limit %.2f)',pitch,a.pitch_deg),true)
+    simUI.setLabelText(ui,7,string.format('RCM shaft yaw %.2f deg (limit %.2f)',yaw,a.yaw_deg),true)
+    simUI.setLabelText(ui,8,string.format('RCM shaft pitch %.2f deg (limit %.2f)',pitch,a.pitch_deg),true)
     simUI.setLabelText(ui,9,string.format('Insertion %.1f mm (%.0f to %.0f)',ins*1000,a.insertion_min*1000,a.insertion_max*1000),true)
 end
 function showEndoscope()
@@ -64,10 +68,31 @@ end
 function openJaws() grip(0.5) end
 function closeJaws() grip(0) end
 function armChanged(_,_,v)
-    selected=v+1;sliders={0,0,0}
+    selected=v+1;sliders={0,0,0};wristSliders={0,0,0}
     for id=2,4 do simUI.setSliderValue(ui,id,0,true) end
+    for id=10,12 do simUI.setSliderValue(ui,id,0,true) end
     updateLabels()
 end
+function wristApply(changed)
+    if not active() then return end
+    local called,state=pcall(sim.callScriptFunction,'getWristState',controller,selected)
+    if not called or not state or not state.available then
+        simUI.setLabelText(ui,16,'No articulated wrist on this arm/scene.',true);return
+    end
+    local names={'roll','pitch','yaw'};local q={}
+    for i,n in ipairs(names) do
+        q[i]=state[n] -- preserve the other actual wrist coordinates, including a nonzero roll home
+        if i==changed then
+            local lim=state.limits[n];local v=wristSliders[i]/100
+            q[i]=v>=0 and v*lim[2] or -v*lim[1]
+        end
+    end
+    local ok=sim.callScriptFunction('setWrist',controller,selected,q[1],q[2],q[3])
+    simUI.setLabelText(ui,16,ok and string.format('Wrist %.1f / %.1f / %.1f deg',math.deg(q[1]),math.deg(q[2]),math.deg(q[3])) or 'Wrist rejected; previous posture retained.',true)
+end
+function rollChanged(_,_,v) wristSliders[1]=v;wristApply(1) end
+function wristPitchChanged(_,_,v) wristSliders[2]=v;wristApply(2) end
+function wristYawChanged(_,_,v) wristSliders[3]=v;wristApply(3) end
 function apply()
     updateLabels()
     if not active() then return end

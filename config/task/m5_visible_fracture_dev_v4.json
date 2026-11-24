@@ -1,0 +1,12 @@
+{
+  "scope": "Development-only render of a physically tearable row-8 ligament on the unchanged conventional PBD sheet. Earlier pure face-recession versions v1/v2 distorted the early visual front; v3 preserved the 0/3/5 mm cuts but still hid 8/9 terminal bank ink. No change to mechanical topology, cut/tear scoring, joint/collision/closure guards, or scene.",
+  "parent": "config/task/m5_visible_fracture_dev_v3.json",
+  "parent_sha256": "d1b6d402989f9fbf1aa4dee674e8a3e462591b7a7075085cc4de7e707c2523ab",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "sheet": {"bridge_print": true},
+  "geometry": "Seven 0.64 x 0.64 mm planar ligament patches centred on the existing 1 mm row-8 cells at columns 8..14 (the independently scored candidate lanes). Each is colored distinctly, follows the actual four surrounding PBD nodes, and is rendered on both sides 0.15 mm off the plane. It remains physically visible while ANY of that cell's three original crossing bonds is alive; it disappears only when ALL THREE physical bonds sever. No scorer length, row prefix, camera reading or hypothetical trajectory is passed into rendering. These non-respondable material faces do not cut, grip, collide, solve, tear, or change spring states. At f≈914px, z≈135mm and 0.45 obliquity an intact patch should project to ~9 pixels; the pixel arithmetic is preregistered before shooting.",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "image_gate": "Capture all real full-FSM RGB-D frames from uncut, with raw and 0.5 mm noisy depth. Seal image-only material-ligament predictions first, then score against the UNCHANGED independent GroundTruth cut_length. At actual 8 mm, require two consecutive same-view, same-exposure scissor-valid, direct-slit-qualified and fully identified row-8 ligament frames as NOT_STOP; at actual 9 mm require two such STOP frames with a deep background gap in an identified missing lane between visible intact neighboring ligaments. Unknown, occluded, missing camera support or wrong progress must never become a positive; zero false STOP below 9. No sensor-to-control integration until this and independent confirmations pass.",
+  "next": "Only then add a stop-only certificate that cannot authorize a closure or motion, and run nominal, 0.5 mm depth noise, occlusion_transient, slip_regrasp and relax from zero with fresh post-bite reacquisition, no overcut/tear/fault, and actual closed jaw and measured _ready_q verification under strict=True."
+}

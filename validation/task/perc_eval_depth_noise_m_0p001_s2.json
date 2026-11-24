@@ -1,0 +1,2300 @@
+{
+  "run_id": "84e5f951ca6a4ab3b7120789f7e97378",
+  "success": true,
+  "mode": "full",
+  "scenario": "nominal",
+  "error": null,
+  "cleanup_error": null,
+  "errors": [],
+  "acceptance_issues": [],
+  "controller_sha256": "e4ba3bc3d73c948d7b65f6ff88fcad9276808b9e23268e9af41f8d35d37cd6a0",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "events": {
+      "relax_m": 0.0005,
+      "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "perception": {
+      "mode": "shadow",
+      "markers": true,
+      "depth_noise_m": 0.001,
+      "camera_pose_error": {
+        "trans_m": 0.0,
+        "rot_deg": 0.0
+      },
+      "seed": 2,
+      "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run)."
+    },
+    "cut": {
+      "length_m": 0.009,
+      "max_overcut_m": 0.001,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "align_mode": "tool_pose",
+      "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
+      "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "total_ticks": 400
+    }
+  },
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "source_sha256": {
+    "scripts/task/cut_fsm.py": "e057fde02af6fb8c6c947278771fe04842c6faee4ec6fb6087eca0addcec33e3",
+    "scripts/task/sim_world.py": "5ff4b8a7ae6472ead0b86dfaed5769e7153be37e7b69946b00cf6827f97dae9b",
+    "scripts/task/workspace.py": "cae1ed99e81d554bfcc448510bfcdd4f7ccfd8778c0f9527fedbdcd42a149362",
+    "scripts/task/ground_truth.py": "4fd5f62e060c52993de8a5a16c3570aa764114edd7a5c78cd72a542927f3b499",
+    "scripts/task/visibility.py": "7df52bcee081993da8fd9fc0be23b0e68c3c897b48e7c51fe9346c3b56854083",
+    "scripts/task/tool_pose.py": "bd39e8533c66607f6d2c04c524d3f49e5174caca64fca4e684b564a6fc942f78",
+    "scripts/task/run_cut_task.py": "d13bd97501c966a149e4fb784eaf7dbee5ddd0a714d3611fc75a19c2f9086929",
+    "config/task/cut_task.json": "1fc0f7efeeb08e45a6dee30daf5c5587f26727636bce1ebb25be11b7898d21bd"
+  },
+  "roles": null,
+  "events": {},
+  "final_observation": {
+    "cut_length_m": 0.01,
+    "tension": 0.08732297747934381,
+    "max_strain": 0.1378014087077466,
+    "torn": 0,
+    "faults": [],
+    "overcut_m": 0.0010000000000000009
+  },
+  "tissue": {
+    "cut": 64,
+    "torn": 0,
+    "cut_events": [
+      {
+        "from_angle": 0.5,
+        "t": 13.100000000000051,
+        "to_angle": 0,
+        "arm": "psm2",
+        "constraints": 12
+      },
+      {
+        "from_angle": 0.5,
+        "t": 14.40000000000007,
+        "to_angle": 0,
+        "arm": "psm2",
+        "constraints": 21
+      },
+      {
+        "from_angle": 0.5,
+        "t": 15.700000000000088,
+        "to_angle": 0,
+        "arm": "psm2",
+        "constraints": 31
+      }
+    ],
+    "torn_events": {}
+  },
+  "camera_moves": 0,
+  "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer.",
+  "refused_candidates": {},
+  "event_log": [
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 8,
+      "event": "tool_align",
+      "refused": false,
+      "pos_err_m": 5.39148153710387e-06,
+      "axis_err_rad": 3.2691327412107632e-06,
+      "yaw_axis_err_rad": 1.0505836470720463e-05,
+      "iterations": 1,
+      "at_limit": []
+    }
+  ],
+  "truth_reads": {
+    "tcp": 33,
+    "tissue_stats": 23,
+    "cut_line_tension": 33,
+    "cut_length": 84,
+    "cut_front": 35,
+    "nodes": 68
+  },
+  "timing": {
+    "sim_step": {
+      "count": 342,
+      "total_s": 19.684647099944414,
+      "mean_s": 0.05755744766065618,
+      "p95_s": 0.06517625000269618
+    },
+    "render": {
+      "count": 18,
+      "total_s": 0.7623001000174554,
+      "mean_s": 0.0423500055565253,
+      "p95_s": 0.06403927000719704
+    },
+    "call:tissueStats": {
+      "count": 24,
+      "total_s": 0.06839290000789333,
+      "mean_s": 0.0028497041669955556,
+      "p95_s": 0.004854105005506425
+    },
+    "call:getRCMStats": {
+      "count": 44,
+      "total_s": 0.03826800007664133,
+      "mean_s": 0.0008697272744691211,
+      "p95_s": 0.0012381149957946037
+    },
+    "call:homeRCM": {
+      "count": 1,
+      "total_s": 0.7322415999951772,
+      "mean_s": 0.7322415999951772,
+      "p95_s": 0.7322415999951772
+    },
+    "call:setRCMTarget": {
+      "count": 11,
+      "total_s": 0.22651460002816748,
+      "mean_s": 0.020592236366197045,
+      "p95_s": 0.05855909999809228
+    },
+    "call:tissueCreate": {
+      "count": 1,
+      "total_s": 0.010776700000860728,
+      "mean_s": 0.010776700000860728,
+      "p95_s": 0.010776700000860728
+    },
+    "call:tissueNodes": {
+      "count": 68,
+      "total_s": 0.2953959999140352,
+      "mean_s": 0.004344058822265223,
+      "p95_s": 0.005384285010222811
+    },
+    "call:tissueConstraints": {
+      "count": 83,
+      "total_s": 0.8997457999794278,
+      "mean_s": 0.010840310843125636,
+      "p95_s": 0.012679999995452815
+    },
+    "call:setGrip": {
+      "count": 11,
+      "total_s": 2.3433615999965696,
+      "mean_s": 0.21303287272696086,
+      "p95_s": 0.7856272499993793
+    },
+    "call:tissueGrasp": {
+      "count": 2,
+      "total_s": 0.004770600004121661,
+      "mean_s": 0.0023853000020608306,
+      "p95_s": 0.0025898700012476185
+    },
+    "call:getWristState": {
+      "count": 5,
+      "total_s": 0.003410499994060956,
+      "mean_s": 0.0006820999988121912,
+      "p95_s": 0.0008281600050395354
+    },
+    "call:toolPoseFK": {
+      "count": 56,
+      "total_s": 0.4731057999742916,
+      "mean_s": 0.008448317856683778,
+      "p95_s": 0.010072049994050758
+    },
+    "call:setToolPose": {
+      "count": 5,
+      "total_s": 0.10805850000178907,
+      "mean_s": 0.021611700000357816,
+      "p95_s": 0.03976712000148836
+    }
+  },
+  "perception": [
+    {
+      "tick": 1,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08492157388034614,
+            -0.9103647315242669,
+            0.6474129279479444
+          ],
+          "normal": [
+            0.22086954130330555,
+            -0.6471488611988319,
+            -0.7296677306648022
+          ],
+          "e1": [
+            0.9750280012914111,
+            0.16429016107066532,
+            0.149429380220389
+          ],
+          "e2": [
+            0.02317417575971524,
+            -0.7444508677034565,
+            0.6672749531890338
+          ],
+          "n_points": 10970
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07694026932538357,
+            -0.9821109823224823,
+            0.6852351011688974
+          ],
+          "axis": [
+            -0.24269221178358788,
+            0.8853292553997403,
+            -0.39660131098236606
+          ],
+          "distal_uv": [
+            313.6666666666667,
+            195.41176470588235
+          ],
+          "proximal_uv": [
+            318.40677966101697,
+            174.91525423728814
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07645927498301092,
+            -1.0093585880181744,
+            0.7377729956892807
+          ],
+          "direction": [
+            -0.02317417575971524,
+            0.7444508677034565,
+            -0.6672749531890338
+          ],
+          "start": [
+            -0.07796149407251834,
+            -1.0201583930904112,
+            0.7468967198621524
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0014398224426012077,
+          "slit_px": 72
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "no post-grasp reference width yet",
+          "width_m": 0.003988864531653048,
+          "slit_opening_m": 0.0014398224426012077,
+          "strain_proxy": null
+        }
+      },
+      "truth": null,
+      "errors": {}
+    },
+    {
+      "tick": 2,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08289838840591232,
+            -0.9191563494609676,
+            0.6544737883640018
+          ],
+          "normal": [
+            0.2237059424027921,
+            -0.6340527155575614,
+            -0.7402248342414356
+          ],
+          "e1": [
+            0.9746555743761809,
+            0.14438347298356505,
+            0.1708798527230181
+          ],
+          "e2": [
+            -0.0014706022966435395,
+            -0.7596910994761528,
+            0.6502824545577087
+          ],
+          "n_points": 12601
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07511597392936858,
+            -1.0037009581629177,
+            0.7026237386655013
+          ],
+          "axis": [
+            -0.29948179450346224,
+            0.899954947357738,
+            -0.3168465677379462
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07154747139714848,
+            -0.9882362768684028,
+            0.7170758262938324
+          ],
+          "direction": [
+            -0.08722794138408613,
+            0.7434004299095983,
+            -0.6631342903606467
+          ],
+          "start": [
+            -0.07781831618002338,
+            -1.0224469012685078,
+            0.7444844096343021
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0018498420845431624,
+          "slit_px": 1509
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "no post-grasp reference width yet",
+          "width_m": 0.012229213675615351,
+          "slit_opening_m": 0.0018498420845431624,
+          "strain_proxy": null
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07439887029705086,
+          -0.9994317615795891,
+          0.6996778080211588
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.01073504989969254
+      },
+      "errors": {
+        "front_pos_err_m": 0.020884453390526105,
+        "direction_err_rad": 0.42539617024714693,
+        "tip_pos_err_m": 0.00250192250784099,
+        "axis_err_rad": 0.03169903345128143
+      }
+    },
+    {
+      "tick": 3,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08289052240457448,
+            -0.9191468975035633,
+            0.6544690277890094
+          ],
+          "normal": [
+            0.22377173744104872,
+            -0.6341945369580363,
+            -0.7400834404411413
+          ],
+          "e1": [
+            0.974640279143858,
+            0.14436634159193265,
+            0.17098153609598593
+          ],
+          "e2": [
+            -0.0015924173435090075,
+            -0.7595759663838391,
+            0.650416647618325
+          ],
+          "n_points": 12601
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07467599753526019,
+            -1.0035638329899288,
+            0.7025963211648462
+          ],
+          "axis": [
+            -0.2891226189663105,
+            0.9026424771211435,
+            -0.31881761196437564
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.0699653406837399,
+            -0.9941160596062761,
+            0.7226198884354931
+          ],
+          "direction": [
+            -0.08782058475314715,
+            0.7431302481734184,
+            -0.6633588615096119
+          ],
+          "start": [
+            -0.07778104752500963,
+            -1.0224377778330063,
+            0.744526262489468
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.003863784421323138,
+          "slit_px": 1379
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "no post-grasp reference width yet",
+          "width_m": 0.01223926482516465,
+          "slit_opening_m": 0.003863784421323138,
+          "strain_proxy": null
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07439887029705086,
+          -0.9994317615795891,
+          0.6996778080211588
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.01073504989969254
+      },
+      "errors": {
+        "front_pos_err_m": 0.023963554119515982,
+        "direction_err_rad": 0.42539314351264107,
+        "tip_pos_err_m": 0.0021437567845766507,
+        "axis_err_rad": 0.022188150667298626
+      }
+    },
+    {
+      "tick": 4,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08293650111296919,
+            -0.9189823125178996,
+            0.6544125490148481
+          ],
+          "normal": [
+            0.22383232871686512,
+            -0.6344894514317081,
+            -0.7398122901405974
+          ],
+          "e1": [
+            0.9746267378581294,
+            0.1446683291617063,
+            0.170803385181854
+          ],
+          "e2": [
+            -0.001345538258777521,
+            -0.7592721584250608,
+            0.6507718332621226
+          ],
+          "n_points": 12594
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07433084071057629,
+            -1.003244690773427,
+            0.7031834168260593
+          ],
+          "axis": [
+            -0.2724733445080505,
+            0.9093394572141105,
+            -0.314420145801989
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07156094846448255,
+            -0.9880626358080783,
+            0.7171000083703137
+          ],
+          "direction": [
+            -0.08739133621709037,
+            0.7429481974054336,
+            -0.6636194167790813
+          ],
+          "start": [
+            -0.07784610203475015,
+            -1.0223165573033741,
+            0.7445758040144979
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.001853178458073077,
+          "slit_px": 1491
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012209805002557857,
+          "slit_opening_m": 0.001853178458073077,
+          "strain_proxy": 0.0
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07460495187552699,
+          -0.9986890388802693,
+          0.699362834167709
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.0008132849878197401
+      },
+      "errors": {
+        "front_pos_err_m": 0.020899611185681635,
+        "direction_err_rad": 0.42588381118437946,
+        "tip_pos_err_m": 0.0023946878779301443,
+        "axis_err_rad": 0.0207566421289182
+      }
+    },
+    {
+      "tick": 5,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08307632677954294,
+            -0.9192051489166165,
+            0.6544557923318697
+          ],
+          "normal": [
+            0.22308217823071014,
+            -0.6348693269200926,
+            -0.7397129710177255
+          ],
+          "e1": [
+            0.9747687262005882,
+            0.13924123508172254,
+            0.17446434843313555
+          ],
+          "e2": [
+            -0.007763515770818765,
+            -0.7599689573850662,
+            0.6499130031272884
+          ],
+          "n_points": 12583
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07489374606419297,
+            -1.0044529261056487,
+            0.7006653338407025
+          ],
+          "axis": [
+            -0.2853795249271376,
+            0.8944597919623092,
+            -0.34423859068254337
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06934548262476778,
+            -0.9942106622495434,
+            0.7229712954711954
+          ],
+          "direction": [
+            -0.08639346826122916,
+            0.7429732611616672,
+            -0.6637220064459161
+          ],
+          "start": [
+            -0.07782087909193106,
+            -1.0223477705702888,
+            0.7445643697332702
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.003721975981472623,
+          "slit_px": 1353
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.011788913642648688,
+          "slit_opening_m": 0.003721975981472623,
+          "strain_proxy": -0.034471587369413026
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07454751785733778,
+          -0.9987999495207773,
+          0.699388014548765
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.003675297482626183
+      },
+      "errors": {
+        "front_pos_err_m": 0.024582389372985732,
+        "direction_err_rad": 0.4264448239095573,
+        "tip_pos_err_m": 0.0021288258792381705,
+        "axis_err_rad": 0.017983561707494374
+      }
+    },
+    {
+      "tick": 6,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08303919853226054,
+            -0.9189415406223831,
+            0.6543405285936896
+          ],
+          "normal": [
+            0.2243172249670202,
+            -0.6344764775945082,
+            -0.7396765387399823
+          ],
+          "e1": [
+            0.974510177902041,
+            0.14338125511820213,
+            0.1725448603872663
+          ],
+          "e2": [
+            -0.0034199047395227404,
+            -0.7595270996218598,
+            0.6504666703156882
+          ],
+          "n_points": 12563
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07501943002298703,
+            -1.0040180474645546,
+            0.7019623062431921
+          ],
+          "axis": [
+            -0.2987458128921801,
+            0.8976328644656825,
+            -0.3240465705890497
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06934516525185788,
+            -0.9940187146838959,
+            0.7228928022358163
+          ],
+          "direction": [
+            -0.09100499636611323,
+            0.7420639468776823,
+            -0.6641228722011611
+          ],
+          "start": [
+            -0.07779007791010589,
+            -1.0223248633305928,
+            0.744612087996052
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0037540064621831583,
+          "slit_px": 1359
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.011972778969533287,
+          "slit_opening_m": 0.0037540064621831583,
+          "strain_proxy": -0.019412761544915336
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07455331962941864,
+          -0.9988479753572168,
+          0.6994410261733165
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.026732913431097183
+      },
+      "errors": {
+        "front_pos_err_m": 0.024503722801995385,
+        "direction_err_rad": 0.42488644882712917,
+        "tip_pos_err_m": 0.002170142445925806,
+        "axis_err_rad": 0.02807404925307415
+      }
+    },
+    {
+      "tick": 7,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08298191768591487,
+            -0.9184396764349574,
+            0.6540635329426235
+          ],
+          "normal": [
+            0.22361300949083227,
+            -0.6364604191128705,
+            -0.7381838232372221
+          ],
+          "e1": [
+            0.9746758536613082,
+            0.14442509570369352,
+            0.17072894312499895
+          ],
+          "e2": [
+            -0.0020499453780800725,
+            -0.7576671608520776,
+            0.6526379326167753
+          ],
+          "n_points": 12487
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07457376966671908,
+            -1.0041870902353047,
+            0.7012672979794905
+          ],
+          "axis": [
+            -0.27919595888159066,
+            0.8986147602396154,
+            -0.33843925485039056
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06939066795853635,
+            -0.9933284190501368,
+            0.7227495419960619
+          ],
+          "direction": [
+            -0.09503529990243019,
+            0.7395155665324786,
+            -0.6663970427820055
+          ],
+          "start": [
+            -0.07790279976811663,
+            -1.0220344970198352,
+            0.7449213351041567
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0036848994739397266,
+          "slit_px": 1288
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012371081528847638,
+          "slit_opening_m": 0.0036848994739397266,
+          "strain_proxy": 0.01320877165982548
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07457842548131519,
+          -0.9988020036396232,
+          0.6994084150774308
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.04903786677751287
+      },
+      "errors": {
+        "front_pos_err_m": 0.02452919000303633,
+        "direction_err_rad": 0.425825142144083,
+        "tip_pos_err_m": 0.0016927037668194576,
+        "axis_err_rad": 0.008575405340013241
+      }
+    },
+    {
+      "tick": 8,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.0829977569115248,
+            -0.9184491129617437,
+            0.6540637660107937
+          ],
+          "normal": [
+            0.2237311919868582,
+            -0.63609278780348,
+            -0.7384648394043803
+          ],
+          "e1": [
+            0.974648984162494,
+            0.14451724994776957,
+            0.17080433875798434
+          ],
+          "e2": [
+            -0.0019265002356539166,
+            -0.7579582638720493,
+            0.6523002060592279
+          ],
+          "n_points": 12484
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07427788291137419,
+            -1.0029868149226602,
+            0.7040388945350604
+          ],
+          "axis": [
+            -0.28215627942629334,
+            0.9102656071633756,
+            -0.30299234049032076
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06922833249306255,
+            -0.9935843547552126,
+            0.7229548390019527
+          ],
+          "direction": [
+            -0.09388716036954117,
+            0.7400821198612803,
+            -0.6659306697993248
+          ],
+          "start": [
+            -0.07779636710181063,
+            -1.0220473310695444,
+            0.7448762041004247
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0037527187367463843,
+          "slit_px": 1322
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.01211128688755719,
+          "slit_opening_m": 0.0037527187367463843,
+          "strain_proxy": -0.008068770547934978
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07457842548131519,
+          -0.9988020036396232,
+          0.6994084150774308
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325187010471781,
+          -1.0031529053713657,
+          0.7010475498113865
+        ],
+        "shaft_axis": [
+          -0.27287343023323773,
+          0.9022401134224595,
+          -0.3339204528090094
+        ],
+        "tension": 0.04903786677751287
+      },
+      "errors": {
+        "front_pos_err_m": 0.0247038748883093,
+        "direction_err_rad": 0.4257617988441096,
+        "tip_pos_err_m": 0.0031667698957180018,
+        "axis_err_rad": 0.033275067692898945
+      }
+    },
+    {
+      "tick": 9,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08297291516670423,
+            -0.9177548233195408,
+            0.6536012179489897
+          ],
+          "normal": [
+            0.22421971507688027,
+            -0.636946653884215,
+            -0.7375801512219163
+          ],
+          "e1": [
+            0.9745377262172944,
+            0.14552285388782768,
+            0.1705852255488957
+          ],
+          "e2": [
+            -0.0013189200386244417,
+            -0.757048254143713,
+            0.6533576366339402
+          ],
+          "n_points": 12354
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07491332272947837,
+            -0.9991841933837045,
+            0.7027086877770845
+          ],
+          "axis": [
+            -0.26085235719930955,
+            0.9158236821258402,
+            -0.3053244683955601
+          ],
+          "distal_uv": [
+            313.97297297297297,
+            129.72972972972974
+          ],
+          "proximal_uv": [
+            321.4065934065934,
+            102.12087912087912
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.0693816926991884,
+            -0.9911543879694148,
+            0.7211179848346068
+          ],
+          "direction": [
+            -0.099655006195702,
+            0.7378973553533812,
+            -0.6675150730152993
+          ],
+          "start": [
+            -0.07794729947847093,
+            -1.0219438329391597,
+            0.7451027084034454
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.00265821366891815,
+          "slit_px": 1344
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012595390321426016,
+          "slit_opening_m": 0.00265821366891815,
+          "strain_proxy": 0.03157997353662734
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07459770863084865,
+          -0.9987730987048351,
+          0.6993869806948251
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07428972162161829,
+          -0.9996893069001737,
+          0.6997162282430534
+        ],
+        "shaft_axis": [
+          -0.27273130511282784,
+          0.902107945845244,
+          -0.3343933152058037
+        ],
+        "tension": 0.05187931388921352
+      },
+      "errors": {
+        "front_pos_err_m": 0.02361118625551353,
+        "direction_err_rad": 0.42523850512363076,
+        "tip_pos_err_m": 0.0030981981971878697,
+        "axis_err_rad": 0.03426869707479609
+      }
+    },
+    {
+      "tick": 10,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08311217023628556,
+            -0.9174255649701353,
+            0.6532073951521435
+          ],
+          "normal": [
+            0.2244419407059774,
+            -0.6363379350329936,
+            -0.7380378362184966
+          ],
+          "e1": [
+            0.9744871614232851,
+            0.14596430436760563,
+            0.17049690340786092
+          ],
+          "e2": [
+            -0.0007664680834723008,
+            -0.7574750519247658,
+            0.65286365976232
+          ],
+          "n_points": 12290
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07588751505031627,
+            -0.9969593801833458,
+            0.7009797371340138
+          ],
+          "axis": [
+            -0.27484978456639425,
+            0.9088117159236427,
+            -0.313877143041239
+          ],
+          "distal_uv": [
+            312.35820895522386,
+            135.91044776119404
+          ],
+          "proximal_uv": [
+            319.4117647058824,
+            109.68235294117648
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07002709616488613,
+            -0.990072680639067,
+            0.7198231600587846
+          ],
+          "direction": [
+            -0.09751764755079428,
+            0.7388919466363885,
+            -0.6667300800264281
+          ],
+          "start": [
+            -0.0779589105328107,
+            -1.0220203924040459,
+            0.7449564367191532
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.002275962887713235,
+          "slit_px": 1431
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012445116455757386,
+          "slit_opening_m": 0.002275962887713235,
+          "strain_proxy": 0.01927233507416637
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07460782746163694,
+          -0.9987594278573317,
+          0.699393373736534
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07515564315724144,
+          -0.9969893592319264,
+          0.6987362094934725
+        ],
+        "shaft_axis": [
+          -0.2732208683793738,
+          0.9020470123912,
+          -0.3341579634216892
+        ],
+        "tension": 0.05248574308494103
+      },
+      "errors": {
+        "front_pos_err_m": 0.02266757255684604,
+        "direction_err_rad": 0.42518565113039125,
+        "tip_pos_err_m": 0.002360074466007342,
+        "axis_err_rad": 0.021441638709831148
+      }
+    },
+    {
+      "tick": 11,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08304113625368759,
+            -0.9178019332253181,
+            0.6533930108761983
+          ],
+          "normal": [
+            0.22363634938224533,
+            -0.6362455517982328,
+            -0.738361958020553
+          ],
+          "e1": [
+            0.974670824050429,
+            0.14451664738565614,
+            0.17068017861857043
+          ],
+          "e2": [
+            -0.0018889096959544586,
+            -0.7578301501295469,
+            0.6524491517158929
+          ],
+          "n_points": 12328
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07625225907591493,
+            -0.9976051295567698,
+            0.6997460828293911
+          ],
+          "axis": [
+            -0.2756507390930532,
+            0.9030682327633037,
+            -0.3293697572808058
+          ],
+          "distal_uv": [
+            312.35820895522386,
+            135.91044776119404
+          ],
+          "proximal_uv": [
+            319.4117647058824,
+            109.68235294117648
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07051116157931121,
+            -0.9906756215111792,
+            0.7199832750074268
+          ],
+          "direction": [
+            -0.09041959504009607,
+            0.7407389174260861,
+            -0.6656802183054674
+          ],
+          "start": [
+            -0.0778196661338721,
+            -1.0221113746070105,
+            0.7448578105886781
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.00208077528054427,
+          "slit_px": 1452
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.01243785916333236,
+          "slit_opening_m": 0.00208077528054427,
+          "strain_proxy": 0.018677952737715886
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07541505441207617,
+          -0.9962527280466245,
+          0.6985483782227768
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07515564315724144,
+          -0.9969893592319264,
+          0.6987362094934725
+        ],
+        "shaft_axis": [
+          -0.2732208683793738,
+          0.9020470123912,
+          -0.3341579634216892
+        ],
+        "tension": 0.06134076360962404
+      },
+      "errors": {
+        "front_pos_err_m": 0.022684952774725948,
+        "direction_err_rad": 0.42695018573954374,
+        "tip_pos_err_m": 0.001612942565823485,
+        "axis_err_rad": 0.0054657254919736305
+      }
+    },
+    {
+      "tick": 12,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.0831155819950815,
+            -0.917210133299212,
+            0.6529492933569593
+          ],
+          "normal": [
+            0.22368779004374478,
+            -0.6363997356325818,
+            -0.7382134847536488
+          ],
+          "e1": [
+            0.9746602846279981,
+            0.14523987171092637,
+            0.17012556901966003
+          ],
+          "e2": [
+            -0.001049835327558361,
+            -0.75756237773016,
+            0.652761933398089
+          ],
+          "n_points": 12222
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07687730988155592,
+            -0.9939472360663147,
+            0.7014386199584028
+          ],
+          "axis": [
+            -0.2764526915589017,
+            0.9133573789404829,
+            -0.29891839633052003
+          ],
+          "distal_uv": [
+            310.77272727272725,
+            141.56060606060606
+          ],
+          "proximal_uv": [
+            317.45,
+            116.675
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07113902899328352,
+            -0.9898616858148356,
+            0.7192098514445385
+          ],
+          "direction": [
+            -0.08839717068738134,
+            0.7410374168413562,
+            -0.6656196264050183
+          ],
+          "start": [
+            -0.07789722343504929,
+            -1.022033101316985,
+            0.7448963975897329
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0026229590003049317,
+          "slit_px": 1499
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.0042374751391581495,
+          "slit_opening_m": 0.0026229590003049317,
+          "strain_proxy": -0.6529448964770173
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.075423681068676,
+          -0.9962292634687367,
+          0.6985358413740191
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07602156066828086,
+          -0.9942894170047762,
+          0.697756168116068
+        ],
+        "shaft_axis": [
+          -0.27368116200938725,
+          0.90198939344253,
+          -0.33393675400945094
+        ],
+        "tension": 0.06032879914189937
+      },
+      "errors": {
+        "front_pos_err_m": 0.022052641133922343,
+        "direction_err_rad": 0.42775804018957464,
+        "tip_pos_err_m": 0.0037960303056986454,
+        "axis_err_rad": 0.036923606704093774
+      }
+    },
+    {
+      "tick": 13,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08316461212936999,
+            -0.9172489624505352,
+            0.6529691794828796
+          ],
+          "normal": [
+            0.22349895969791184,
+            -0.6368668715152833,
+            -0.7378677408453949
+          ],
+          "e1": [
+            0.9746989749812254,
+            0.14356122786272174,
+            0.17132449336010241
+          ],
+          "e2": [
+            -0.003181695224131905,
+            -0.7574897767104736,
+            0.6528392719457196
+          ],
+          "n_points": 12216
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07692621641047181,
+            -0.9944560083591858,
+            0.6993088890335022
+          ],
+          "axis": [
+            -0.2702808066549169,
+            0.9068828369159048,
+            -0.32328285704832477
+          ],
+          "distal_uv": [
+            310.77272727272725,
+            141.56060606060606
+          ],
+          "proximal_uv": [
+            317.45,
+            116.675
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07089830100737514,
+            -0.9900289699650737,
+            0.7195023544032155
+          ],
+          "direction": [
+            -0.08732134694601666,
+            0.7408903695920358,
+            -0.6659252530226722
+          ],
+          "start": [
+            -0.07786445741217128,
+            -1.0219771409738614,
+            0.7449673557460158
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0029513671047857694,
+          "slit_px": 1464
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.004152894259782488,
+          "slit_opening_m": 0.0029513671047857694,
+          "strain_proxy": -0.6598721880560345
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07626896337777034,
+          -0.9940183020493708,
+          0.69746963818858
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07602156066828086,
+          -0.9942894170047762,
+          0.697756168116068
+        ],
+        "shaft_axis": [
+          -0.27368116200938725,
+          0.90198939344253,
+          -0.33393675400945094
+        ],
+        "tension": 0.07502010949653504
+      },
+      "errors": {
+        "front_pos_err_m": 0.02302605846796722,
+        "direction_err_rad": 0.42858406692719714,
+        "tip_pos_err_m": 0.0018047429009919248,
+        "axis_err_rad": 0.012207193636673887
+      }
+    },
+    {
+      "tick": 14,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08320569033225057,
+            -0.9169627580086221,
+            0.6529353254004081
+          ],
+          "normal": [
+            0.22444341272882837,
+            -0.63843508310501,
+            -0.7362240142397801
+          ],
+          "e1": [
+            0.9744848456379858,
+            0.14541008963289181,
+            0.17098301510637026
+          ],
+          "e2": [
+            -0.002107155558486844,
+            -0.7558151563005688,
+            0.6547816501718715
+          ],
+          "n_points": 12194
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07720845349560247,
+            -0.9912584216908793,
+            0.6995216881877682
+          ],
+          "axis": [
+            -0.2568078815000227,
+            0.9152618956514862,
+            -0.31039551280248584
+          ],
+          "distal_uv": [
+            309.4237288135593,
+            146.83050847457628
+          ],
+          "proximal_uv": [
+            315.73972602739724,
+            123.27397260273973
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07034782433637826,
+            -0.9928084702407566,
+            0.7226266502203214
+          ],
+          "direction": [
+            -0.08538215212635457,
+            0.7397098223760503,
+            -0.6674872783646622
+          ],
+          "start": [
+            -0.07804140615195525,
+            -1.0216298189192765,
+            0.7452743580612426
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0037530278865719746,
+          "slit_px": 1357
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012527686341438882,
+          "slit_opening_m": 0.0037530278865719746,
+          "strain_proxy": 0.026034923474570704
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.0762349190574709,
+          -0.9940964610655684,
+          0.6975100317400629
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07688746791634729,
+          -0.991589472725724,
+          0.6967761231460446
+        ],
+        "shaft_axis": [
+          -0.2741146739917744,
+          0.9019349059961284,
+          -0.3337282889539607
+        ],
+        "tension": 0.07626700488640736
+      },
+      "errors": {
+        "front_pos_err_m": 0.025829466283738382,
+        "direction_err_rad": 0.43125154586384706,
+        "tip_pos_err_m": 0.0027840175876053244,
+        "axis_err_rad": 0.03196309025230271
+      }
+    },
+    {
+      "tick": 15,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08322522107750879,
+            -0.9169012026872255,
+            0.6529206079999416
+          ],
+          "normal": [
+            0.22342416516980668,
+            -0.6387200026428358,
+            -0.7362869010393372
+          ],
+          "e1": [
+            0.9747133912857437,
+            0.14335938132061232,
+            0.17141147171532903
+          ],
+          "e2": [
+            -0.003930301059557015,
+            -0.7559661672398487,
+            0.6545988899488556
+          ],
+          "n_points": 12201
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07885421720242466,
+            -0.991918567555075,
+            0.6987421706332886
+          ],
+          "axis": [
+            -0.30717282749941555,
+            0.8988186764342487,
+            -0.3126816926828292
+          ],
+          "distal_uv": [
+            309.4237288135593,
+            146.83050847457628
+          ],
+          "proximal_uv": [
+            315.73972602739724,
+            123.27397260273973
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.07024960718076934,
+            -0.9929564366709482,
+            0.7228350189189257
+          ],
+          "direction": [
+            -0.08353163930640932,
+            0.740056300245412,
+            -0.6673373492483815
+          ],
+          "start": [
+            -0.07796995858143078,
+            -1.0216149054330392,
+            0.7453531761121992
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0036254044632770153,
+          "slit_px": 1329
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012299810505002609,
+          "slit_opening_m": 0.0036254044632770153,
+          "strain_proxy": 0.007371575748007064
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.0767313458845573,
+          -0.991596003185035,
+          0.6972904462027978
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07688746791634729,
+          -0.991589472725724,
+          0.6967761231460446
+        ],
+        "shaft_axis": [
+          -0.2741146739917744,
+          0.9019349059961284,
+          -0.3337282889539607
+        ],
+        "tension": 0.08736402274955091
+      },
+      "errors": {
+        "front_pos_err_m": 0.026389181706588043,
+        "direction_err_rad": 0.431899929754632,
+        "tip_pos_err_m": 0.0028003122831373054,
+        "axis_err_rad": 0.03931552754521067
+      }
+    },
+    {
+      "tick": 16,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08325748945061237,
+            -0.9180055370288777,
+            0.6537576735637735
+          ],
+          "normal": [
+            0.2236796156254349,
+            -0.6379547125981543,
+            -0.7368725902267395
+          ],
+          "e1": [
+            0.9746319221670984,
+            0.1403916908567565,
+            0.17430659606350965
+          ],
+          "e2": [
+            -0.007748925507729054,
+            -0.7571683814133993,
+            0.6531737872429421
+          ],
+          "n_points": 12395
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07419770585662536,
+            -1.0031752478103975,
+            0.7034995015392146
+          ],
+          "axis": [
+            -0.27649031471392654,
+            0.909577451386009,
+            -0.31019665665433305
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06817281339777195,
+            -0.9929674645128092,
+            0.7232356947633344
+          ],
+          "direction": [
+            -0.0984866548652481,
+            0.7373647014378525,
+            -0.6682766462228944
+          ],
+          "start": [
+            -0.07793387986782599,
+            -1.0217590676147272,
+            0.7451993116771191
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.003608928823556834,
+          "slit_px": 1217
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012020804627329918,
+          "slit_opening_m": 0.003608928823556834,
+          "strain_proxy": -0.015479393420971488
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07673959621468286,
+          -0.9915682788313744,
+          0.6972919286057011
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325185870261008,
+          -1.0031529129609178,
+          0.7010475734928503
+        ],
+        "shaft_axis": [
+          -0.2728733584293599,
+          0.9022402072697676,
+          -0.3339202579139049
+        ],
+        "tension": 0.08732297747934381
+      },
+      "errors": {
+        "front_pos_err_m": 0.027357384576110515,
+        "direction_err_rad": 0.42661266303999557,
+        "tip_pos_err_m": 0.002628131813438567,
+        "axis_err_rad": 0.025095016035107928
+      }
+    },
+    {
+      "tick": 17,
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.08307366691812822,
+            -0.9179400004335105,
+            0.6537473320384048
+          ],
+          "normal": [
+            0.2235305935186548,
+            -0.6375458505261135,
+            -0.7372715661397315
+          ],
+          "e1": [
+            0.9746907391363009,
+            0.14351722841153672,
+            0.17140819172665467
+          ],
+          "e2": [
+            -0.0034694096225058825,
+            -0.7569267425755318,
+            0.6534905275295622
+          ],
+          "n_points": 12394
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07474194688441793,
+            -1.0035250138336596,
+            0.7029313086105535
+          ],
+          "axis": [
+            -0.2869054293121889,
+            0.9043674713298533,
+            -0.3159189000861377
+          ],
+          "distal_uv": [
+            315.9102564102564,
+            121.15384615384616
+          ],
+          "proximal_uv": [
+            323.8514851485148,
+            91.26732673267327
+          ],
+          "axis_src": "markers"
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "front_valid": true,
+          "front": [
+            -0.06906312575985732,
+            -0.9929690559451836,
+            0.7228755202551833
+          ],
+          "direction": [
+            -0.09633157721534724,
+            0.738257453871292,
+            -0.667604792549215
+          ],
+          "start": [
+            -0.07796235806552043,
+            -1.0218149212216086,
+            0.7451214765431088
+          ],
+          "mode": "slit",
+          "slit_opening_m": 0.0036244160224666016,
+          "slit_px": 1248
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.012186831563643502,
+          "slit_opening_m": 0.0036244160224666016,
+          "strain_proxy": -0.0018815565776474363
+        }
+      },
+      "truth": {
+        "cut_front": [
+          -0.07673959621468286,
+          -0.9915682788313744,
+          0.6972919286057011
+        ],
+        "direction": [
+          -0.28860164449504544,
+          0.8999824817521525,
+          -0.32671183531361725
+        ],
+        "tcp": [
+          -0.07325185870261008,
+          -1.0031529129609178,
+          0.7010475734928503
+        ],
+        "shaft_axis": [
+          -0.2728733584293599,
+          0.9022402072697676,
+          -0.3339202579139049
+        ],
+        "tension": 0.08732297747934381
+      },
+      "errors": {
+        "front_pos_err_m": 0.026747159416540604,
+        "direction_err_rad": 0.42670448778939774,
+        "tip_pos_err_m": 0.0024304896302446972,
+        "axis_err_rad": 0.022923703040032602
+      }
+    }
+  ],
+  "final_state": "DONE",
+  "final_label": "完成",
+  "reason": "cut length 10.0 mm reached; scissors retracted",
+  "ticks": 12,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "GRASP",
+    "INIT",
+    "LOCALIZE"
+  ],
+  "transitions": [
+    "ALIGN->CUT",
+    "CUT->DONE",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "建立抓持",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 7,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.049",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.01 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 12,
+      "frm": "CUT",
+      "to": "DONE",
+      "label": "完成",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.1971839415084517,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.0873,
+        "max_strain": 0.1378,
+        "torn": 0,
+        "cut_length_m": 0.01,
+        "faults": []
+      }
+    }
+  ]
+}

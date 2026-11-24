@@ -1,0 +1,24 @@
+{
+  "parent": "config/learn/learned_perception_v1_scoring_notes.json",
+  "scope": "Phase A development diagnostic only. Not a candidate freeze, an L1-L6 pass/fail, H1/H2 evaluation or evidence for enabling motion.",
+  "stream": "Actual ECM 640x480 only, same RGB-D preprocessing and length-only ResNet-18 as the engineering pilot. No auxiliary views, no truth or command metadata in feature channels.",
+  "arms": [68, 135, 270],
+  "partition": "Nested prefixes in the existing Phase A index's frozen train episode order; all arms use the same 30 validation episodes in their original order, including failed task episodes.",
+  "training": {
+    "updates_per_arm": 900,
+    "batch_size": 8,
+    "seed": 20261123,
+    "optimizer": "AdamW, lr 0.0003, weight_decay 0.01, no schedule",
+    "sampling": "Shuffle full batches without replacement per pass, drop the incomplete last training batch, start a fresh shuffled pass on exhaustion. Same optimizer updates and number of training draws for all sizes. Train on native depth only.",
+    "objective": "Exact structural row cross-entropy when sheet is present, uniform 14-way cross-entropy otherwise. No early stopping or checkpoint selection; evaluate the last update only."
+  },
+  "validation": {
+    "depth_sigmas_m": [0.0, 0.0005],
+    "noise_seed": 20261124,
+    "noise": "IID Gaussian on validation depth only, then clip to [0, 0.3] m (registered ECM far plane). Same ordered frames, batch size and CUDA generator reset for every arm; RGB unchanged.",
+    "confidence_cutoffs": [0.0, 0.5, 0.75, 0.9, 0.95, 0.99],
+    "fixed_rule": "Exact row = argmax of the 14-way softmax; otherwise ABSTAIN if max probability < cutoff. Scores here are uncalibrated.",
+    "in_sample_zero_false_reference": "Also show what is left after abstaining on every score at or below the largest false-endpoint confidence observed in either validation depth variant (if none, accept all). One shared cutoff per arm. This is descriptive on the same data used to pick it, not out-of-sample recall and not the study's frozen tau.",
+    "report": "For each variant and rule: false-endpoint count, including pre-sheet as negatives, pre-sheet outcomes, exact-row nonabstained and correct counts, and endpoint calls by true row. Report pooled and exact 9/10 outcomes separately. Do not select the best arm or infer that a flat short curve proves non-observability."
+  }
+}

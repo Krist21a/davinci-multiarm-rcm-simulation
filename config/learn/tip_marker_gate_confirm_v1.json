@@ -1,0 +1,29 @@
+{
+  "status": "registered before collection and one-time independent scoring",
+  "scope": "Independent offline confirmation of the fixed depth-only gate for the three-marker cutter TCP proxy on the non-anatomical simulation sheet. Not clinical validation, direct blade visibility proof, a stop permit, or controller integration. No M5 change.",
+  "parent": {
+    "protocol": "config/learn/tip_marker_gate_v1_dev.json",
+    "protocol_sha256": "247328a2ffe1e317cd0c295e5743a080494b8fe196954d6f84f1ed95297c50f2",
+    "gate_source": "scripts/learn/tip_marker_gate_dev.py",
+    "gate_source_sha256": "8dcdad5a07cf4e785160ffdf5864a751656b57e6994b7a4280cefd31402b4ee7",
+    "development_report": "tip_marker_gate_v1_dev_01/report.json",
+    "development_report_sha256": "c432b27ea264b72c36f7dd1385002c2f175800a11c9ebb8c61711651a63fa3fb"
+  },
+  "cohort": {
+    "tag": "tip_marker_gate_confirm_v1",
+    "start": 8212,
+    "count": 40,
+    "sampler_namespace": "dev",
+    "selection": "Starting at 412 (one past the separately reserved v1 indices), examine nonoverlapping blocks of 40 consecutive indices, through the last block starting below 10000. Lock the first block whose pre-capture sampled scenarios contain >=16 occlusion_transient episodes and >=5 of each other registered scenario. No images, labels, execution outcomes or estimated gate results in selection. This cohort is occlusion-enriched, not an estimate of natural prevalence.",
+    "expected_scenarios": {"nominal": 13, "occlusion_transient": 16, "relax": 6, "slip_regrasp": 5},
+    "acquisition": "Use unchanged scripts/learn/collect.py and registered scene, base configuration and sampler. Truth-controlled collection only. Dedicated simulator profiles on ports 24620-24623; actual 640x480 ECM only (--no-aux). Preserve all DONE and FSM FAILED episodes. No substitutions or reruns; any missing episode, refusal, infrastructure error, missing frame, corruption or cleanup failure makes confirmation incomplete.",
+    "workers": 4,
+    "base_port": 24620
+  },
+  "readers": "Unchanged ray-refined three-marker baseline and exactly the fixed depth rule from the development protocol. The gate only suppresses coordinates. It uses a valid in-image marker estimate, complete finite 9x9 depth patch, and the central 3x3 all nearer than marker TCP z by strictly more than 3 mm. No learned gate, label, pose, state, history or timing in any reader.",
+  "scoring": {
+    "labels": "Same virtual TCP label policy, clean-depth evidence and timing strata as learned_tip_v1. Labels only in scorer; same labels for clean and registered 0.5 mm noise. Same seeded draw for both readers.",
+    "coverage": "Require at least four distinct independent episodes with a depth_blocked exposure, at least one supported positive exposure per registered scenario, and at least one blocked exposure with an actual marker-only output per depth stream to exercise suppression. Otherwise incomplete, regardless of point estimates.",
+    "gates": "Per depth stream fixed rule: supported-positive coverage >=90%, median accepted-positive 3D error <0.5 mm, fraction of accepted positives with 3D error >2 mm <5%, and zero accepted explicit negatives. No change to the development cutoffs. Report baseline, fixed gate, paired retained/suppressed counts and episode bootstrap intervals. One scoring attempt; no rerun, tuning, or automatic use in control."
+  }
+}

@@ -73,7 +73,9 @@ class SimWorld:
     _in_event = False
     awaiting_new_slit = False
 
-    SHEET_KEYS = frozenset(('seam_mode', 'guide_band_m', 'ruler_print', 'indexed_print'))
+    SHEET_KEYS = frozenset(('seam_mode', 'guide_band_m', 'ruler_print', 'indexed_print',
+                            'visual_gap_m', 'visual_gap_style', 'visual_gap_start_row',
+                            'bridge_print', 'bridge_fracture_faces', 'roll_deg'))
 
     @staticmethod
     def _check_sheet_cfg(sheet):
@@ -95,6 +97,28 @@ class SimWorld:
             raise ValueError('sheet.ruler_print must be a boolean')
         if 'indexed_print' in sheet and type(sheet['indexed_print']) is not bool:
             raise ValueError('sheet.indexed_print must be a boolean')
+        gap = sheet.get('visual_gap_m')
+        if gap is not None and (type(gap) not in (int, float) or not math.isfinite(gap)
+                                or not 0 < gap <= 0.0004 or mode is not None):
+            raise ValueError('sheet.visual_gap_m requires the conventional flat sheet and <= 0.4 mm')
+        if 'visual_gap_style' in sheet and (sheet['visual_gap_style'] != 'edge'
+                                            or gap is None):
+            raise ValueError('sheet.visual_gap_style requires visual_gap_m and edge mode')
+        if 'visual_gap_start_row' in sheet and (type(sheet['visual_gap_start_row']) is not int
+                                               or sheet['visual_gap_start_row'] != 7
+                                               or sheet.get('visual_gap_style') != 'edge'):
+            raise ValueError('sheet.visual_gap_start_row requires the row-7 edge specimen')
+        if 'bridge_print' in sheet and (sheet['bridge_print'] is not True or gap is not None
+                                         or mode is not None):
+            raise ValueError('sheet.bridge_print requires the flat conventional marked sheet')
+        if 'bridge_fracture_faces' in sheet and (
+                sheet['bridge_fracture_faces'] is not True or not sheet.get('bridge_print')):
+            raise ValueError('sheet.bridge_fracture_faces requires the physical bridge specimen')
+        if 'roll_deg' in sheet:
+            roll = sheet['roll_deg']
+            if (type(roll) not in (float, int) or not -workspace.MAX_ROLL_DEG <= roll <= workspace.MAX_ROLL_DEG
+                    or not sheet.get('bridge_fracture_faces')):
+                raise ValueError('sheet.roll_deg requires the v5 fracture specimen and a roll within +/-16 deg')
         if sheet.get('indexed_print') and sheet.get('ruler_print'):
             raise ValueError('conflicting print layouts')
         if 'guide_band_m' in sheet:
@@ -106,6 +130,12 @@ class SimWorld:
     def _canonical_gate(self, cfg):
         """True when the requested surface-seam coupon may run; refuse every
         incompatible setting instead of silently falling back."""
+        if 'visual_gap_m' in self.sheet_cfg or 'bridge_print' in self.sheet_cfg:
+            if (self.tissue_source is not None or self.mode != 'full'
+                    or self.roi_proxy is not None
+                    or not (cfg.get('perception') or {}).get('material_pattern')):
+                raise ValueError("sheet.visual_gap_m requires the current full-mode "
+                                 'flat marked conventional sheet')
         if self.sheet_cfg.get('seam_mode') != 'surface':
             return False
         if self.tissue_source is not None:
@@ -809,7 +839,8 @@ class SimWorld:
                                            anchor_from_row=3, grasp_radius=GRASP_RADIUS_M))
         else:
             f = self.frame(self.cutter)
-            L = workspace.layout(f['pivot'], f['x'], f['axis'], f['tcp'])
+            L = workspace.layout(f['pivot'], f['x'], f['axis'], f['tcp'],
+                                 roll_deg=self.sheet_cfg.get('roll_deg', 0.0))
             self.v, self.u, self.sheet_origin, self.grasp_points = \
                 L['v'], L['u'], L['origin'], L['grasp_points']
             seam = {}
@@ -821,6 +852,16 @@ class SimWorld:
                     seam['ruler_print'] = True
                 if self.sheet_cfg.get('indexed_print'):
                     seam['indexed_print'] = True
+            elif 'visual_gap_m' in self.sheet_cfg:
+                seam['visual_gap_m'] = self.sheet_cfg['visual_gap_m']
+                if 'visual_gap_style' in self.sheet_cfg:
+                    seam['visual_gap_style'] = self.sheet_cfg['visual_gap_style']
+                if 'visual_gap_start_row' in self.sheet_cfg:
+                    seam['visual_gap_start_row'] = self.sheet_cfg['visual_gap_start_row']
+            if self.sheet_cfg.get('bridge_print'):
+                seam['bridge_print'] = True
+                if self.sheet_cfg.get('bridge_fracture_faces'):
+                    seam['bridge_fracture_faces'] = True
             self.call('tissueCreate', dict(origin=self.sheet_origin.tolist(), u=self.u.tolist(), v=self.v.tolist(),
                                            nu=NU, nv=NV, spacing=H, pretension=self.pretension,
                                            anchor_sides=self.mode == 'cut_only',

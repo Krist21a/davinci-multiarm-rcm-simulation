@@ -1,0 +1,21 @@
+{
+  "status": "registered before label generation and offline fitting",
+  "scope": "Weak-supervision training of visible central slit aperture pixels, not a dense human annotation, slit apex, structural length, closure decision, stop permission or clinical system.",
+  "data": {
+    "split": "Use the original Phase A episode lock (270 train, 30 development validation). Keep DONE and FAILED. No new captures, independent evaluation, H1, auxiliary cameras or history.",
+    "image": "Use the matched 1280x960 actual-pose HD render for each main exposure, with RGB-D from one exposure only. Crop [448,832) in u and [288,672) in v without pooling, independent of truth and without moving the camera. Multiplex RGB/255 and metric depth clipped to [0,far] and divided by far into four channels. Store float16, train from float32 inputs.",
+    "alignment": "Match the pinned index, episode manifests, tick and source digests. Require exact pair pose and 2x focal length. Never provide pose, logged nodes, edges, stage or structural length to the model."
+  },
+  "labels": {
+    "type": "Weak, visibility-bounded pixel labels on the native grid: 1 supported visible aperture, 0 known non-aperture, 255 unknown/ignored.",
+    "geometry": "Reconstruct the original renderer triangles from the 14x24 mesh and triangle-edge liveness, using the central strip across columns 11/12 and the adjoining cells. Use camera-space projection, pixel centres at (u+0.5,v+0.5) and perspective-correct inverse depth. Non-face diagonals are not visual labels. Neither positive nor extent is inferred from cut length.",
+    "positive": "An interior ray of a missing central triangle gets a positive only if a finite non-pink measured depth is strictly more than 2 mm behind its projected depth, there is no overlapping live central triangle projection, and each adjacent bank in the same material cell has at least two pink depth-consistent live-triangle pixels within 1 mm of predicted depth. Remove isolated positives (8-connectivity, retain components >=2 pixels).",
+    "negative_unknown": "Pre-sheet and mesh-intact central strip are all known negative. When the central strip is damaged, pixels outside its 2-pixel dilated projection and depth-supported pink live central pixels are known negatives; the other pixels are unknown unless positive. A wholly off-crop damaged projection is all unknown. No closed/occluded evidence is filled in. Pixel annotations are conservative proxy targets, not independently labelled exact boundaries.",
+    "loss_support": "Fit only when training has at least 20 distinct episodes with positive pixels and development validation has at least 3. Retain counts for every episode, including frames without positive pixels."
+  },
+  "training": {
+    "model": "Native-resolution RGB-D U-Net, widths 16/32/64 with two 3x3 Conv+GroupNorm(4)+SiLU blocks in each stage, 2x average pooling, nearest upsample with skip concatenation, binary 1x1 head.",
+    "recipe": "Seed 20261126. Six epochs, last only, AdamW lr=0.0003 weight_decay=0.01, batch 8, keep short batch, no augmentation, deterministic CUDA BF16 autocast and FP32 loss. A seeded replacement sampler draws one eligible-training-population length per epoch and puts equal total weight on frames with/without positive pixels. Use equal-weight positive/negative mean softplus BCE when both exist in the batch; if either is absent, average over the present class only. Unknown pixels are not scored.",
+    "output": "Last checkpoint, training loss history and development-only metrics on weak labels at fixed sigmoid >0.5 (incl. precision, recall, IoU, class support and positive prediction counts on no-positive frames). No acceptance thresholds, model selection, independent evaluation or controller integration."
+  }
+}

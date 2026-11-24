@@ -7,3 +7,7 @@ pillow
 trimesh
 fast-simplification
 shapely              # scripts/build/measure_jaw_pivot.py only
+
+# Feasibility analysis geometry kernels (scripts/analysis/).
+rtree==1.4.1         # trimesh bounds_tree/proximity queries
+embreex==4.4.0.post1 # embree ray backend for trimesh (optional; trimesh falls back to its default engine)

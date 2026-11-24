@@ -1,0 +1,9 @@
+{
+  "scope": "Development-only 8 mm native-HD negative for the physical row-8 bridge specimen, without changing the executing noisy 640x480 visual FSM or its closure/recovery budgets.",
+  "parent": "config/task/m5_visible_fracture_dev_v4.json",
+  "parent_sha256": "e3be9d62818792c60a7bfd586c8f2f867516d75cce30fe23e4f924e260afb14a",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "capture": "Repeat the full 0.5 mm noisy FSM with bridge_print=true. From the third commanded closure, take a passive extra 1280x960 RGB-D exposure and re-estimate scissors and slit on THAT HD image using a copy of the estimator. Restore the untouched controller image and 640x480 camera each time. Independently verify tick-for-tick mechanical length and closure trace identity against m5_visible_fracture_dev_v4/depth_noise_0p5. Keep every frame, not a hand-picked endpoint. Stop earlier only for a normal FSM failure; never use a truth trajectory or an HD prediction for movement.",
+  "screen": "Freeze image-only predictions with byte-identical bridge_observer.py before reading the 8 mm structural label. Require at least two consecutive post-third-closure exposures at actual 8 mm with all seven physical row-8 ligaments qualified and status NOT_STOP, zero STOP_CANDIDATE below 9 mm, valid optical cutter and direct slit. Unknown is not a negative. Compare the already sealed 9 mm nominal positive in the v4 run (ticks 31/32) only after freezing. Passing permits a separate controller trial but is not M5 success."
+}

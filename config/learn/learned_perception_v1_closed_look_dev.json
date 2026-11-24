@@ -1,0 +1,24 @@
+{
+  "parent": "config/learn/learned_perception_v1_native_hd_dev.json",
+  "scope": "Development-only paired closed-jaw look-back on the original non-anatomical sheet. No H1/H2, Phase B, gate or production controller changes.",
+  "cohort": {
+    "tag": "dev_closed_look_v1",
+    "start": 336,
+    "blocks": 3,
+    "condition_names": ["below", "near", "within", "above_candidate"],
+    "advance_um": [3000, 3500, 4000, 2000],
+    "target_um": [8000, 8000, 10000, 10000],
+    "scenario": "nominal",
+    "pose": "Use a new parent dev seed per episode and the sampled ECM initial target from the first index of each four-episode block. Do not move ECM for the pair."
+  },
+  "capture": {
+    "work": "Existing observations in the truth-controlled runner. At the parent FSM's _complete entry, keep the work frame only if jaws are already closed. For the genuine overcut failure use its first observed structural row outside 10 mm as a work-only negative; never try the back-off on a guard failure.",
+    "look": "Invoke only the existing guarded 3 mm clear_view back-off once, with unchanged closed jaws, before the normal completion path. Use original sheet and sensors; record main and native HD images; no extra cut or camera command.",
+    "qualified": "Compare cut-event count, constraint bits, structural cut length (1e-12 m), accepted closure count, jaw state, grasp counts, existing fault/tear/tension guards, and ECM extrinsics (1e-6 entries and metres). Require back-off residual <=0.5 mm along the original axis and distance from the ready pose >0.5 mm. Require the work image to be the first observation of this exact positive terminal row and strictly after an accepted closure. Final parent withdrawal must still pass. Report all exclusions and refusals; never rerun to replace a failed pair."
+  },
+  "scoring": {
+    "model": "Rebuild only the native384 arm from unchanged Phase A training and caches, same configuration and seed. The original run saved no weights. Derive and write its old-development strict threshold before reading paired pixels or scoring them. No calibration or threshold adjustments with the new cohort. Use existing clean RGB-D locator and native crop, clean depth only.",
+    "populations": "Report raw argmax and locked decisions by structural row and phase. Use valid pairs only for paired differences; any missing nominal pair invalidates the progression criterion. Force abstention when the image locator is invalid. Also report work-only overcut frames separately with true measured labels.",
+    "progression": "Consider only a larger development view qualification (not formal training or integration) if all nine 8/9/10 mm work-look pairs qualify, all three work-only overcut negatives exist, there are zero false endpoints in any checked work/look frame, and the locked look gains endpoint detections with no losses over paired work, reaches at least 3 of 6 true endpoints, and detects at least one each of true 9 and 10 mm. Otherwise stop this back-off recipe; no selection among additional poses on these data."
+  }
+}

@@ -1,0 +1,2003 @@
+{
+  "run_id": "6aa297ab4f9a4f679346fddaadf61635",
+  "_note": "Wrist-aware reachability companion to prostate_access_feasibility.py. The instrument is modelled as the polyline port -> W -> target; the shaft AND the distal wrist+jaw segment are clearance-checked (centre ray on both segments, 6 mm radius in arc length excluding the first 20 mm and the last 12 mm of arc). At theta = 0 this is exactly the original straight-shaft model. Conservative (a) = max |wrist pitch| only; optimistic (b) = acos(cos pmax * cos ymax). Sampled bend directions are nominal about the port->target line; the ACCEPTED bend is the angle between the actual shaft direction port->W and the distal direction, verified <= theta_max. Exploratory geometric feasibility only; no deformation, no clinical claim.",
+  "source_sha256": {
+    "scripts/analysis/prostate_access_wrist.py": "9917759852db505b18b9238eecb0ed85350d9ab610ced260bf73f73e8d2dfdd1",
+    "scripts/analysis/prostate_access_feasibility.py": "1e909f3e5b759515d26da9fea28d9cd8f0275f8503e1f3e7c3505dc169e5ea7f",
+    "config/task/cut_task.json": "76b980af268e9c07dae8b765b93a19b91e35bfa86d7734e9de3b602f5830bdb8",
+    "config/instruments/roles.json": "798a25e8e329a1e5b2a5c0953d6f89bbe13e47f3c645eb4eba2a4c358dc40543",
+    "config/instruments/rcm_config.json": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+    "config/instruments/420172.json": "684f7eb57c973118fd734e7ea8fe40efc0095c11ffc22dd5797b749e3086bb74",
+    "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
+    "config/instruments/420093.json": "d82b4dfc26d55b5ae692357ff3cb5f9295eec491624f7d7de24611d1be9a49eb"
+  },
+  "params": {
+    "shaft_radius_m": 0.006,
+    "wall_skip_m": 0.02,
+    "tip_skip_m": 0.012,
+    "range_m": [
+      0.06,
+      0.22
+    ],
+    "axial_step_m": 0.001,
+    "port_sep_m": 0.06,
+    "meet_deg": [
+      20.0,
+      100.0
+    ],
+    "n_az": 16,
+    "bend_fracs": [
+      0.3333333333333333,
+      0.6666666666666666,
+      1.0
+    ],
+    "self_check": {
+      "Ld": 0.012,
+      "theta_max": 0.0
+    },
+    "ray_engine": "ray_pyembree",
+    "roles": [
+      "retract_primary",
+      "cut",
+      "retract_assist"
+    ],
+    "tools": {
+      "retract_primary": {
+        "arm": "psm1",
+        "model": "420172",
+        "pitch_limit_rad": 1.2217,
+        "yaw_limit_rad": 1.5708,
+        "theta_conservative_rad": 1.2217,
+        "theta_optimistic_rad": 1.5707975832102268,
+        "ld_m": 0.03178642543534129
+      },
+      "cut": {
+        "arm": "psm2",
+        "model": "420179",
+        "pitch_limit_rad": 1.39626,
+        "yaw_limit_rad": 1.39626,
+        "theta_conservative_rad": 1.39626,
+        "theta_optimistic_rad": 1.540636901847597,
+        "ld_m": 0.022208901062549656
+      },
+      "retract_assist": {
+        "arm": "psm3",
+        "model": "420093",
+        "pitch_limit_rad": 1.39626,
+        "yaw_limit_rad": 1.39626,
+        "theta_conservative_rad": 1.39626,
+        "theta_optimistic_rad": 1.540636901847597,
+        "ld_m": 0.039405943747813865
+      }
+    },
+    "wrist": {
+      "psm1": {
+        "ld_m": 0.03178642543534129,
+        "ld_origin_m": 0.03178644442841618,
+        "pitch_joint": "psm1_joint9",
+        "yaw_joint": "psm1_wrist_yaw_joint",
+        "tcp": "psm1_tcp",
+        "pitch_pos": [
+          -0.11118765617458276,
+          -1.0225079016020047,
+          0.7060646835766684
+        ],
+        "pitch_axis": [
+          0.3866535899900447,
+          -0.48417841555416163,
+          -0.7849014353785271
+        ],
+        "yaw_pos": [
+          -0.10369128568669775,
+          -1.0149357428928825,
+          0.7050865005711804
+        ],
+        "yaw_axis": [
+          0.5997208726563971,
+          -0.5145508397505667,
+          0.612839545241849
+        ],
+        "roll_axis": [
+          0.7005965852033135,
+          0.7076767837843191,
+          -0.0914220678727986
+        ],
+        "tcp_pos": [
+          -0.08979807243482835,
+          -0.9993070986061285,
+          0.7022454562742722
+        ],
+        "q_pitch_rad": 0.0,
+        "q_yaw_rad": 0.0,
+        "pitch_to_yaw_origin_m": 0.010699999999999727,
+        "tcp_to_yaw_axis_m": 0.021053328675871962,
+        "pitch_axis_x_roll_axis": 3.6732051034715774e-06
+      },
+      "psm2": {
+        "ld_m": 0.022208901062549656,
+        "ld_origin_m": 0.022208939852903415,
+        "pitch_joint": "psm2_joint9",
+        "yaw_joint": "psm2_wrist_yaw_joint",
+        "tcp": "psm2_tcp",
+        "pitch_pos": [
+          -0.07180899069886348,
+          -1.001824350684374,
+          0.6928932327709801
+        ],
+        "pitch_axis": [
+          -0.2707799010752074,
+          -0.46527725183133245,
+          -0.842730872878159
+        ],
+        "yaw_pos": [
+          -0.07405302531222147,
+          -0.9938186135525641,
+          0.6891942489064017
+        ],
+        "yaw_axis": [
+          0.9305203173849155,
+          0.09774799599501573,
+          -0.35295505126408716
+        ],
+        "roll_axis": [
+          -0.2465985272292755,
+          0.8797495902402694,
+          -0.40648471661358976
+        ],
+        "tcp_pos": [
+          -0.07580766147384407,
+          -0.9822002302321796,
+          0.6832941943868001
+        ],
+        "q_pitch_rad": 0.0,
+        "q_yaw_rad": 0.0,
+        "pitch_to_yaw_origin_m": 0.009100000000000072,
+        "tcp_to_yaw_axis_m": 0.013052307048067185,
+        "pitch_axis_x_roll_axis": 3.6732051032495328e-06
+      },
+      "psm3": {
+        "ld_m": 0.039405943747813865,
+        "ld_origin_m": 0.03940598333418354,
+        "pitch_joint": "psm3_joint9",
+        "yaw_joint": "psm3_wrist_yaw_joint",
+        "tcp": "psm3_tcp",
+        "pitch_pos": [
+          -0.0336889116340468,
+          -1.0231236688535388,
+          0.698918034927307
+        ],
+        "pitch_axis": [
+          -0.6509773807409429,
+          -0.7347505256347384,
+          -0.19070950380916307
+        ],
+        "yaw_pos": [
+          -0.0414741987236093,
+          -1.01589503625761,
+          0.6976428189745505
+        ],
+        "yaw_axis": [
+          0.2164050959975841,
+          0.061176775425954545,
+          -0.9743850555990474
+        ],
+        "roll_axis": [
+          -0.7275993903915847,
+          0.6755704197202207,
+          -0.11917942398266398
+        ],
+        "tcp_pos": [
+          -0.06237456514644146,
+          -0.99653691158663,
+          0.694110837913322
+        ],
+        "q_pitch_rad": 0.0,
+        "q_yaw_rad": 0.0,
+        "pitch_to_yaw_origin_m": 0.010699999999999857,
+        "tcp_to_yaw_axis_m": 0.028705863918450803,
+        "pitch_axis_x_roll_axis": 3.673205103311983e-06
+      }
+    },
+    "wrist_source": "scenes/davinci_si_articulated_verified.ttt",
+    "target_spacing_m": 0.003,
+    "port_grid_m": 0.01
+  },
+  "transform_check_max_error_m": 9.047773596649288e-10,
+  "target_surface_check": {
+    "max_abs_offset_m": 5.681219383824043e-17
+  },
+  "axes": {
+    "left_right": [
+      -1.0,
+      0.0,
+      0.0
+    ],
+    "anterior": [
+      0.0,
+      -0.3420201433256687,
+      0.9396926207859085
+    ],
+    "superior": [
+      0.0,
+      0.9396926207859085,
+      0.3420201433256687
+    ],
+    "prostate_centre": [
+      -0.06919169999682331,
+      -0.9999999999859341,
+      0.6499999999890308
+    ]
+  },
+  "ecm_port": [
+    -0.0691917,
+    -1.1896155795977577,
+    0.7116643785470914
+  ],
+  "current_ports": {
+    "psm1": [
+      -0.17515218205829597,
+      -1.0871188502031828,
+      0.7144115259054065
+    ],
+    "psm2": [
+      -0.048448429529702866,
+      -1.0851640378533396,
+      0.7313999960021021
+    ],
+    "psm3": [
+      0.042251817941704045,
+      -1.09363405028434,
+      0.7113569848756469
+    ]
+  },
+  "candidate_ports": 5056,
+  "candidate_ports_pre_filter": 5144,
+  "targets": {
+    "points": [
+      [
+        -0.08623362170284334,
+        -1.0048705543069418,
+        0.6464341433368491
+      ],
+      [
+        -0.05091945621126087,
+        -0.9998221926913602,
+        0.6444596890271495
+      ],
+      [
+        -0.052874671383341745,
+        -1.0074652638585189,
+        0.6532657471272469
+      ],
+      [
+        -0.05381960856309572,
+        -0.9932497242364184,
+        0.6507827719389961
+      ],
+      [
+        -0.08545439476139512,
+        -0.9933729169107834,
+        0.6447408193559514
+      ],
+      [
+        -0.05157200927167567,
+        -1.0013642319462848,
+        0.6563621551278654
+      ],
+      [
+        -0.05029204036670639,
+        -1.001358409865803,
+        0.6488667217665146
+      ],
+      [
+        -0.08742066825474773,
+        -0.999346606777572,
+        0.6539004809921876
+      ]
+    ],
+    "side": [
+      "+x",
+      "-x",
+      "-x",
+      "-x",
+      "+x",
+      "-x",
+      "-x",
+      "+x"
+    ]
+  },
+  "cases": {
+    "bladder_in_place": {
+      "visible": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "straight": {
+        "ports_reaching": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "triangulable": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "feasible": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ]
+      },
+      "theta0_ports_reaching": {
+        "retract_primary": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cut": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "retract_assist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "self_check": {
+        "expected": {
+          "visible": 6,
+          "visible_array": [
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "ports_reaching": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "reachable_by_3": 0,
+          "feasible": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "got": {
+          "visible": 6,
+          "visible_array": [
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "ports_reaching": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "reachable_by_3": 0,
+          "feasible": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "residual_ports": [],
+        "ok": true,
+        "exact": true
+      },
+      "conservative": {
+        "summary": {
+          "+x": {
+            "targets": 3,
+            "visible": 2,
+            "reachable_any_role": 1,
+            "triangulable": 0,
+            "feasible": 0
+          },
+          "-x": {
+            "targets": 5,
+            "visible": 4,
+            "reachable_any_role": 0,
+            "triangulable": 0,
+            "feasible": 0
+          }
+        },
+        "reaching_ports_per_role": {
+          "retract_primary": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0
+          ],
+          "cut": [
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0
+          ],
+          "retract_assist": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0
+          ]
+        },
+        "reaching_gain_vs_theta0": {
+          "retract_primary": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0
+          ],
+          "cut": [
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0
+          ],
+          "retract_assist": [
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0
+          ]
+        },
+        "triangulable": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "feasible": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "trios": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "optimistic": {
+        "summary": {
+          "+x": {
+            "targets": 3,
+            "visible": 2,
+            "reachable_any_role": 1,
+            "triangulable": 0,
+            "feasible": 0
+          },
+          "-x": {
+            "targets": 5,
+            "visible": 4,
+            "reachable_any_role": 0,
+            "triangulable": 0,
+            "feasible": 0
+          }
+        },
+        "reaching_ports_per_role": {
+          "retract_primary": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "cut": [
+            0,
+            0,
+            0,
+            0,
+            5,
+            0,
+            0,
+            0
+          ],
+          "retract_assist": [
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0
+          ]
+        },
+        "reaching_gain_vs_theta0": {
+          "retract_primary": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "cut": [
+            0,
+            0,
+            0,
+            0,
+            5,
+            0,
+            0,
+            0
+          ],
+          "retract_assist": [
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0
+          ]
+        },
+        "triangulable": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "feasible": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "trios": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "current_ports": {
+        "psm1": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "optimistic": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "psm2": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "optimistic": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "psm3": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "optimistic": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        }
+      }
+    },
+    "bladder_removed": {
+      "visible": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true
+      ],
+      "straight": {
+        "ports_reaching": [
+          67,
+          5,
+          76,
+          0,
+          0,
+          0,
+          4,
+          3
+        ],
+        "triangulable": [
+          true,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "feasible": [
+          true,
+          false,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false
+        ]
+      },
+      "theta0_ports_reaching": {
+        "retract_primary": [
+          67,
+          5,
+          76,
+          0,
+          0,
+          0,
+          4,
+          3
+        ],
+        "cut": [
+          67,
+          5,
+          76,
+          0,
+          0,
+          0,
+          4,
+          3
+        ],
+        "retract_assist": [
+          67,
+          5,
+          76,
+          0,
+          0,
+          0,
+          4,
+          3
+        ]
+      },
+      "self_check": {
+        "expected": {
+          "visible": 7,
+          "visible_array": [
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true,
+            true
+          ],
+          "ports_reaching": [
+            68,
+            5,
+            76,
+            0,
+            0,
+            0,
+            4,
+            3
+          ],
+          "reachable_by_3": 2,
+          "feasible": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "got": {
+          "visible": 7,
+          "visible_array": [
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true,
+            true
+          ],
+          "ports_reaching": [
+            67,
+            5,
+            76,
+            0,
+            0,
+            0,
+            4,
+            3
+          ],
+          "reachable_by_3": 2,
+          "feasible": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "residual_ports": [
+          {
+            "target": 0,
+            "got": 67,
+            "expected": 68
+          }
+        ],
+        "ok": true,
+        "exact": false
+      },
+      "conservative": {
+        "summary": {
+          "+x": {
+            "targets": 3,
+            "visible": 3,
+            "reachable_any_role": 3,
+            "triangulable": 3,
+            "feasible": 3
+          },
+          "-x": {
+            "targets": 5,
+            "visible": 4,
+            "reachable_any_role": 4,
+            "triangulable": 4,
+            "feasible": 4
+          }
+        },
+        "reaching_ports_per_role": {
+          "retract_primary": [
+            206,
+            145,
+            222,
+            0,
+            22,
+            155,
+            156,
+            141
+          ],
+          "cut": [
+            164,
+            115,
+            178,
+            0,
+            24,
+            113,
+            119,
+            108
+          ],
+          "retract_assist": [
+            251,
+            180,
+            284,
+            0,
+            31,
+            204,
+            206,
+            172
+          ]
+        },
+        "reaching_gain_vs_theta0": {
+          "retract_primary": [
+            139,
+            140,
+            146,
+            0,
+            22,
+            155,
+            152,
+            138
+          ],
+          "cut": [
+            97,
+            110,
+            102,
+            0,
+            24,
+            113,
+            115,
+            105
+          ],
+          "retract_assist": [
+            184,
+            175,
+            208,
+            0,
+            31,
+            204,
+            202,
+            169
+          ]
+        },
+        "triangulable": [
+          true,
+          true,
+          true,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "feasible": [
+          true,
+          true,
+          true,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "trios": [
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07974881794170403,
+                -1.1163414317277933,
+                0.6761104023118315
+              ],
+              "wrist": [
+                -0.08121100674102345,
+                -1.0360938368523076,
+                0.6496367685091209
+              ],
+              "bend_rad": 0.9419907397639422,
+              "port_w_m": 0.1817927251897459,
+              "arc_m": 0.2135791506250872
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.04196981794170404,
+                -1.1467527414125365,
+                0.7124804335568737
+              ],
+              "wrist": [
+                -0.0721597918251289,
+                -1.0204460004068165,
+                0.6536845280003803
+              ],
+              "bend_rad": 2.1073424255447017e-08,
+              "port_w_m": 0.18009974780444216,
+              "arc_m": 0.20230864886699182
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.04606181794170404,
+                -1.0768033862608841,
+                0.7257080379057549
+              ],
+              "wrist": [
+                -0.08303908505670754,
+                -1.042586127624699,
+                0.6573958433685613
+              ],
+              "bend_rad": 1.1431327800275466,
+              "port_w_m": 0.1500147321634387,
+              "arc_m": 0.18942067591125256
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.05660181794170403,
+                -1.16341356256069,
+                0.6863446942289861
+              ],
+              "wrist": [
+                -0.05852427473988712,
+                -1.0303461877318114,
+                0.6490236022464914
+              ],
+              "bend_rad": 0.9433602877670675,
+              "port_w_m": 0.17987164136334954,
+              "arc_m": 0.21165806679869084
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.01104651794170404,
+                -1.1430649765359828,
+                0.7268498637036505
+              ],
+              "wrist": [
+                -0.055489224165549626,
+                -1.0209850702682046,
+                0.6395114449024555
+              ],
+              "bend_rad": 1.0395514403553352,
+              "port_w_m": 0.1641904622406716,
+              "arc_m": 0.18639936330322127
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.0020488179417040425,
+                -1.082090305354487,
+                0.7333452455671281
+              ],
+              "wrist": [
+                -0.06164067059948492,
+                -1.0371141908077106,
+                0.6513292480514041
+              ],
+              "bend_rad": 1.2139233354631571,
+              "port_w_m": 0.11316282816747836,
+              "arc_m": 0.15256877191529222
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07497981794170404,
+                -1.1624848181693506,
+                0.6528532918228097
+              ],
+              "wrist": [
+                -0.05683158677735216,
+                -1.039004408706601,
+                0.6532209724373977
+              ],
+              "bend_rad": 0.9428268307504716,
+              "port_w_m": 0.18061504124555477,
+              "arc_m": 0.21240146668089607
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.04196981794170404,
+                -1.1467527414125365,
+                0.7124804335568737
+              ],
+              "wrist": [
+                -0.06055708397127222,
+                -1.0278339734017437,
+                0.65766250670433
+              ],
+              "bend_rad": 1.0381617027017025,
+              "port_w_m": 0.16630828032749495,
+              "arc_m": 0.1885171813900446
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.04368981794170404,
+                -1.0870942955106817,
+                0.7260334324340718
+              ],
+              "wrist": [
+                -0.05728894072600349,
+                -1.044794277544091,
+                0.6650931460842737
+              ],
+              "bend_rad": 1.1858597206417574,
+              "port_w_m": 0.1252985224272034,
+              "arc_m": 0.16470446617501727
+            }
+          ],
+          null,
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07196271625578839,
+                -0.951196840261206,
+                0.7700007237834541
+              ],
+              "wrist": [
+                -0.06335601330913793,
+                -0.9705271588350446,
+                0.6450720550603393
+              ],
+              "bend_rad": 0.9396450583312417,
+              "port_w_m": 0.1851809710962806,
+              "arc_m": 0.2169673965316219
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.0013052179417040455,
+                -1.1620355267531286,
+                0.7257110011065173
+              ],
+              "wrist": [
+                -0.093286101369581,
+                -1.0141279228187452,
+                0.6436780927825125
+              ],
+              "bend_rad": 1.0228966866700204,
+              "port_w_m": 0.19378744809392195,
+              "arc_m": 0.21599634915647162
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.027483085226185464,
+                -0.8885840454560252,
+                0.770865205353703
+              ],
+              "wrist": [
+                -0.05742900615395342,
+                -0.967369602115927,
+                0.6351891903986819
+              ],
+              "bend_rad": 1.1089610990712244,
+              "port_w_m": 0.17839621138027215,
+              "arc_m": 0.217802155128086
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.06438581794170405,
+                -1.1675841507017473,
+                0.6717551175713325
+              ],
+              "wrist": [
+                -0.0580891632488966,
+                -1.0324314884949264,
+                0.6580141589216243
+              ],
+              "bend_rad": 0.9412092664129921,
+              "port_w_m": 0.18290756426086374,
+              "arc_m": 0.21469398969620504
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.018909117941704037,
+                -1.2009599692489197,
+                0.6950900309008905
+              ],
+              "wrist": [
+                -0.05447015000976193,
+                -1.0230915887365495,
+                0.6599339940907667
+              ],
+              "bend_rad": 0.516400874926011,
+              "port_w_m": 0.19559556404832174,
+              "arc_m": 0.2178044651108714
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.05172281794170404,
+                -1.1126803555776181,
+                0.7179901396228189
+              ],
+              "wrist": [
+                -0.05991017950650262,
+                -1.0388475865101885,
+                0.6652109658065717
+              ],
+              "bend_rad": 1.152346406976532,
+              "port_w_m": 0.14387093207511148,
+              "arc_m": 0.18327687582292534
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.05660181794170403,
+                -1.16341356256069,
+                0.6863446942289861
+              ],
+              "wrist": [
+                -0.05779854418358309,
+                -1.031967763907992,
+                0.6530015358522575
+              ],
+              "bend_rad": 0.9451528714389594,
+              "port_w_m": 0.17741817000628224,
+              "arc_m": 0.20920459544162354
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.01104651794170404,
+                -1.1430649765359828,
+                0.7268498637036505
+              ],
+              "wrist": [
+                -0.0548937599883426,
+                -1.0224376859340358,
+                0.6436014028427267
+              ],
+              "bend_rad": 1.041911810501216,
+              "port_w_m": 0.16071518200584262,
+              "arc_m": 0.18292408306839228
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.0020488179417040425,
+                -1.082090305354487,
+                0.7333452455671281
+              ],
+              "wrist": [
+                -0.06083412057226484,
+                -1.0387785265791372,
+                0.6553031658745528
+              ],
+              "bend_rad": 1.2245457448603374,
+              "port_w_m": 0.10918214295194387,
+              "arc_m": 0.14858808669975773
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07499081794170405,
+                -1.1207986561295256,
+                0.6841140855243959
+              ],
+              "wrist": [
+                -0.08398813649815741,
+                -1.030783248840699,
+                0.6571148399471507
+              ],
+              "bend_rad": 0.9399876388157381,
+              "port_w_m": 0.18467820869259394,
+              "arc_m": 0.21646463412793523
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.020883717941704044,
+                -1.1516344869905555,
+                0.7219311643377814
+              ],
+              "wrist": [
+                -0.08796599004578112,
+                -1.0203144632691727,
+                0.6466006930022535
+              ],
+              "bend_rad": 1.0265244044767943,
+              "port_w_m": 0.18646149058392217,
+              "arc_m": 0.20867039164647183
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.03140581794170404,
+                -1.0799606253453047,
+                0.7322539513947005
+              ],
+              "wrist": [
+                -0.0880721193349187,
+                -1.037100468459785,
+                0.6651721242719557
+              ],
+              "bend_rad": 1.1528206749374008,
+              "port_w_m": 0.14356859710345354,
+              "arc_m": 0.1829745408512674
+            }
+          ]
+        ]
+      },
+      "optimistic": {
+        "summary": {
+          "+x": {
+            "targets": 3,
+            "visible": 3,
+            "reachable_any_role": 3,
+            "triangulable": 3,
+            "feasible": 3
+          },
+          "-x": {
+            "targets": 5,
+            "visible": 4,
+            "reachable_any_role": 4,
+            "triangulable": 4,
+            "feasible": 4
+          }
+        },
+        "reaching_ports_per_role": {
+          "retract_primary": [
+            225,
+            148,
+            238,
+            0,
+            30,
+            150,
+            161,
+            133
+          ],
+          "cut": [
+            168,
+            116,
+            183,
+            0,
+            36,
+            114,
+            123,
+            113
+          ],
+          "retract_assist": [
+            257,
+            182,
+            290,
+            0,
+            37,
+            200,
+            204,
+            170
+          ]
+        },
+        "reaching_gain_vs_theta0": {
+          "retract_primary": [
+            158,
+            143,
+            162,
+            0,
+            30,
+            150,
+            157,
+            130
+          ],
+          "cut": [
+            101,
+            111,
+            107,
+            0,
+            36,
+            114,
+            119,
+            110
+          ],
+          "retract_assist": [
+            190,
+            177,
+            214,
+            0,
+            37,
+            200,
+            200,
+            167
+          ]
+        },
+        "triangulable": [
+          true,
+          true,
+          true,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "feasible": [
+          true,
+          true,
+          true,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "trios": [
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.08149081794170403,
+                -1.1111634827051333,
+                0.6743862919080831
+              ],
+              "wrist": [
+                -0.08767576940775505,
+                -1.0365468706423582,
+                0.6486495519610924
+              ],
+              "bend_rad": 1.195202695558525,
+              "port_w_m": 0.18667445688761994,
+              "arc_m": 0.21846088232296124
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.05291781794170404,
+                -1.1607573434305218,
+                0.6931483007697123
+              ],
+              "wrist": [
+                -0.07180037875933051,
+                -1.0210396424949773,
+                0.6512794887019586
+              ],
+              "bend_rad": 0.0,
+              "port_w_m": 0.1919079518077276,
+              "arc_m": 0.21411685287027726
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.05133481794170404,
+                -1.075055960704573,
+                0.7222051948012842
+              ],
+              "wrist": [
+                -0.08525746863950924,
+                -1.0432274775959107,
+                0.65541311675573
+              ],
+              "bend_rad": 1.2459232862818643,
+              "port_w_m": 0.15534376968557864,
+              "arc_m": 0.1947497134333925
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.05660181794170403,
+                -1.16341356256069,
+                0.6863446942289861
+              ],
+              "wrist": [
+                -0.06242578820695649,
+                -1.0286200284195672,
+                0.6374835996260203
+              ],
+              "bend_rad": 1.1954666960465232,
+              "port_w_m": 0.1863445047151503,
+              "arc_m": 0.2181309301504916
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.01104651794170404,
+                -1.1430649765359828,
+                0.7268498637036505
+              ],
+              "wrist": [
+                -0.05672929034722282,
+                -1.0202415504618703,
+                0.6379381139138321
+              ],
+              "bend_rad": 1.1417794271162933,
+              "port_w_m": 0.16608568099775373,
+              "arc_m": 0.1882945820603034
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.0020488179417040425,
+                -1.082090305354487,
+                0.7333452455671281
+              ],
+              "wrist": [
+                -0.06424989747379327,
+                -1.0366714333670144,
+                0.6486143490649566
+              ],
+              "bend_rad": 1.320040079802197,
+              "port_w_m": 0.11678064231892725,
+              "arc_m": 0.15618658606674113
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07497981794170404,
+                -1.1624848181693506,
+                0.6528532918228097
+              ],
+              "wrist": [
+                -0.06399898591631559,
+                -1.0372415195651854,
+                0.6532331247547394
+              ],
+              "bend_rad": 1.1948748074180848,
+              "port_w_m": 0.18708590550897775,
+              "arc_m": 0.21887233094431904
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.044777817941704046,
+                -1.1432445877263675,
+                0.7121600251434679
+              ],
+              "wrist": [
+                -0.061977543360424325,
+                -1.0273602708577116,
+                0.6570817272997633
+              ],
+              "bend_rad": 1.141209401108124,
+              "port_w_m": 0.16691165614247205,
+              "arc_m": 0.18912055720502172
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.03140581794170404,
+                -1.0799606253453047,
+                0.7322539513947005
+              ],
+              "wrist": [
+                -0.06226801926724864,
+                -1.0438683677244587,
+                0.665072840212057
+              ],
+              "bend_rad": 1.3100379956035733,
+              "port_w_m": 0.12079213772987704,
+              "arc_m": 0.1601980814776909
+            }
+          ],
+          null,
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.05061814007356423,
+                -0.9373231698521457,
+                0.7676949220405672
+              ],
+              "wrist": [
+                -0.06311203700446132,
+                -0.9727767044833129,
+                0.6354138731536729
+              ],
+              "bend_rad": 1.20245822846948,
+              "port_w_m": 0.1780162413676329,
+              "arc_m": 0.20980266680297419
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.020883717941704044,
+                -1.1516344869905555,
+                0.7219311643377814
+              ],
+              "wrist": [
+                -0.09256798934989542,
+                -1.0142708639103923,
+                0.6423102083961064
+              ],
+              "bend_rad": 1.1246444467364962,
+              "port_w_m": 0.19513982540259187,
+              "arc_m": 0.21734872646514153
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                -0.04233448205829596,
+                -1.1217866764589388,
+                0.7404833836168142
+              ],
+              "wrist": [
+                -0.09837983358566084,
+                -1.02979213885392,
+                0.6370335690737436
+              ],
+              "bend_rad": 1.254854762022612,
+              "port_w_m": 0.14935173419141412,
+              "arc_m": 0.18875767793922799
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.06472981794170403,
+                -1.158515448598198,
+                0.6775974856077865
+              ],
+              "wrist": [
+                -0.061939162293524946,
+                -1.030108266575412,
+                0.6476054746256654
+              ],
+              "bend_rad": 1.198324517450861,
+              "port_w_m": 0.18284680930116726,
+              "arc_m": 0.21463323473650855
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.018909117941704037,
+                -1.2009599692489197,
+                0.6950900309008905
+              ],
+              "wrist": [
+                -0.055524126852477894,
+                -1.0229395849635363,
+                0.6598435622018236
+              ],
+              "bend_rad": 0.5691984702680533,
+              "port_w_m": 0.19614759419238484,
+              "arc_m": 0.2183564952549345
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.04374481794170404,
+                -1.1139331457197719,
+                0.7225110360733614
+              ],
+              "wrist": [
+                -0.05991743929687177,
+                -1.0397229273786963,
+                0.6529281072141166
+              ],
+              "bend_rad": 1.2614208086948897,
+              "port_w_m": 0.14524050423575888,
+              "arc_m": 0.18464644798357274
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.06472981794170403,
+                -1.158515448598198,
+                0.6775974856077865
+              ],
+              "wrist": [
+                -0.0632197974882108,
+                -1.030304388754988,
+                0.6511862570455648
+              ],
+              "bend_rad": 1.1981567692576396,
+              "port_w_m": 0.1830484442680358,
+              "arc_m": 0.2148348697033771
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.018909117941704037,
+                -1.2009599692489197,
+                0.6950900309008905
+              ],
+              "wrist": [
+                -0.054410528118152064,
+                -1.022786838920038,
+                0.6530014253006178
+              ],
+              "bend_rad": 0.5688975663678669,
+              "port_w_m": 0.19721279266546202,
+              "arc_m": 0.21942169372801168
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.031218817941704044,
+                -1.1287402561213775,
+                0.7234265739025264
+              ],
+              "wrist": [
+                -0.05483962415367932,
+                -1.0384938639040078,
+                0.6364931233516347
+              ],
+              "bend_rad": 1.2507991266346619,
+              "port_w_m": 0.15201280074000387,
+              "arc_m": 0.19141874448781773
+            }
+          ],
+          [
+            {
+              "role": "retract_primary",
+              "port": [
+                0.07597381794170403,
+                -1.111883849355816,
+                0.6872917400579714
+              ],
+              "wrist": [
+                -0.09012766183670116,
+                -1.030907518850939,
+                0.6565382559638214
+              ],
+              "bend_rad": 1.194680729315229,
+              "port_w_m": 0.18733030846753068,
+              "arc_m": 0.21911673390287198
+            },
+            {
+              "role": "cut",
+              "port": [
+                0.03147181794170405,
+                -1.1396780564761069,
+                0.7206523813950168
+              ],
+              "wrist": [
+                -0.08772987293954779,
+                -1.0197723504826373,
+                0.6451867749514718
+              ],
+              "bend_rad": 1.129924668928924,
+              "port_w_m": 0.18515258354836397,
+              "arc_m": 0.20736148461091364
+            },
+            {
+              "role": "retract_assist",
+              "port": [
+                0.02654791794170404,
+                -1.0700992131767977,
+                0.735430091092681
+              ],
+              "wrist": [
+                -0.09040765988083925,
+                -1.0371858993835763,
+                0.6644879367185992
+              ],
+              "bend_rad": 1.2691427778634463,
+              "port_w_m": 0.1406935772375274,
+              "arc_m": 0.18009952098534127
+            }
+          ]
+        ]
+      },
+      "current_ports": {
+        "psm1": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "optimistic": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "psm2": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "optimistic": [
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "psm3": {
+          "straight": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "conservative": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "optimistic": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            true
+          ]
+        }
+      }
+    }
+  },
+  "seconds": 19.5,
+  "decision_rule": "pre-registered: bladder-in-place feasible iff >=1 target triangulable under the conservative variant (a); (a) and (b) reported separately, never merged. If only (b) or only bladder-removed is feasible, that is stated plainly.",
+  "self_check": {
+    "provenance": "the stored report predates the committed prostate_access_feasibility.py (missing `triangulable`/`seconds` keys; `candidate_ports` counts the grid before the >=60 mm ECM exclusion while reach evaluation used the filtered set). Its reach used ~1 mm axial sampling; this run uses STEP=0.001. Reproduction is exact except the documented boundary residual.",
+    "port_grid_check": {
+      "expected_pre_filter": 5144,
+      "got_pre_filter": 5144,
+      "got_evaluated": 5056,
+      "ok": true
+    },
+    "model_check": {
+      "bladder_in_place": {
+        "ok": true,
+        "per_target": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "bladder_removed": {
+        "ok": true,
+        "per_target": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "cases": {
+      "bladder_in_place": {
+        "ok": true,
+        "exact": true,
+        "residual_ports": []
+      },
+      "bladder_removed": {
+        "ok": true,
+        "exact": false,
+        "residual_ports": [
+          {
+            "target": 0,
+            "got": 67,
+            "expected": 68
+          }
+        ]
+      }
+    }
+  },
+  "self_check_ok": true
+}

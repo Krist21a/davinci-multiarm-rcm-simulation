@@ -1,0 +1,12 @@
+{
+  "scope": "Second render-only development specimen. V1 failed: the displaced whole face lengthened the apparent early slit by ~0.5 mm and the guarded nominal second closure refused at actual 3 mm; the noisy trial jumped directly from 6 to 9 mm. This version changes only which vertices of the same surviving adjacent face recede.",
+  "parent": "config/task/m5_visible_fracture_dev_v1.json",
+  "parent_sha256": "d690d17a6e5f1ff5ff5e468ca69f891a7412822d0b9efc44f8ea583851ca67a5",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "visual_gap_m": 0.0004,
+  "visual_gap_style": "edge",
+  "render_rule": "Leave all outboard vertices of surviving faces at their physical PBD node positions, including longitudinal outer borders. Only vertices at the two central seam columns (11/12) on an existing face bordering a missing face recede transversely 0.4 mm toward their bank. Keep v1's whole-face render mode unchanged for its historical images. Spring/tissue nodes, face survival, actual grip sweep, structural score and all guards are unchanged.",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "screen": "From zero two strict-vision FSMs, with unchanged closure budgets, optical reader and seeds. Seal RGB-D-only predictions before joining independent structural labels. Require two supported BELOW at true 8 mm under 0.5 mm noise and two supported STOP at true 9 mm nominal, no false STOP below 9, no tear/fault or trace over 10 mm. If either actual 8/9 state is absent, fail the pair rather than infer from bite count. No integration or five-case run until this screen passes."
+}

@@ -268,6 +268,117 @@ class LuaSafetyTests(unittest.TestCase):
             assert(tissueStats().cut==0, 'cut beyond blade tips')
         """)
 
+    def test_optical_fracture_render_does_not_change_springs_or_nodes(self):
+        self.lua("""
+            local bands={
+                {end_row=3,color={0.88,0.30,0.44}},
+                {end_row=6,color={0.88,0.30,0.53}},
+                {end_row=9,color={0.88,0.30,0.62}},
+                {end_row=13,color={0.88,0.30,0.71}}
+            }
+            local spec={nu=24,nv=14,origin={0.008,0,0},u={0,0,1},v={0,1,0},
+                        spacing=0.001,pretension=0.08,anchor_sides=true,
+                        material_bands=bands}
+            tissueCreate(spec)
+            local base=tissueConstraints()
+            local nodes=tissueNodes()
+            assert(not pcall(tissueCreate, {nu=24,nv=14,visual_gap_m=0.0004}),
+                   'invalid visual sheet destroyed its predecessor')
+            assert(#tissueConstraints()==#base)
+            spec.visual_gap_m=0.0004
+            tissueCreate(spec)
+            local visual=tissueConstraints()
+            local after=tissueNodes()
+            assert(#base==#visual and #nodes==#after)
+            for k=1,#base do assert(base[k]==visual[k]) end
+            for k=1,#nodes do assert(nodes[k]==after[k]) end
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local visual_after=tissueConstraints()
+            spec.visual_gap_m=nil
+            tissueCreate(spec)
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local baseline_after=tissueConstraints()
+            assert(#visual_after==#baseline_after)
+            for k=1,#visual_after do
+                assert(visual_after[k]==baseline_after[k], 'appearance changed cut mechanics')
+            end
+            spec.visual_gap_m=0.0004
+            spec.visual_gap_style='edge'
+            tissueCreate(spec)
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local edge_after=tissueConstraints()
+            assert(#edge_after==#baseline_after)
+            for k=1,#edge_after do
+                assert(edge_after[k]==baseline_after[k], 'edge-only rendering changed mechanics')
+            end
+            spec.visual_gap_start_row=7
+            tissueCreate(spec)
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local terminal_after=tissueConstraints()
+            assert(#terminal_after==#baseline_after)
+            for k=1,#terminal_after do
+                assert(terminal_after[k]==baseline_after[k], 'terminal rendering changed mechanics')
+            end
+        """)
+
+    def test_row_eight_ligaments_are_render_only_and_require_existing_bonds(self):
+        self.lua("""
+            local bands={
+                {end_row=3,color={0.88,0.30,0.44}},
+                {end_row=6,color={0.88,0.30,0.53}},
+                {end_row=9,color={0.88,0.30,0.62}},
+                {end_row=13,color={0.88,0.30,0.71}}
+            }
+            local spec={nu=24,nv=14,origin={0.008,0,0},u={0,0,1},v={0,1,0},
+                        spacing=0.001,pretension=0.08,anchor_sides=true,
+                        material_bands=bands}
+            local n=stub.mesh
+            tissueCreate(spec)
+            local ordinary=stub.mesh-n
+            local baseline=tissueConstraints()
+            spec.bridge_print=true
+            n=stub.mesh
+            tissueCreate(spec)
+            assert(stub.mesh-n==ordinary+7, 'all seven intact ligaments must render')
+            local printed=tissueConstraints()
+            for k=1,#baseline do assert(baseline[k]==printed[k]) end
+            assert(not pcall(tissueCreate,{nu=24,nv=14,bridge_print=true}),
+                   'unmarked or incomplete sheet accepted the optical feature')
+            assert(#tissueConstraints()==#baseline,'rejected option destroyed the active sheet')
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local cut=tissueConstraints()
+            spec.bridge_print=nil
+            tissueCreate(spec)
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local reference=tissueConstraints()
+            for k=1,#cut do assert(cut[k]==reference[k],
+                                   'ligament material changed a physical spring') end
+        """)
+
+    def test_fracture_faces_need_physical_bond_break_and_leave_constraints_unchanged(self):
+        self.lua("""
+            local spec={nu=24,nv=14,origin={0.008,0,0},u={0,0,1},v={0,1,0},
+                        spacing=0.001,pretension=0.08,anchor_sides=true,
+                        material_bands={{end_row=13,color={0.8,0.3,0.5}}},bridge_print=true}
+            tissueCreate(spec)
+            local initial=tissueConstraints()
+            assert(not pcall(tissueCreate,{nu=24,nv=14,bridge_fracture_faces=true}),
+                   'cannot paint fracture without its physical bridge')
+            spec.bridge_fracture_faces=true
+            local before=stub.mesh
+            tissueCreate(spec)
+            assert(stub.mesh-before==8, 'intact seven bridges were changed by fracture mode')
+            local current=tissueConstraints()
+            for k=1,#initial do assert(initial[k]==current[k]) end
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local after=tissueConstraints()
+            spec.bridge_fracture_faces=nil
+            tissueCreate(spec)
+            assert(setGrip(2,0.5));assert(setGrip(2,0))
+            local baseline=tissueConstraints()
+            for k=1,#after do assert(after[k]==baseline[k]) end
+        """)
+
     def test_rejected_closure_preserves_armed_cycle_and_tissue(self):
         self.lua("""
             sheet(0,0.008,false);assert(setGrip(2,0.5));assert(setGrip(2,0.1))

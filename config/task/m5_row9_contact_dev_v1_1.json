@@ -1,0 +1,9 @@
+{
+  "scope": "Acquisition-only correction of m5_row9_contact_dev_v1. The image classifier, thresholds, controls, acceptance and case order are unchanged.",
+  "parent": "config/task/m5_row9_contact_dev_v1.json",
+  "parent_sha256": "9c149214a1c9e49ac8447c3016f11f7647f03389e2dbd5255a0b79b5469ebbbb",
+  "failed_capture": "validation/task/m5_row9_contact_dev_v1_capture; both trials failed before cutting because setup renders more than once at tick 2, and the capture hook treated the second render as a duplicate. No result was scored; keep those reports.",
+  "amendment": "Capture the exposure only from _estimate(), once per observation, rather than from render(). Copy the precise image/depth/pose it consumes; clone its RNG state for the injected depth without advancing control RNG. No other behavior change.",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "screen": "Apply the unchanged detector and pass/fail rules in the parent plan. Preserve both failed v1 reports and generate fresh files in a distinct directory."
+}

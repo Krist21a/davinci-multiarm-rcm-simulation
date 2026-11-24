@@ -1,0 +1,28 @@
+{
+  "status": "registered before fitting or scoring the hybrid gate",
+  "scope": "Development-only offline virtual cutter TCP evidence gate on a non-anatomical simulation sheet. The existing three-marker estimator supplies all coordinates; a gate may only suppress a prediction. No change to learned_tip_v1, controller, M5, or any holdout. No new trajectories.",
+  "inputs": {
+    "phase_a_run": "tip_v1_dev_02",
+    "artifacts_sha256": {
+      "registration.json": "c34407896b415f3b5685a509ef786e4d91211703785859c7bd037756cec4f26a",
+      "labels.json": "b5d786d836ec9fcf8f1f034bcbd0e1f9c3e3d4fce1555e05bd2cd0ff2b628b69",
+      "baseline_predictions.json": "9f58ba8a42c06d9c2488d35e83e1e43382cdd0928ecb05bfb15b5dbfb314cb54",
+      "baseline_report.json": "f6b0192924cd1434b306ae5b0a613c0e7660e609baf080c402975566602e29af",
+      "train/model_report.json": "ee9c7487ed0947eb6b3602bbbfc867bb2570c2597e410534925ba020e9a40528"
+    },
+    "split": "Original 270 training and 30 development-validation Phase A episodes. No v1 evaluation data, auxiliary views, or HD. Reuse v1 marker predictions on validation; fit existing ray-refined marker estimator on each eligible training exposure independently. Train on both registered depth variants, using identical registration and noise seeding as v1.",
+    "labels": "Use the frozen tip labels, scored from clean depth for both variants. Positive = fiducial_candidate, negative = depth_blocked or out_of_view. Exclude uncertain rows only from fitting; score all validation rows. Keep all failed episodes. Only marker coordinates, intrinsics and the same input depth may determine gate features. No RGB beyond the marker fit, true tip/marker poses, scenario, timing, tick or history in the gate."
+  },
+  "readers": {
+    "baseline": "Frozen v1 unfiltered three-marker replay, unchanged including both fit checks.",
+    "depth_rule": "Abstain on an unusable patch or if every pixel in the central 3x3 is more than 3 mm nearer than the estimated camera-axis TCP depth. Otherwise retain the original marker estimate.",
+    "learned_gate": "For a valid marker estimate with 0 < z < far and finite in-image UV, round UV half-to-even. Require a complete 9x9 metric-depth patch with finite samples in (0, far], comparing far in the float32 encoding of the inputs. Subtract estimated z from all samples and convert to mm. Features (in this order) are the median clipped relative depth to [-20,20] mm and fraction of pixels strictly below -3 mm in centered 3x3, 5x5 and 9x9 windows, then clipped maximum relative depth in 3x3. Abstain on invalid or missing marker/patch, without a fallback. Otherwise a logistic probability of positive supports retaining the original marker estimate.",
+    "fit": "Training only, on both depth variants with usable patches and known labels. Standardize features with unweighted training mean and population standard deviation; constant features use scale 1. Initialize all parameters zero; minimize class-balanced binary logistic loss (each class totals 0.5) plus 0.5 * 0.01 * sum(weights^2), no penalty on intercept. Float64 SciPy L-BFGS-B with analytic gradient, maxiter 1000, gtol 1e-10, ftol 1e-13. Require both classes and a finite converged fit."
+  },
+  "decision": {
+    "threshold": "One shared visibility cutoff = maximum score on a usable explicit negative validation frame over both variants. Keep only score strictly above it. Require at least one scored depth_blocked frame and at least one accepted positive in each variant; otherwise the learned point is undefined. The depth-only rule is fixed, not calibrated.",
+    "absolute_gates": "Use the unmodified learned_tip_v1 thresholds in each variant: coverage >=90%, median 3-D error <0.5 mm, fraction >2 mm <5%, zero output on explicit negatives. Report v1-style scenario and timing strata, episode bootstrap intervals, and paired accept/reject counts. Report validation results as calibration/development, not independent confirmation.",
+    "benefit": "If the learned gate passes both variants, it adds development value only if the fixed depth rule does not pass both, or if the rule passes both and the learned gate accepts at least as many positive frames in each variant and strictly more in at least one. If the fixed rule alone passes and the learned gate offers no registered benefit, prefer the fixed rule for any separately proposed confirmation.",
+    "stop": "No independent evaluation collection in this diagnostic. If neither candidate passes, do not spend independent episodes. Do not relax any criterion or replace a v1 result."
+  }
+}

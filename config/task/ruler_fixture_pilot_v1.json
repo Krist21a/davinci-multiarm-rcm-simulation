@@ -1,0 +1,9 @@
+{
+  "id": "ruler_fixture_pilot_v1",
+  "parent": "ruler_endpoint_v1",
+  "scope": "Separate mounting feasibility study. Rotate the same non-anatomical sheet about its central lateral line to face the existing ECM. Not the original task, no changes to on-disk scene, ports, safety or endpoint. Never force an RCM command.",
+  "motivation": "Native and real 4x-linear-resolution images at two guarded ECM poses failed both near-threshold parked examples. In a scoring-only historical endpoint raster, rotating the line of sight around the sheet centre by 45 or 60 degrees towards the visible normal substantially exposes the ordinal cells; no such virtual camera is permitted in control. Try an actual angled test fixture instead.",
+  "tilt_deg": [45, 60],
+  "geometry": "Keep origin + 6.5 mm*v fixed. u unchanged, v_new = cos(angle)*v - sin(angle)*cross(u,v). Same initial rest lengths, number/order of springs, marks, pretension and controller limits. Both retractors must establish their ordinary grasp and the full task must withdraw normally; no bypass, extra motion budgets, alternative grasp positions or gain changes.",
+  "trials": "At the native ECM pose and 640x480 resolution, replay registered full-mode truth collection at cap=3 mm, goal=8 and 9 mm for both tilts, keeping all failures. Label only by measured structural length. Feasibility requires unaltered guard acceptance, both grasps, terminal safety, and actual 8 and 9/10 mm development states for the SAME angle. If reachable, test local optical evidence on these new images first. These are not vision runs. If neither mount satisfies the mechanical prerequisite, stop before spending the held trajectories or modifying the robot."
+}

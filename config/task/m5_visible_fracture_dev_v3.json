@@ -1,0 +1,14 @@
+{
+  "scope": "Development of a terminal-area tear-visible synthetic test sheet, not a change to the structural endpoint scorer or existing guard. V1/V2 altered the apparent first 3 mm front and prevented nominal's second bite; both archived as failures. The physical cut events must remain naturally observable without feeding a hidden length label to the controller.",
+  "parent": "config/task/m5_visible_fracture_dev_v2.json",
+  "parent_sha256": "870c1f3f6afe8d80f0d574fa758552d08e038b183baf11eb47a5b7bec90ce1c5",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "visual_gap_m": 0.0004,
+  "visual_gap_style": "edge",
+  "visual_gap_start_row": 7,
+  "render_rule": "The per-vertex 0.4 mm recession of v2 is confined at creation to the last six 1 mm material cells, rows 7..12. Row identity is a static property of each triangle, NOT the current cut length; recession still depends only on which adjacent physical face has fractured. Rows 0..6 and the scorer's actual node/spring/face liveness are never changed. This avoids introducing a false optical slit into the earlier, already working servo segment while making the last 8/9 mm transition visible.",
+  "cases": ["nominal", "depth_noise_0p5"],
+  "screen": "Use the unchanged live visual FSM and readout from zero, same per-bite interlocks, camera pose, depth-noise seed and structural GroundTruth scorer. Save raw/noisy native RGB-D plus same-frame scissors/slit estimates and independently labelled structural traces. Seal predictions with byte-identical row9_terminal.py before opening labels. Require two direct, supported NOT_STOP frames after true 8 mm under 0.5 mm depth noise and two direct supported STOP_CANDIDATE frames after true 9 mm nominal, with no STOP_CANDIDATE at any <9 mm frame, no tear/fault or peak >10 mm. Failed or missing 8/9 evidence is failure; no guard or threshold change.",
+  "next": "Only after this two-case image screen passes independently, wire a versioned stop-only certificate to the FSM, without giving a permit to move or close. Run the five strict-vision full tasks from uncut, score terminal length independently, verify closed scissors and measured _ready_q. Do not call any development image test M5 acceptance."
+}

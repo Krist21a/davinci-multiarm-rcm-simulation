@@ -1,0 +1,20 @@
+{
+  "id": "seam_wide_cell_v1",
+  "parent": "config/task/ruler_endpoint_v1.json",
+  "seam_parent": "config/task/surface_seam_pilot_v1.json",
+  "reader_sha256": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+  "certificate_sha256": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+  "seam_parent_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+  "print_sha256": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d",
+  "scope": "New non-anatomical coarse coupon, not interchangeable with historical M5b. Only transverse node spacing changes relative to the 30-degree slide print: columns 11/12 at -2.5/+2.5 mm rather than -0.5/+0.5; each side's eleven intervals share the remaining nine mm. Same 23 mm overall width, 13 x 1 mm longitudinal intervals, far/entry placement, grasp sites in material indices and original guarded tool path planner. Intact at placement. No dropped added springs, no tear/cut radius/clearance/solver-budget changes. Severing a wider triangle removes a larger visible area; aperture width is not a measurement of physical incision. The independent structural scorer, not missing ink, labels the longitudinal prefix.",
+  "development_runs": [
+    {"id":"pull","goal_mm":9,"cap_mm":3,"pull_only":true},
+    {"id":"a","goal_mm":8,"cap_mm":3},
+    {"id":"b","goal_mm":8.5,"cap_mm":3},
+    {"id":"c","goal_mm":9,"cap_mm":3},
+    {"id":"d","goal_mm":8,"cap_mm":2},
+    {"id":"e","goal_mm":9,"cap_mm":2}
+  ],
+  "preflight": "First run only the traction negative. Before any cutting, independently check fully uncut starting material, far row and edge dimensions, all guide IDs, two real grasps and nonzero outward pull per arm, all historical safety limits, no damage/fault and no cut events. Both loaded and pulled sensor-only 30 degree real 4x RGB-D exposures must identify every one of the 28 distinct bank corner marks and both positive face inks in every one of the 13 intact cells, with the frozen certificate returning all states PRESENT and UNKNOWN (uncut) at raw and 0.5 mm noise. This explicitly tests working resolution/geometry/ink and cannot be passed by an opaque negative. Never start cutting if this gate fails.",
+  "work": "Only if preflight passes, run the remaining five truth acquisitions without replacing failures. Same before-command WORK, loaded and guarded-ready capture, separate unaltered native and real zoom optional-print sensor and structural oracle. No holdout or visual controller integration until every acquisition passes the prior mechanical checks AND the full threshold development gate from seam_cell_certificate_v1: all 8 BELOW, every 9/10 STOP under both noise settings in working frames (actual not requested), distinct 8/9 trajectories, no false authorization even at other lengths or under complete shutter. No using a reference look-back/park as a work frame. This is not an acceptance run."
+}

@@ -93,6 +93,42 @@ class ControllerStartupTests(unittest.TestCase):
         np.testing.assert_allclose(frame['axis'], [0, 0, 1])
 
 
+class CouponRollTests(unittest.TestCase):
+    def test_sheet_roll_preserves_entrance_and_cut_axis_and_rotates_both_grasps(self):
+        w = SimWorld.__new__(SimWorld)
+        w.roi_proxy, w.canonical_seam = None, False
+        w.cutter, w.mode, w.pretension, w.tissue_source = 'psm2', 'full', .08, None
+        w.frame = Mock(return_value=dict(pivot=np.zeros(3), x=np.array([1., 0., 0.]),
+                                         axis=np.array([0., 1., 0.]), tcp=np.array([0., 0., .1])))
+        w.steps = Mock()
+        w.call = Mock(side_effect=[None, [.00092] * NV, None, [.00092] * NV])
+        w.sheet_cfg = {}
+        w.place_sheet()
+        base = w.call.call_args_list[0].args[1]
+        w.sheet_cfg = {'bridge_print': True, 'bridge_fracture_faces': True, 'roll_deg': 16}
+        w.place_sheet()
+        tilted = w.call.call_args_list[2].args[1]
+        angle = np.deg2rad(16.)
+        across = np.array([0., np.cos(angle), np.sin(angle)])
+        np.testing.assert_array_equal(tilted['origin'], base['origin'])
+        np.testing.assert_array_equal(tilted['v'], base['v'])
+        self.assertEqual(tilted['spacing'], base['spacing'])
+        np.testing.assert_allclose(tilted['u'], across, atol=1e-14)
+        mid = w.sheet_origin + .5 * (NV - 1) * H * w.v
+        for arm, sign in [('psm1', -1), ('psm3', 1)]:
+            np.testing.assert_allclose(w.grasp_points[arm], mid + sign * .5 * (NU - 1) * H * across)
+
+    def test_sheet_roll_refuses_invalid_mounts(self):
+        valid = dict(bridge_print=True, bridge_fracture_faces=True)
+        for value in (-16, -8., 0, 8, 16):
+            self.assertEqual(SimWorld._check_sheet_cfg(dict(valid, roll_deg=value))['roll_deg'], value)
+        for value in (True, None, '8', float('inf'), float('nan'), -17, 17):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'roll_deg'):
+                SimWorld._check_sheet_cfg(dict(valid, roll_deg=value))
+        with self.assertRaisesRegex(ValueError, 'roll_deg'):
+            SimWorld._check_sheet_cfg({'roll_deg': 8})
+
+
 class VisibilityTests(unittest.TestCase):
     def test_transparent_tcp_marker_keeps_collision_and_detection_properties(self):
         w = SimWorld.__new__(SimWorld)

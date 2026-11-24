@@ -1,0 +1,7 @@
+{
+  "id": "seam_asymmetric_rest_v1",
+  "inherits": "config/task/seam_asymmetric_cell_v1.json",
+  "correction": "Keep the 3-mm asymmetric coupon exactly as built, including its -1 mm transverse midpoint relative to the old symmetric lane. Longitudinal row pitch remains 1 mm. Correct only transverse model strain: per row divide measured separation by THAT Lua spring's original rest length, not by the 1 mm longitudinal grid spacing times (1-pretension). At creation read all 14 solver rest lengths; require each matches 0.003*(1-pretension). Determine only the same median of eligible material rows, excluding the actual cut prefix plus two and the final anchor. Readback is not optical information. It remains under the existing tension_until_m6 purpose; the cutter may not use it for endpoint length.",
+  "prior_check": "On the archived asymmetric no-cut preflight, retain the original failed outcome. For each pre-tear observed number the equivalent correct fixed-geometry value is (reported+1)/3-1. Confirm the direction of EXPOSE's tension correction before and after. Do not claim this arithmetic rescues the trajectory; a fresh live run is required.",
+  "gates": "Same PBD tear threshold, grasp/strain band, budgets, scene and guarded actuation; same mandatory loaded/pulled sensor-only evidence and all 8/9/10 working gate requirements as the asymmetric registration. No cut unless the corrected complete preflight passes. Guard failures and optical refusals remain failures."
+}

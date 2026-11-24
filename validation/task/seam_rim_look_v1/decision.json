@@ -1,0 +1,564 @@
+{
+  "criteria": {
+    "id": "seam_rim_look_v1",
+    "source": "validation/task/seam_rim_near_v1/decision.json",
+    "criteria": "Three matched truth-acquisition checkpoints only: near / b / c at their last closed work before park. Must independently reproduce recorded camera and TCP readback, native RGB-D, high RGB-D, exact nodes, edge flags, central faces, grip, tick and real cut count of the reference. Apply exactly the original guarded clear_view(.003) retaining closed jaws; if refused or tearing, over-budget, or connectivity/grasp/cut-event mismatch, retain failed probe. Observe on a new simulation tick with the actual tool still in frame and NOT parked (>0.5 mm from ready). Only complete raw+noisy blind verdicts qualify the matched pair; diagnostic pinhole geometry, predicted corners or part recolouring must not enter the classifier.",
+    "attribution": "For each missing or unproven cut face, predefine a 2x2 factorial attribution, scorer-only: require the same 2x2 through-depth patch and threshold as the locked image predicate. O=observed cap box around decoded corners+measured flank depth bounds; I=privileged exact projected corner or vertex depth. Count faces with blocks at (O,O),(I,O),(O,I),(I,I) separately on the current clear observation. Explicitly identify missing corner patches vs present but unbounded, 2D uncertainty vs depth failure. An ideal replacement is a diagnostic upper bound and cannot pass the image gate. No further look variations, holdout or control on refusal."
+  },
+  "cases": [
+    {
+      "case": "near",
+      "qualified": true,
+      "mm": 8,
+      "motion_mm": 2.999993511955773,
+      "decisions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "diagnostic": {
+        "missing": [
+          0,
+          2,
+          4
+        ],
+        "evidence": [
+          {
+            "row": 0,
+            "half": 0,
+            "blocks": {
+              "II": 1947
+            }
+          },
+          {
+            "row": 0,
+            "half": 1,
+            "blocks": {
+              "II": 448
+            }
+          },
+          {
+            "row": 1,
+            "half": 0,
+            "blocks": {
+              "II": 1730
+            }
+          },
+          {
+            "row": 1,
+            "half": 1,
+            "blocks": {
+              "II": 293
+            }
+          },
+          {
+            "row": 2,
+            "half": 0,
+            "blocks": {
+              "II": 1473
+            }
+          },
+          {
+            "row": 2,
+            "half": 1,
+            "blocks": {
+              "II": 172
+            }
+          },
+          {
+            "row": 3,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1252,
+              "II": 1252
+            }
+          },
+          {
+            "row": 3,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 401,
+              "II": 401
+            }
+          },
+          {
+            "row": 4,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1124,
+              "II": 1124
+            }
+          },
+          {
+            "row": 4,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 842,
+              "II": 842
+            }
+          },
+          {
+            "row": 5,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1229,
+              "II": 1229
+            }
+          },
+          {
+            "row": 5,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1425,
+              "II": 1425
+            }
+          },
+          {
+            "row": 6,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1569,
+              "II": 1569
+            }
+          },
+          {
+            "row": 6,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1477,
+              "II": 1477
+            }
+          },
+          {
+            "row": 7,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1445,
+              "II": 1445
+            }
+          },
+          {
+            "row": 7,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1281,
+              "II": 1281
+            }
+          },
+          {
+            "row": 8,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1217,
+              "II": 1217
+            }
+          }
+        ]
+      },
+      "probe_sha256": "29de4cc8e2ee48a5955df4da957f898c52f2a2700fc95588c6eb0be294cda377"
+    },
+    {
+      "case": "b",
+      "qualified": true,
+      "mm": 9,
+      "motion_mm": 2.999992705378817,
+      "decisions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "diagnostic": {
+        "missing": [
+          0,
+          2,
+          4,
+          6
+        ],
+        "evidence": [
+          {
+            "row": 0,
+            "half": 0,
+            "blocks": {
+              "II": 1850
+            }
+          },
+          {
+            "row": 0,
+            "half": 1,
+            "blocks": {
+              "II": 503
+            }
+          },
+          {
+            "row": 1,
+            "half": 0,
+            "blocks": {
+              "II": 1940
+            }
+          },
+          {
+            "row": 1,
+            "half": 1,
+            "blocks": {
+              "II": 432
+            }
+          },
+          {
+            "row": 2,
+            "half": 0,
+            "blocks": {
+              "II": 1732
+            }
+          },
+          {
+            "row": 2,
+            "half": 1,
+            "blocks": {
+              "II": 290
+            }
+          },
+          {
+            "row": 3,
+            "half": 0,
+            "blocks": {
+              "II": 1474
+            }
+          },
+          {
+            "row": 3,
+            "half": 1,
+            "blocks": {
+              "II": 168
+            }
+          },
+          {
+            "row": 4,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1241,
+              "II": 1241
+            }
+          },
+          {
+            "row": 4,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 339,
+              "II": 339
+            }
+          },
+          {
+            "row": 5,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1101,
+              "II": 1101
+            }
+          },
+          {
+            "row": 5,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 746,
+              "II": 746
+            }
+          },
+          {
+            "row": 6,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1136,
+              "II": 1136
+            }
+          },
+          {
+            "row": 6,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1239,
+              "II": 1239
+            }
+          },
+          {
+            "row": 7,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1557,
+              "II": 1557
+            }
+          },
+          {
+            "row": 7,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1460,
+              "II": 1460
+            }
+          },
+          {
+            "row": 8,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1436,
+              "II": 1436
+            }
+          },
+          {
+            "row": 8,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1271,
+              "II": 1271
+            }
+          },
+          {
+            "row": 9,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1216,
+              "II": 1216
+            }
+          }
+        ]
+      },
+      "probe_sha256": "15c37925a87b7e96360416401887c065a0926c7639a17af39f4fe006dc23d504"
+    },
+    {
+      "case": "c",
+      "qualified": true,
+      "mm": 10,
+      "motion_mm": 2.9999920891065295,
+      "decisions": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "diagnostic": {
+        "missing": [
+          0,
+          2,
+          4,
+          6,
+          8
+        ],
+        "evidence": [
+          {
+            "row": 0,
+            "half": 0,
+            "blocks": {
+              "II": 1349
+            }
+          },
+          {
+            "row": 0,
+            "half": 1,
+            "blocks": {
+              "II": 196
+            }
+          },
+          {
+            "row": 1,
+            "half": 0,
+            "blocks": {
+              "II": 1735
+            }
+          },
+          {
+            "row": 1,
+            "half": 1,
+            "blocks": {
+              "II": 455
+            }
+          },
+          {
+            "row": 2,
+            "half": 0,
+            "blocks": {
+              "II": 1800
+            }
+          },
+          {
+            "row": 2,
+            "half": 1,
+            "blocks": {
+              "II": 355
+            }
+          },
+          {
+            "row": 3,
+            "half": 0,
+            "blocks": {
+              "II": 1569
+            }
+          },
+          {
+            "row": 3,
+            "half": 1,
+            "blocks": {
+              "II": 213
+            }
+          },
+          {
+            "row": 4,
+            "half": 0,
+            "blocks": {
+              "II": 1312
+            }
+          },
+          {
+            "row": 4,
+            "half": 1,
+            "blocks": {
+              "II": 156
+            }
+          },
+          {
+            "row": 5,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1130,
+              "II": 1130
+            }
+          },
+          {
+            "row": 5,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 489,
+              "II": 489
+            }
+          },
+          {
+            "row": 6,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1032,
+              "II": 1032
+            }
+          },
+          {
+            "row": 6,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 910,
+              "II": 910
+            }
+          },
+          {
+            "row": 7,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1233,
+              "II": 1233
+            }
+          },
+          {
+            "row": 7,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1461,
+              "II": 1461
+            }
+          },
+          {
+            "row": 8,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1499,
+              "II": 1499
+            }
+          },
+          {
+            "row": 8,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1363,
+              "II": 1363
+            }
+          },
+          {
+            "row": 9,
+            "half": 0,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1351,
+              "II": 1351
+            }
+          },
+          {
+            "row": 9,
+            "half": 1,
+            "blocks": {
+              "OO": 0,
+              "OI": 0,
+              "IO": 1156,
+              "II": 1156
+            }
+          }
+        ]
+      },
+      "probe_sha256": "257410626df8492a1ecb76259694151600b2d2c818292ea05034c0f91d2f7261"
+    }
+  ],
+  "blind_sha256": "7a41bffbbf4914be71d7371036d8624e8d3bb70a83371dfae5b3e699ce529670",
+  "confirmation": false,
+  "vision": false
+}

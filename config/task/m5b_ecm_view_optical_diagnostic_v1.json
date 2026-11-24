@@ -1,0 +1,7 @@
+{
+  "id": "m5b_ecm_view_optical_diagnostic_v1",
+  "selection": "validation/task/m5b_ecm_view_study_v1_selection.json",
+  "trigger": "The first registered study yielded no fully qualified view. Fixed-pose RGB-D scoring nevertheless saw both ends in every pre-grasp, loaded, and post-cut frame of multiple candidates. Scoring-only node chords show deformation makes the nominal sheet shorter than the geometric prior; change of camera alone need not restore a material coordinate.",
+  "selection_rule": "Retain the original failed qualification and select only for follow-up optical diagnostics: restrict to fixed eligible candidates with both ends visible in every frame of all three windows; choose highest supported post-cut fraction, then original order.",
+  "trials": "Before looking at new visual outcomes, freeze the selected pose and run the same nominal and 0.5 mm depth-noise cases with existing v1.3.1 behavior, seed and safety checks. Score the same closure, reacquisition, completion and overcut conditions. A pass here cannot change the failed original qualification."
+}

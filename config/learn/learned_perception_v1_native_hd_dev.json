@@ -1,0 +1,27 @@
+{
+  "parent": "config/learn/learned_perception_v1_roi_dev.json",
+  "scope": "Development diagnostic only. No H1/H2, formal candidate freeze, controller, gate/status change or Phase B.",
+  "training": {
+    "arms": ["roi640", "native384"],
+    "updates_per_arm": 1800,
+    "batch_size": 8,
+    "seed": 20261123,
+    "recipe": "Same scratch four-channel ResNet-18, clean depth and row/uniform objective as roi_dev. Same shuffled eligible exposures, 270 frozen Phase A train episodes. Use the clean 640 tip estimate, same pixel center and field of view; keep the native 384x384 HD crop without pooling. Fail if native and 640 eligibility differ from the previous Phase A cache."
+  },
+  "cohort": {
+    "tag": "dev_native_hd_matched_v1",
+    "start": 312,
+    "blocks": 6,
+    "condition_names": ["below", "near", "within", "above_candidate"],
+    "advance_um": [3000, 3500, 4000, 2000],
+    "target_um": [8000, 8000, 10000, 10000],
+    "scenario": "nominal",
+    "pose": "Each consecutive block of four new dev indices uses the parent sampler's initial ECM target from its first index. All four keep their own seeds, use only registered cap/target values, native HD twin enabled, no auxiliary deltas.",
+    "boundary": "The conditions select registered parameters, not structural outputs. The labels are the observed structural rows. No reruns or force-to-label. Retain refusals and FAILED, including any budget-detected overcuts. Unmodified truth controller and guards. Initial and per-frame ECM camera pose matching is audited, not assumed. Cutter trajectory, deformation and number of bites need not match."
+  },
+  "validation": {
+    "confidence_cutoffs": [0.0, 0.5, 0.75, 0.9, 0.95, 0.99],
+    "frozen_dev_rule": "For each arm predict the maximum probability row only above the largest false endpoint confidence among localizable frames on the old 30 Phase A validation trajectories; if none, accept every localizable image. New cohort only applies this rule; never select a confidence on the new cohort. Uncalibrated probabilities, clean depth only.",
+    "report": "Report all exposures and first localizable-or-not occurrence of each observed 8/9/10/11/12 mm row per trajectory (never select by localization). Also report support and endpoint outcomes by matched camera block. Missing phase labels do not become negative exposures; preserve pre-sheet rules. Force abstention for invalid locator. No formal acceptance call."
+  }
+}

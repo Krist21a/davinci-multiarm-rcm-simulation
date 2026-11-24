@@ -1,0 +1,4794 @@
+{
+  "plan": {
+    "parent": "config/learn/learned_perception_v1_scoring_notes.json",
+    "scope": "Phase A development diagnostic only. Not a candidate freeze, an L1-L6 pass/fail, H1/H2 evaluation or evidence for enabling motion.",
+    "stream": "Actual ECM 640x480 only, same RGB-D preprocessing and length-only ResNet-18 as the engineering pilot. No auxiliary views, no truth or command metadata in feature channels.",
+    "arms": [
+      68,
+      135,
+      270
+    ],
+    "partition": "Nested prefixes in the existing Phase A index's frozen train episode order; all arms use the same 30 validation episodes in their original order, including failed task episodes.",
+    "training": {
+      "updates_per_arm": 900,
+      "batch_size": 8,
+      "seed": 20261123,
+      "optimizer": "AdamW, lr 0.0003, weight_decay 0.01, no schedule",
+      "sampling": "Shuffle full batches without replacement per pass, drop the incomplete last training batch, start a fresh shuffled pass on exhaustion. Same optimizer updates and number of training draws for all sizes. Train on native depth only.",
+      "objective": "Exact structural row cross-entropy when sheet is present, uniform 14-way cross-entropy otherwise. No early stopping or checkpoint selection; evaluate the last update only."
+    },
+    "validation": {
+      "depth_sigmas_m": [
+        0.0,
+        0.0005
+      ],
+      "noise_seed": 20261124,
+      "noise": "IID Gaussian on validation depth only, then clip to [0, 0.3] m (registered ECM far plane). Same ordered frames, batch size and CUDA generator reset for every arm; RGB unchanged.",
+      "confidence_cutoffs": [
+        0.0,
+        0.5,
+        0.75,
+        0.9,
+        0.95,
+        0.99
+      ],
+      "fixed_rule": "Exact row = argmax of the 14-way softmax; otherwise ABSTAIN if max probability < cutoff. Scores here are uncalibrated.",
+      "in_sample_zero_false_reference": "Also show what is left after abstaining on every score at or below the largest false-endpoint confidence observed in either validation depth variant (if none, accept all). One shared cutoff per arm. This is descriptive on the same data used to pick it, not out-of-sample recall and not the study's frozen tau.",
+      "report": "For each variant and rule: false-endpoint count, including pre-sheet as negatives, pre-sheet outcomes, exact-row nonabstained and correct counts, and endpoint calls by true row. Report pooled and exact 9/10 outcomes separately. Do not select the best arm or infer that a flat short curve proves non-observability."
+    }
+  },
+  "plan_sha256": "a1f38683e6a2b4fdd97d786d94e2822e3ea36a639735f1be9fe838e2bddfd1fa",
+  "index_sha256": "3b96b814322868b3ea1e2027f9e048b87a73a4ddf58cbed8079f5d0808fdf3b5",
+  "scoring_notes_sha256": "e87392a5dc24fe8382aa1926345145957e4e41423208a4d4ae63bde28bccf16a",
+  "script_sha256": "c234c9e867e2ed0f4cf0236703e743c561eee48c569edba4007ea019c4588b39",
+  "loader_sha256": "1db9b9e01243f296e124205f0d9b0a532f84926b27e1e732264a866326f835f4",
+  "validation_episode_ids": [
+    116,
+    179,
+    253,
+    252,
+    192,
+    87,
+    134,
+    3,
+    278,
+    238,
+    160,
+    255,
+    16,
+    8,
+    46,
+    234,
+    283,
+    281,
+    188,
+    210,
+    81,
+    29,
+    157,
+    9,
+    102,
+    23,
+    204,
+    258,
+    139,
+    6
+  ],
+  "torch": "2.9.1+cu126",
+  "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "status": "completed",
+  "arms": {
+    "68": {
+      "episode_ids": [
+        277,
+        22,
+        270,
+        271,
+        73,
+        217,
+        216,
+        84,
+        279,
+        127,
+        239,
+        126,
+        118,
+        222,
+        267,
+        52,
+        299,
+        207,
+        164,
+        4,
+        42,
+        147,
+        117,
+        261,
+        199,
+        187,
+        95,
+        212,
+        214,
+        170,
+        111,
+        235,
+        30,
+        66,
+        64,
+        240,
+        100,
+        178,
+        200,
+        36,
+        61,
+        17,
+        50,
+        1,
+        85,
+        150,
+        113,
+        167,
+        121,
+        165,
+        280,
+        141,
+        288,
+        136,
+        233,
+        292,
+        128,
+        83,
+        28,
+        232,
+        243,
+        151,
+        174,
+        189,
+        265,
+        19,
+        221,
+        266
+      ],
+      "unique_train_frames": 1383,
+      "training": {
+        "sheet_frames": 6845,
+        "pre_sheet_frames": 355,
+        "sheet_loss": 1.2285935524797962,
+        "pre_sheet_loss": 2.743595922496957,
+        "mean_loss": 1.3032915860014758
+      },
+      "scores": {
+        "largest_false_endpoint_confidence_either_depth": 0.3030381202697754,
+        "variants": {
+          "0.0": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 8,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 190,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.35315985130111527,
+                "exact_8_9": 12,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.23529411764705882,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 22,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 0,
+                    "endpoint_calls": 4
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 9,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 12,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 20,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 15,
+                "numeric_sheet_frames": 300,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.05,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 13,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 4,
+                "numeric_sheet_frames": 289,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.01384083044982699,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 2,
+                "numeric_sheet_frames": 286,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.006993006993006993,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 284,
+                    "exact": 284,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 2,
+                "numeric_sheet_frames": 282,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0070921985815602835,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 280,
+                    "exact": 280,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 256,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 256,
+                    "exact": 256,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 52,
+              "numeric_sheet_frames": 351,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.14814814814814814,
+              "exact_8_9": 4,
+              "numeric_8_9": 8,
+              "accuracy_8_9": 0.5,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 15,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 8,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 10,
+                  "exact": 10,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 11,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 6,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 4,
+                  "exact": 4,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          },
+          "0.0005": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 8,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 190,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.35315985130111527,
+                "exact_8_9": 12,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.23529411764705882,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 22,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 0,
+                    "endpoint_calls": 4
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 9,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 12,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 20,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 15,
+                "numeric_sheet_frames": 300,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.05,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 13,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 4,
+                "numeric_sheet_frames": 289,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.01384083044982699,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 2,
+                "numeric_sheet_frames": 286,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.006993006993006993,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 284,
+                    "exact": 284,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 2,
+                "numeric_sheet_frames": 282,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0070921985815602835,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 280,
+                    "exact": 280,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 256,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 256,
+                    "exact": 256,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 51,
+              "numeric_sheet_frames": 349,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.14613180515759314,
+              "exact_8_9": 3,
+              "numeric_8_9": 7,
+              "accuracy_8_9": 0.42857142857142855,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 15,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 7,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 10,
+                  "exact": 10,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 11,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 6,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 3,
+                  "exact": 3,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 4,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "seconds": 148.03982489999908,
+      "peak_allocated_bytes": 830329344
+    },
+    "135": {
+      "episode_ids": [
+        277,
+        22,
+        270,
+        271,
+        73,
+        217,
+        216,
+        84,
+        279,
+        127,
+        239,
+        126,
+        118,
+        222,
+        267,
+        52,
+        299,
+        207,
+        164,
+        4,
+        42,
+        147,
+        117,
+        261,
+        199,
+        187,
+        95,
+        212,
+        214,
+        170,
+        111,
+        235,
+        30,
+        66,
+        64,
+        240,
+        100,
+        178,
+        200,
+        36,
+        61,
+        17,
+        50,
+        1,
+        85,
+        150,
+        113,
+        167,
+        121,
+        165,
+        280,
+        141,
+        288,
+        136,
+        233,
+        292,
+        128,
+        83,
+        28,
+        232,
+        243,
+        151,
+        174,
+        189,
+        265,
+        19,
+        221,
+        266,
+        38,
+        34,
+        114,
+        296,
+        40,
+        72,
+        206,
+        182,
+        211,
+        183,
+        21,
+        158,
+        248,
+        140,
+        197,
+        295,
+        59,
+        58,
+        173,
+        153,
+        135,
+        104,
+        142,
+        103,
+        98,
+        105,
+        67,
+        168,
+        287,
+        181,
+        5,
+        205,
+        247,
+        92,
+        184,
+        177,
+        219,
+        293,
+        274,
+        230,
+        112,
+        201,
+        162,
+        76,
+        289,
+        41,
+        223,
+        169,
+        69,
+        99,
+        249,
+        202,
+        220,
+        18,
+        54,
+        57,
+        227,
+        37,
+        71,
+        125,
+        259,
+        129,
+        228,
+        106,
+        297,
+        91,
+        78
+      ],
+      "unique_train_frames": 2674,
+      "training": {
+        "sheet_frames": 6843,
+        "pre_sheet_frames": 357,
+        "sheet_loss": 1.2638063256589933,
+        "pre_sheet_loss": 2.767565473455007,
+        "mean_loss": 1.3383677167372123
+      },
+      "scores": {
+        "largest_false_endpoint_confidence_either_depth": 0.28911566734313965,
+        "variants": {
+          "0.0": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 22,
+                "endpoint_hits": 16,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.4444444444444444,
+                "wrong": 190,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.35315985130111527,
+                "exact_8_9": 0,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.0,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 4,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 22,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 7,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 0,
+                    "endpoint_calls": 6
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 4,
+                    "endpoint_calls": 6
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 0,
+                    "endpoint_calls": 10
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 0,
+                    "endpoint_calls": 10
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 6,
+                    "endpoint_calls": 6
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 20,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 285,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 282,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 282,
+                    "exact": 282,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 264,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 264,
+                    "exact": 264,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 243,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 243,
+                    "exact": 243,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 171,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 171,
+                    "exact": 171,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 67,
+              "numeric_sheet_frames": 374,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.17914438502673796,
+              "exact_8_9": 0,
+              "numeric_8_9": 0,
+              "accuracy_8_9": null,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 7,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 7,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 22,
+                  "exact": 22,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 50,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 3,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          },
+          "0.0005": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 22,
+                "endpoint_hits": 16,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.4444444444444444,
+                "wrong": 190,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.35315985130111527,
+                "exact_8_9": 0,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.0,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 4,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 22,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 7,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 0,
+                    "endpoint_calls": 6
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 4,
+                    "endpoint_calls": 6
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 0,
+                    "endpoint_calls": 10
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 0,
+                    "endpoint_calls": 10
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 6,
+                    "endpoint_calls": 6
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 20,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 285,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 282,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 282,
+                    "exact": 282,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 263,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 263,
+                    "exact": 263,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 242,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 242,
+                    "exact": 242,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 0,
+                "numeric_sheet_frames": 172,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.0,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 172,
+                    "exact": 172,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 67,
+              "numeric_sheet_frames": 374,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.17914438502673796,
+              "exact_8_9": 0,
+              "numeric_8_9": 0,
+              "accuracy_8_9": null,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 7,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 7,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 22,
+                  "exact": 22,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 50,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 3,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "seconds": 136.54755330000262,
+      "peak_allocated_bytes": 825970688
+    },
+    "270": {
+      "episode_ids": [
+        277,
+        22,
+        270,
+        271,
+        73,
+        217,
+        216,
+        84,
+        279,
+        127,
+        239,
+        126,
+        118,
+        222,
+        267,
+        52,
+        299,
+        207,
+        164,
+        4,
+        42,
+        147,
+        117,
+        261,
+        199,
+        187,
+        95,
+        212,
+        214,
+        170,
+        111,
+        235,
+        30,
+        66,
+        64,
+        240,
+        100,
+        178,
+        200,
+        36,
+        61,
+        17,
+        50,
+        1,
+        85,
+        150,
+        113,
+        167,
+        121,
+        165,
+        280,
+        141,
+        288,
+        136,
+        233,
+        292,
+        128,
+        83,
+        28,
+        232,
+        243,
+        151,
+        174,
+        189,
+        265,
+        19,
+        221,
+        266,
+        38,
+        34,
+        114,
+        296,
+        40,
+        72,
+        206,
+        182,
+        211,
+        183,
+        21,
+        158,
+        248,
+        140,
+        197,
+        295,
+        59,
+        58,
+        173,
+        153,
+        135,
+        104,
+        142,
+        103,
+        98,
+        105,
+        67,
+        168,
+        287,
+        181,
+        5,
+        205,
+        247,
+        92,
+        184,
+        177,
+        219,
+        293,
+        274,
+        230,
+        112,
+        201,
+        162,
+        76,
+        289,
+        41,
+        223,
+        169,
+        69,
+        99,
+        249,
+        202,
+        220,
+        18,
+        54,
+        57,
+        227,
+        37,
+        71,
+        125,
+        259,
+        129,
+        228,
+        106,
+        297,
+        91,
+        78,
+        94,
+        10,
+        131,
+        44,
+        263,
+        107,
+        149,
+        209,
+        250,
+        122,
+        159,
+        152,
+        79,
+        236,
+        208,
+        20,
+        198,
+        133,
+        146,
+        32,
+        13,
+        143,
+        231,
+        282,
+        132,
+        15,
+        70,
+        194,
+        33,
+        145,
+        291,
+        273,
+        161,
+        11,
+        74,
+        60,
+        97,
+        242,
+        56,
+        25,
+        43,
+        251,
+        171,
+        27,
+        119,
+        163,
+        89,
+        294,
+        284,
+        262,
+        75,
+        12,
+        186,
+        82,
+        246,
+        124,
+        203,
+        245,
+        101,
+        176,
+        120,
+        63,
+        39,
+        154,
+        47,
+        137,
+        224,
+        180,
+        195,
+        218,
+        77,
+        257,
+        237,
+        80,
+        2,
+        286,
+        290,
+        226,
+        215,
+        269,
+        244,
+        86,
+        276,
+        90,
+        213,
+        229,
+        241,
+        109,
+        225,
+        172,
+        264,
+        62,
+        275,
+        53,
+        68,
+        138,
+        156,
+        48,
+        14,
+        65,
+        45,
+        31,
+        260,
+        55,
+        144,
+        0,
+        272,
+        93,
+        175,
+        96,
+        110,
+        254,
+        35,
+        51,
+        268,
+        130,
+        88,
+        26,
+        190,
+        196,
+        49,
+        285,
+        115,
+        166,
+        185,
+        148,
+        256,
+        191,
+        7,
+        24,
+        298,
+        123,
+        155,
+        108,
+        193
+      ],
+      "unique_train_frames": 5273,
+      "training": {
+        "sheet_frames": 6838,
+        "pre_sheet_frames": 362,
+        "sheet_loss": 1.187067237441022,
+        "pre_sheet_loss": 2.7496682010302886,
+        "mean_loss": 1.2656313414437046
+      },
+      "scores": {
+        "largest_false_endpoint_confidence_either_depth": 0.25450026988983154,
+        "variants": {
+          "0.0": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 87,
+                "endpoint_hits": 36,
+                "true_endpoints": 36,
+                "endpoint_recall": 1.0,
+                "wrong": 170,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.3159851301115242,
+                "exact_8_9": 27,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.5294117647058824,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 7,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 46,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 1,
+                    "endpoint_calls": 19
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 0,
+                    "endpoint_calls": 22
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 0,
+                    "endpoint_calls": 24
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 27,
+                    "endpoint_calls": 27
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 2,
+                    "endpoint_calls": 9
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 0,
+                    "endpoint_calls": 20
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 34,
+                "numeric_sheet_frames": 319,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.10658307210031348,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 28,
+                "numeric_sheet_frames": 313,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.08945686900958466,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 9,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 23,
+                "numeric_sheet_frames": 308,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.07467532467532467,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 6,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 20,
+                "numeric_sheet_frames": 305,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.06557377049180328,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 16,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 10,
+                "numeric_sheet_frames": 286,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.03496503496503497,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 276,
+                    "exact": 276,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 8,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 47,
+              "numeric_sheet_frames": 364,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.12912087912087913,
+              "exact_8_9": 0,
+              "numeric_8_9": 0,
+              "accuracy_8_9": null,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 17,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 11,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 10,
+                  "exact": 2,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 36,
+                  "exact": 30,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 3,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 2,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          },
+          "0.0005": {
+            "fixed_cutoffs": {
+              "0.0": {
+                "false_endpoints": 87,
+                "endpoint_hits": 36,
+                "true_endpoints": 36,
+                "endpoint_recall": 1.0,
+                "wrong": 171,
+                "numeric_sheet_frames": 538,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.31784386617100374,
+                "exact_8_9": 27,
+                "numeric_8_9": 51,
+                "accuracy_8_9": 0.5294117647058824,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 0,
+                  "numeric_non_endpoint": 30,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 22,
+                    "exact": 7,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 61,
+                    "exact": 45,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 14,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 21,
+                    "exact": 1,
+                    "endpoint_calls": 19
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 25,
+                    "exact": 0,
+                    "endpoint_calls": 22
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 24,
+                    "exact": 0,
+                    "endpoint_calls": 24
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 27,
+                    "exact": 27,
+                    "endpoint_calls": 27
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 9,
+                    "exact": 2,
+                    "endpoint_calls": 9
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 20,
+                    "exact": 0,
+                    "endpoint_calls": 20
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 2
+                  }
+                }
+              },
+              "0.5": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 34,
+                "numeric_sheet_frames": 319,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.10658307210031348,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 11,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.75": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 28,
+                "numeric_sheet_frames": 313,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.08945686900958466,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 9,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 2,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.9": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 23,
+                "numeric_sheet_frames": 308,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.07467532467532467,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 6,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.95": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 21,
+                "numeric_sheet_frames": 306,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.06862745098039216,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 285,
+                    "exact": 285,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 17,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 4,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              },
+              "0.99": {
+                "false_endpoints": 0,
+                "endpoint_hits": 0,
+                "true_endpoints": 36,
+                "endpoint_recall": 0.0,
+                "wrong": 11,
+                "numeric_sheet_frames": 287,
+                "sheet_frames": 538,
+                "valid_but_wrong": 0.03832752613240418,
+                "exact_8_9": 0,
+                "numeric_8_9": 0,
+                "accuracy_8_9": null,
+                "pre_sheet": {
+                  "frames": 30,
+                  "abstain": 30,
+                  "numeric_non_endpoint": 0,
+                  "false_endpoints": 0
+                },
+                "by_true_mm": {
+                  "0": {
+                    "frames": 285,
+                    "numeric": 276,
+                    "exact": 276,
+                    "endpoint_calls": 0
+                  },
+                  "1": {
+                    "frames": 17,
+                    "numeric": 8,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "2": {
+                    "frames": 11,
+                    "numeric": 3,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "3": {
+                    "frames": 22,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "4": {
+                    "frames": 61,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "5": {
+                    "frames": 14,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "6": {
+                    "frames": 21,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "7": {
+                    "frames": 25,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "8": {
+                    "frames": 24,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "9": {
+                    "frames": 27,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "10": {
+                    "frames": 9,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "11": {
+                    "frames": 20,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  },
+                  "12": {
+                    "frames": 2,
+                    "numeric": 0,
+                    "exact": 0,
+                    "endpoint_calls": 0
+                  }
+                }
+              }
+            },
+            "in_sample_zero_false_reference": {
+              "false_endpoints": 0,
+              "endpoint_hits": 0,
+              "true_endpoints": 36,
+              "endpoint_recall": 0.0,
+              "wrong": 47,
+              "numeric_sheet_frames": 364,
+              "sheet_frames": 538,
+              "valid_but_wrong": 0.12912087912087913,
+              "exact_8_9": 0,
+              "numeric_8_9": 0,
+              "accuracy_8_9": null,
+              "pre_sheet": {
+                "frames": 30,
+                "abstain": 30,
+                "numeric_non_endpoint": 0,
+                "false_endpoints": 0
+              },
+              "by_true_mm": {
+                "0": {
+                  "frames": 285,
+                  "numeric": 285,
+                  "exact": 285,
+                  "endpoint_calls": 0
+                },
+                "1": {
+                  "frames": 17,
+                  "numeric": 17,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "2": {
+                  "frames": 11,
+                  "numeric": 11,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "3": {
+                  "frames": 22,
+                  "numeric": 10,
+                  "exact": 2,
+                  "endpoint_calls": 0
+                },
+                "4": {
+                  "frames": 61,
+                  "numeric": 36,
+                  "exact": 30,
+                  "endpoint_calls": 0
+                },
+                "5": {
+                  "frames": 14,
+                  "numeric": 3,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "6": {
+                  "frames": 21,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "7": {
+                  "frames": 25,
+                  "numeric": 2,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "8": {
+                  "frames": 24,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "9": {
+                  "frames": 27,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "10": {
+                  "frames": 9,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "11": {
+                  "frames": 20,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                },
+                "12": {
+                  "frames": 2,
+                  "numeric": 0,
+                  "exact": 0,
+                  "endpoint_calls": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "seconds": 110.07468510000035,
+      "peak_allocated_bytes": 825970688
+    }
+  }
+}

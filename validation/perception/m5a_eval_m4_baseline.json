@@ -1,0 +1,1156 @@
+{
+ "run_id": "3c7e4afbe3c6435abfbe46645f358a9c",
+ "label": "m4_baseline",
+ "created_at": "2026-11-19T08:43:48.296198+00:00",
+ "protocol": {
+  "_note": "M5a perception acceptance protocol, pre-registered 2026-11-19 BEFORE the revised estimator is evaluated. Evaluated by scripts/vision/replay_perception.py on recorded shadow-mode frames (validation/perception/frames/<scenario>/). Simulation benchmark only; model quantities, not clinical accuracy. Thresholds must not be loosened after seeing results; a failed gate is reported as failed.",
+  "protocol_version": 1,
+  "wrong_threshold_m": 0.002,
+  "definitions": {
+   "tip_truth": "tcp_M[:3,3] of the cutter tcp (true sim pose)",
+   "jaw_axis_truth": "tcp_M[:3, tool_axis_col] (pointing axis used by tool_pose control)",
+   "front_truth": "GroundTruth.cut_front: midpoint of the two centre columns at row round(cut_length/H) (1 mm grid quantisation)",
+   "direction_truth_live": "centre-line m_j = (n[j,NU/2-1]+n[j,NU/2])/2; j0 = min(round(cut_length/H), NV-4); unit(m[j0+3]-m[j0])",
+   "direction_truth_placement": "sheet_v at placement (reported for comparison with M4, not gated)",
+   "truth_visible": "visibility.depth_visible on the true camera/depth with SimWorld.point_visible defaults (tol 3 mm, window 21, min_clear 0.35)",
+   "valid_but_wrong_rate": "#(estimate valid AND error > wrong_threshold_m) / #(estimate valid)",
+   "availability": "#(estimate valid) / #(ticks with the sheet present AND the truth point visible)",
+   "relative_error": "|(front_est - tip_est) - (front_true - tip_true)| on ticks where both estimates are valid; the quantity a relative visual servo consumes",
+   "pre_sheet_false_positive": "tick with no sheet in the scene but cut.valid or cut.front_valid true"
+  },
+  "gates": [
+   {
+    "id": "G1_tip_bias",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "tip_err_median_m",
+    "op": "<",
+    "value": 0.0005
+   },
+   {
+    "id": "G2_tip_vbw",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "tip_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G3_front_vbw",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "front_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G4a_tip_availability",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "tip_availability",
+    "op": ">=",
+    "value": 0.9
+   },
+   {
+    "id": "G4b_front_availability",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "front_availability",
+    "op": ">=",
+    "value": 0.8,
+    "basis": "lower than tip: the blades can legitimately hide the slit apex in the image while the coarse truth gate (21 px window, 35 % clear) still calls the point visible"
+   },
+   {
+    "id": "G5_direction",
+    "dataset": "nominal",
+    "degradation": "none",
+    "metric": "direction_live_err_median_rad",
+    "op": "<",
+    "value": 0.0873,
+    "basis": "5 deg"
+   },
+   {
+    "id": "G6_pre_sheet_fp",
+    "dataset": "all",
+    "degradation": "none",
+    "metric": "pre_sheet_false_positives",
+    "op": "==",
+    "value": 0
+   },
+   {
+    "id": "G7a_occluded_front_not_wrong",
+    "dataset": "occlusion_transient",
+    "degradation": "none",
+    "metric": "front_vbw_on_occluded",
+    "op": "==",
+    "value": 0
+   },
+   {
+    "id": "G7b_occluded_tip_not_wrong",
+    "dataset": "occlusion_transient",
+    "degradation": "none",
+    "metric": "tip_vbw_on_occluded",
+    "op": "==",
+    "value": 0
+   },
+   {
+    "id": "G8a_front_vbw_slip",
+    "dataset": "slip_regrasp",
+    "degradation": "none",
+    "metric": "front_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G8b_tip_vbw_slip",
+    "dataset": "slip_regrasp",
+    "degradation": "none",
+    "metric": "tip_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G8c_front_vbw_relax",
+    "dataset": "relax",
+    "degradation": "none",
+    "metric": "front_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G8d_tip_vbw_relax",
+    "dataset": "relax",
+    "degradation": "none",
+    "metric": "tip_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G9a_depth_noise_front",
+    "dataset": "nominal",
+    "degradation": "depth_noise_m=0.001",
+    "metric": "front_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G9b_depth_noise_tip",
+    "dataset": "nominal",
+    "degradation": "depth_noise_m=0.001",
+    "metric": "tip_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G9c_pose_trans_relative",
+    "dataset": "nominal",
+    "degradation": "trans_m=0.001",
+    "metric": "relative_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   },
+   {
+    "id": "G9d_pose_rot_relative",
+    "dataset": "nominal",
+    "degradation": "rot_deg=1.0",
+    "metric": "relative_vbw_rate",
+    "op": "<",
+    "value": 0.05
+   }
+  ],
+  "degradations": {
+   "none": {
+    "depth_noise_m": 0.0,
+    "trans_m": 0.0,
+    "rot_deg": 0.0,
+    "seeds": [
+     1
+    ]
+   },
+   "depth_noise_m=0.0005": {
+    "depth_noise_m": 0.0005,
+    "trans_m": 0.0,
+    "rot_deg": 0.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "depth_noise_m=0.001": {
+    "depth_noise_m": 0.001,
+    "trans_m": 0.0,
+    "rot_deg": 0.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "depth_noise_m=0.002": {
+    "depth_noise_m": 0.002,
+    "trans_m": 0.0,
+    "rot_deg": 0.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "report_only": true
+   },
+   "trans_m=0.001": {
+    "depth_noise_m": 0.0,
+    "trans_m": 0.001,
+    "rot_deg": 0.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "trans_m=0.002": {
+    "depth_noise_m": 0.0,
+    "trans_m": 0.002,
+    "rot_deg": 0.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "report_only": true
+   },
+   "rot_deg=1.0": {
+    "depth_noise_m": 0.0,
+    "trans_m": 0.0,
+    "rot_deg": 1.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "rot_deg=2.0": {
+    "depth_noise_m": 0.0,
+    "trans_m": 0.0,
+    "rot_deg": 2.0,
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "report_only": true
+   }
+  },
+  "datasets": [
+   "nominal",
+   "occlusion_transient",
+   "slip_regrasp",
+   "relax",
+   "handover_tension"
+  ],
+  "report_only_datasets": [
+   "handover_tension"
+  ],
+  "pooling": "Seeds of one degradation are pooled tick-wise before computing rates/medians. A gate whose denominator is 0 is FAILED (no evidence), not passed.",
+  "closed_loop_precondition": "M5b may close the loop only if every gate passes, or the user explicitly accepts a named failing gate."
+ },
+ "protocol_sha256": "1cdc044bcb6959482f9bfb309bfcf9ab9bec3d175116686d21452e99b438648c",
+ "source_sha256": {
+  "scripts/vision/cut_perception.py": "1f6125b70ef97ae7",
+  "scripts/vision/replay_perception.py": "8e042c0038e56865",
+  "config/perception/m5a_gates.json": "1cdc044bcb695948"
+ },
+ "datasets": {
+  "nominal": {
+   "frames": 17,
+   "sha256": "6000938f7f7fda1528e02ac7d5d9b67d3b20f3293521471bc0bd6c6f740c8ea4",
+   "run_name": "perc_frames_nominal",
+   "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  },
+  "occlusion_transient": {
+   "frames": 22,
+   "sha256": "b59fd6ddc5ad1e2583625cedd10dc80770ebad871d2f04d76993ec8ae7acf3a4",
+   "run_name": "perc_frames_occlusion_transient",
+   "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  },
+  "slip_regrasp": {
+   "frames": 22,
+   "sha256": "b0be33674eb952c32a0040ed3326885b78349e23e6628a8312d1a7f861a118bd",
+   "run_name": "perc_frames_slip_regrasp",
+   "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  },
+  "relax": {
+   "frames": 17,
+   "sha256": "c1e3339e71dee3f418764a4aeee610db444c28d47572be906ed0a828de39ac9d",
+   "run_name": "perc_frames_relax",
+   "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  },
+  "handover_tension": {
+   "frames": 15,
+   "sha256": "72727cd24c538b60774656578e5db663fce51d218bad607bada51023e07e1718",
+   "run_name": "perc_frames_handover_tension",
+   "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7"
+  }
+ },
+ "results": {
+  "nominal": {
+   "none": {
+    "metrics": {
+     "ticks": 17,
+     "sheet_ticks": 16,
+     "tip_err": {
+      "n": 17,
+      "median": 0.0017829530844193353,
+      "p95": 0.0019116294273074763,
+      "max": 0.0019116294273074763
+     },
+     "tip_err_median_m": 0.0017829530844193353,
+     "tip_vbw_rate": 0.0,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 16,
+      "median": 0.024663556799350277,
+      "p95": 0.04472454381872865,
+      "max": 0.04472454381872865
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 16,
+      "median": 0.4395761701763068,
+      "p95": 0.6089739836674031,
+      "max": 0.6089739836674031
+     },
+     "direction_live_err_median_rad": 0.4395761701763068,
+     "direction_place_err": {
+      "n": 16,
+      "median": 0.42372021373463187,
+      "p95": 0.4288631053859621,
+      "max": 0.4288631053859621
+     },
+     "relative_err": {
+      "n": 16,
+      "median": 0.02428544309475588,
+      "p95": 0.04487934716908933,
+      "max": 0.04487934716908933
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 1,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1
+    ]
+   },
+   "depth_noise_m=0.0005": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.0019519432334886644,
+      "p95": 0.0031111005116608516,
+      "max": 0.0038824452210244114
+     },
+     "tip_err_median_m": 0.0019519432334886644,
+     "tip_vbw_rate": 0.43137254901960786,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.022717971120034382,
+      "p95": 0.02621109487978286,
+      "max": 0.027169160465341558
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4391686307719507,
+      "p95": 0.6085178566619955,
+      "max": 0.6091190934189367
+     },
+     "direction_live_err_median_rad": 0.4391686307719507,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.42441929805771617,
+      "p95": 0.42850323705982657,
+      "max": 0.42873860316216933
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.022007677608019326,
+      "p95": 0.026048326766725232,
+      "max": 0.02703556893156474
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "depth_noise_m=0.001": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.0023946878779301443,
+      "p95": 0.004331919386785563,
+      "max": 0.006266443715221829
+     },
+     "tip_err_median_m": 0.0023946878779301443,
+     "tip_vbw_rate": 0.7647058823529411,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.024019259833769895,
+      "p95": 0.026903355132238377,
+      "max": 0.027357384576110515
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.44041877804085305,
+      "p95": 0.609079852327427,
+      "max": 0.6095766574125229
+     },
+     "direction_live_err_median_rad": 0.44041877804085305,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.4266037602598859,
+      "p95": 0.4318999297546317,
+      "max": 0.43236971766595683
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.022441923506427368,
+      "p95": 0.02604869066933635,
+      "max": 0.02821998084912929
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "depth_noise_m=0.002": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.00284662342972689,
+      "p95": 0.015427466306080306,
+      "max": 0.01556800982457072
+     },
+     "tip_err_median_m": 0.00284662342972689,
+     "tip_vbw_rate": 0.7058823529411765,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.02446553263271796,
+      "p95": 0.027154764620725382,
+      "max": 0.027603395460021916
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4468253220178584,
+      "p95": 0.6109911344634403,
+      "max": 0.6111910912393875
+     },
+     "direction_live_err_median_rad": 0.4468253220178584,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.4326373887560775,
+      "p95": 0.43845535684850095,
+      "max": 0.4401859328369061
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.023525545668490445,
+      "p95": 0.027793769870264867,
+      "max": 0.028683000060925317
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "trans_m=0.001": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.00204574889271518,
+      "p95": 0.00275987473077418,
+      "max": 0.0028412716216745
+     },
+     "tip_err_median_m": 0.00204574889271518,
+     "tip_vbw_rate": 0.5294117647058824,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.02482528371816528,
+      "p95": 0.044525671922464954,
+      "max": 0.045616662109519944
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4395761701763068,
+      "p95": 0.6089739836674031,
+      "max": 0.6089739836674031
+     },
+     "direction_live_err_median_rad": 0.4395761701763068,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.42372021373463187,
+      "p95": 0.4288631053859621,
+      "max": 0.4288631053859621
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.024488707651172233,
+      "p95": 0.04465155623130971,
+      "max": 0.045267122396473354
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "trans_m=0.002": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.0025950242059213373,
+      "p95": 0.003740621004374698,
+      "max": 0.0037982888469387755
+     },
+     "tip_err_median_m": 0.0025950242059213373,
+     "tip_vbw_rate": 0.6862745098039216,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.024828677977651058,
+      "p95": 0.04434846221122668,
+      "max": 0.0465131691484771
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4395761701763068,
+      "p95": 0.6089739836674031,
+      "max": 0.6089739836674031
+     },
+     "direction_live_err_median_rad": 0.4395761701763068,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.42372021373463187,
+      "p95": 0.4288631053859621,
+      "max": 0.4288631053859621
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.024680678413514946,
+      "p95": 0.044488468538428305,
+      "max": 0.04563726565168627
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "rot_deg=1.0": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.0022794386100671643,
+      "p95": 0.003723932608781638,
+      "max": 0.004004051097905835
+     },
+     "tip_err_median_m": 0.0022794386100671643,
+     "tip_vbw_rate": 0.5686274509803921,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.02405012842695832,
+      "p95": 0.04581905710776442,
+      "max": 0.04688496696566271
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4397022720330107,
+      "p95": 0.6078829474710572,
+      "max": 0.6210324185147155
+     },
+     "direction_live_err_median_rad": 0.4397022720330107,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.4261687593873095,
+      "p95": 0.4403459136737772,
+      "max": 0.4434405928367363
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.023963793100366886,
+      "p95": 0.045142452395958696,
+      "max": 0.04537802605154924
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   },
+   "rot_deg=2.0": {
+    "metrics": {
+     "ticks": 51,
+     "sheet_ticks": 48,
+     "tip_err": {
+      "n": 51,
+      "median": 0.003249720238623421,
+      "p95": 0.005796376995064727,
+      "max": 0.0062416136074100355
+     },
+     "tip_err_median_m": 0.003249720238623421,
+     "tip_vbw_rate": 0.9215686274509803,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 48,
+      "median": 0.024103518269425122,
+      "p95": 0.04700673493455123,
+      "max": 0.049060890677557284
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 48,
+      "median": 0.4363060468831132,
+      "p95": 0.6119219336395896,
+      "max": 0.6331113040838398
+     },
+     "direction_live_err_median_rad": 0.4363060468831132,
+     "direction_place_err": {
+      "n": 48,
+      "median": 0.42987410610202603,
+      "p95": 0.4569801535963979,
+      "max": 0.4580953002063955
+     },
+     "relative_err": {
+      "n": 48,
+      "median": 0.023997450083815895,
+      "p95": 0.04545602079112685,
+      "max": 0.04586928544641768
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 3,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1,
+     2,
+     3
+    ]
+   }
+  },
+  "occlusion_transient": {
+   "none": {
+    "metrics": {
+     "ticks": 22,
+     "sheet_ticks": 21,
+     "tip_err": {
+      "n": 22,
+      "median": 0.0017819975817764512,
+      "p95": 0.0018806744551674091,
+      "max": 0.0019116294273074763
+     },
+     "tip_err_median_m": 0.0017819975817764512,
+     "tip_vbw_rate": 0.0,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 21,
+      "median": 0.024746397391555756,
+      "p95": 0.04472454381872865,
+      "max": 0.04472454381872865
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 21,
+      "median": 0.44053344835728303,
+      "p95": 0.6038765956754266,
+      "max": 0.6089739836674031
+     },
+     "direction_live_err_median_rad": 0.44053344835728303,
+     "direction_place_err": {
+      "n": 21,
+      "median": 0.423722659716651,
+      "p95": 0.48209605883598905,
+      "max": 0.48209605883598905
+     },
+     "relative_err": {
+      "n": 21,
+      "median": 0.02437967971896981,
+      "p95": 0.04487934716908933,
+      "max": 0.04487934716908933
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 1,
+     "occluded_front_ticks": 3,
+     "occluded_tip_ticks": 3,
+     "front_vbw_on_occluded": 3,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 3
+    },
+    "seeds": [
+     1
+    ]
+   }
+  },
+  "slip_regrasp": {
+   "none": {
+    "metrics": {
+     "ticks": 22,
+     "sheet_ticks": 21,
+     "tip_err": {
+      "n": 22,
+      "median": 0.0018386372041573461,
+      "p95": 0.0019116294273074763,
+      "max": 0.0020725781848865573
+     },
+     "tip_err_median_m": 0.0018386372041573461,
+     "tip_vbw_rate": 0.045454545454545456,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 21,
+      "median": 0.024389433477849488,
+      "p95": 0.02721207437256913,
+      "max": 0.04433311296123157
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 21,
+      "median": 0.4456747484876325,
+      "p95": 0.6676508505565627,
+      "max": 0.6779204397680264
+     },
+     "direction_live_err_median_rad": 0.4456747484876325,
+     "direction_place_err": {
+      "n": 21,
+      "median": 0.424291938849818,
+      "p95": 0.4257408427590077,
+      "max": 0.42886023849765686
+     },
+     "relative_err": {
+      "n": 21,
+      "median": 0.02399906721062442,
+      "p95": 0.026951380705071876,
+      "max": 0.04429356792851259
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 1,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1
+    ]
+   }
+  },
+  "relax": {
+   "none": {
+    "metrics": {
+     "ticks": 17,
+     "sheet_ticks": 16,
+     "tip_err": {
+      "n": 17,
+      "median": 0.0017829530844193353,
+      "p95": 0.0019116294273074763,
+      "max": 0.0019116294273074763
+     },
+     "tip_err_median_m": 0.0017829530844193353,
+     "tip_vbw_rate": 0.0,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 16,
+      "median": 0.024389433477849488,
+      "p95": 0.026700576693943434,
+      "max": 0.026700576693943434
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 16,
+      "median": 0.4452272756967318,
+      "p95": 0.5010547960751133,
+      "max": 0.5010547960751133
+     },
+     "direction_live_err_median_rad": 0.4452272756967318,
+     "direction_place_err": {
+      "n": 16,
+      "median": 0.42391026665733367,
+      "p95": 0.42789695894308555,
+      "max": 0.42789695894308555
+     },
+     "relative_err": {
+      "n": 16,
+      "median": 0.02399906721062442,
+      "p95": 0.026473189622172055,
+      "max": 0.026473189622172055
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 1,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1
+    ]
+   }
+  },
+  "handover_tension": {
+   "none": {
+    "metrics": {
+     "ticks": 15,
+     "sheet_ticks": 14,
+     "tip_err": {
+      "n": 15,
+      "median": 0.0017819975817764512,
+      "p95": 0.0019116294273074763,
+      "max": 0.0019116294273074763
+     },
+     "tip_err_median_m": 0.0017819975817764512,
+     "tip_vbw_rate": 0.0,
+     "tip_availability": 1.0,
+     "jaw_axis_err": {
+      "n": 0
+     },
+     "front_err": {
+      "n": 14,
+      "median": 0.024389433477849488,
+      "p95": 0.0437549855795401,
+      "max": 0.0437549855795401
+     },
+     "front_vbw_rate": 1.0,
+     "front_availability": 1.0,
+     "direction_live_err": {
+      "n": 14,
+      "median": 0.4452272756967318,
+      "p95": 0.6458782541606967,
+      "max": 0.6458782541606967
+     },
+     "direction_live_err_median_rad": 0.4452272756967318,
+     "direction_place_err": {
+      "n": 14,
+      "median": 0.42372021373463187,
+      "p95": 0.4257408427590077,
+      "max": 0.4257408427590077
+     },
+     "relative_err": {
+      "n": 14,
+      "median": 0.02399906721062442,
+      "p95": 0.04386393031854301,
+      "max": 0.04386393031854301
+     },
+     "relative_vbw_rate": 1.0,
+     "pre_sheet_false_positives": 1,
+     "occluded_front_ticks": 0,
+     "occluded_tip_ticks": 0,
+     "front_vbw_on_occluded": 0,
+     "tip_vbw_on_occluded": 0,
+     "front_valid_on_occluded": 0
+    },
+    "seeds": [
+     1
+    ]
+   }
+  }
+ },
+ "gates": [
+  {
+   "id": "G1_tip_bias",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "tip_err_median_m",
+   "op": "<",
+   "value": 0.0005,
+   "measured": 0.0017829530844193353,
+   "status": "FAILED"
+  },
+  {
+   "id": "G2_tip_vbw",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "tip_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 0.0,
+   "status": "PASSED"
+  },
+  {
+   "id": "G3_front_vbw",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "front_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  },
+  {
+   "id": "G4a_tip_availability",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "tip_availability",
+   "op": ">=",
+   "value": 0.9,
+   "measured": 1.0,
+   "status": "PASSED"
+  },
+  {
+   "id": "G4b_front_availability",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "front_availability",
+   "op": ">=",
+   "value": 0.8,
+   "basis": "lower than tip: the blades can legitimately hide the slit apex in the image while the coarse truth gate (21 px window, 35 % clear) still calls the point visible",
+   "measured": 1.0,
+   "status": "PASSED"
+  },
+  {
+   "id": "G5_direction",
+   "dataset": "nominal",
+   "degradation": "none",
+   "metric": "direction_live_err_median_rad",
+   "op": "<",
+   "value": 0.0873,
+   "basis": "5 deg",
+   "measured": 0.4395761701763068,
+   "status": "FAILED"
+  },
+  {
+   "id": "G6_pre_sheet_fp",
+   "dataset": "all",
+   "degradation": "none",
+   "metric": "pre_sheet_false_positives",
+   "op": "==",
+   "value": 0,
+   "measured": 5,
+   "status": "FAILED"
+  },
+  {
+   "id": "G7a_occluded_front_not_wrong",
+   "dataset": "occlusion_transient",
+   "degradation": "none",
+   "metric": "front_vbw_on_occluded",
+   "op": "==",
+   "value": 0,
+   "measured": 3,
+   "status": "FAILED"
+  },
+  {
+   "id": "G7b_occluded_tip_not_wrong",
+   "dataset": "occlusion_transient",
+   "degradation": "none",
+   "metric": "tip_vbw_on_occluded",
+   "op": "==",
+   "value": 0,
+   "measured": 0,
+   "status": "PASSED"
+  },
+  {
+   "id": "G8a_front_vbw_slip",
+   "dataset": "slip_regrasp",
+   "degradation": "none",
+   "metric": "front_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  },
+  {
+   "id": "G8b_tip_vbw_slip",
+   "dataset": "slip_regrasp",
+   "degradation": "none",
+   "metric": "tip_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 0.045454545454545456,
+   "status": "PASSED"
+  },
+  {
+   "id": "G8c_front_vbw_relax",
+   "dataset": "relax",
+   "degradation": "none",
+   "metric": "front_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  },
+  {
+   "id": "G8d_tip_vbw_relax",
+   "dataset": "relax",
+   "degradation": "none",
+   "metric": "tip_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 0.0,
+   "status": "PASSED"
+  },
+  {
+   "id": "G9a_depth_noise_front",
+   "dataset": "nominal",
+   "degradation": "depth_noise_m=0.001",
+   "metric": "front_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  },
+  {
+   "id": "G9b_depth_noise_tip",
+   "dataset": "nominal",
+   "degradation": "depth_noise_m=0.001",
+   "metric": "tip_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 0.7647058823529411,
+   "status": "FAILED"
+  },
+  {
+   "id": "G9c_pose_trans_relative",
+   "dataset": "nominal",
+   "degradation": "trans_m=0.001",
+   "metric": "relative_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  },
+  {
+   "id": "G9d_pose_rot_relative",
+   "dataset": "nominal",
+   "degradation": "rot_deg=1.0",
+   "metric": "relative_vbw_rate",
+   "op": "<",
+   "value": 0.05,
+   "measured": 1.0,
+   "status": "FAILED"
+  }
+ ],
+ "all_gates_passed": false
+}

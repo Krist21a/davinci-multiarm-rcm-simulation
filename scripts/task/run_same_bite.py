@@ -38,17 +38,20 @@ def register(out, policy, extra_sources=()):
     return plan
 
 
-def run(args, *, world_class=SameBiteWorld, fsm_class=CutTaskFSM, active_spec=None):
-    policy='same_bite' if active_spec is None else 'active_look'
+def run(args, *, world_class=SameBiteWorld, fsm_class=CutTaskFSM, active_spec=None,
+        policy=None, extra_sources=(), sheet_cfg=None):
+    policy=policy or ('same_bite' if active_spec is None else 'active_look')
     extra=() if active_spec is None else (active_spec, Path(__file__).with_name('run_active_look.py'),
                                           Path(__file__).with_name('live_active_look.py'))
-    plan=register(args.out, policy, extra)
+    plan=register(args.out, policy, (*extra, *extra_sources))
     scenario,noise,seed=plan['cases'][args.case]
     dest=args.out/(args.case+'.json')
     if dest.exists():
         raise FileExistsError(dest)
     cfg=json.loads((REPO/plan['base']).read_bytes())
     cfg['cut']['control_source']='vision'
+    if sheet_cfg is not None:
+        cfg['sheet']=dict(sheet_cfg)
     cfg['perception'].update(mode='shadow',markers=True,depth_noise_m=noise,seed=seed,material_pattern=True,
                              local_material_chart=True,front_recovery=True,predictive_view=True,
                              exclude_tcp_marker=True,recovery_view_after_cut=True,ray_marker_fit=True)
@@ -81,7 +84,8 @@ def run(args, *, world_class=SameBiteWorld, fsm_class=CutTaskFSM, active_spec=No
         report.update(fsm.report(),final=asdict(final),strict_truth=w.truth.strict,truth_purposes=w.truth.reads_by_purpose,
                       actual_ready=ready,actual_closed=closed,ready_q=w._ready_q,
                       actual_q=None if q is None else q[0],tissue=stats,events=w.event_log,
-                      perception=w.perc_log,controller_sha256=w.controller_sha256)
+                      perception=w.perc_log,controller_sha256=w.controller_sha256,
+                      optical_observer=getattr(w, 'hd_optical', None))
         closures=[e['tick'] for e in w.event_log if e['event']=='closure']
         reacq=[e['tick'] for e in w.event_log if e['event']=='post_closure_reacquired']
         complete_sequence=bool(closures and len(closures)==len(reacq) and all(

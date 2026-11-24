@@ -1,0 +1,22 @@
+{
+  "_note": "User decision record. Signed by the user in the session of 2026-11-20 (answer: \"接受并进入 M5b\"). The agent only transcribes it.",
+  "protocol": "config/perception/m5a_gates.json",
+  "protocol_version": 3,
+  "evidence": [
+    "validation/perception/m5a_eval_dev_v3.json",
+    "validation/perception/m5a_eval_holdout_v3.json"
+  ],
+  "estimator_commit": "e2e8dad",
+  "accepted_failing_gates": [
+    "G4b_front_availability",
+    "H_occlusion_persistent_front_availability",
+    "H_nominal_shaft_front_availability",
+    "H_relax_large_front_availability",
+    "H3_view_a_front_availability",
+    "H3_relax_view_b_front_availability",
+    "H3_slip_handover_front_availability",
+    "H3_occlusion_transient_shaft_front_availability"
+  ],
+  "condition": "M5b closes the loop observe-before-act: the cutter acts only on a valid front estimate; an invalid estimate triggers a bounded clear-and-look recovery, and when that budget is exhausted the task is FAILED. Closed-loop front availability and clear-and-look counts are reported as M5b metrics.",
+  "not_accepted": "Every wrongness gate (vbw, occluded-not-wrong, pre-sheet FP) remains binding; any estimator change voids this acceptance."
+}

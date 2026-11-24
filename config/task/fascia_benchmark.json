@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "status": "blocked",
+  "_note": "P1 audit preparation only; declarative specification, not consumed by the current task runner. No validated anatomical ROI, material calibration or clinical safety claim.",
+  "benchmark_kind": "synthetic_proxy",
+  "roles": {"retract_primary": "psm1", "cut": "psm2", "retract_assist": "psm3", "view": "ecm"},
+  "roi": {
+    "status": "blocked",
+    "validated": false,
+    "anatomical_target": "endopelvic fascia research proxy; not prostatic fascia or Denonvilliers fascia",
+    "world_coordinates": null,
+    "source_to_world_transform": null,
+    "annotation_evidence": null,
+    "reason": "No reviewed source mesh/annotation and no validated registration for this ROI. Do not reuse feasibility offsets or a tissue sheet in front of the scissors as anatomy."
+  },
+  "exposure": {
+    "initial_condition": "preset_already_exposed",
+    "exposure_sequence_simulated": false,
+    "bladder_present": true,
+    "remove_bladder": false,
+    "bladder_is_occluder_and_protected_structure": true,
+    "note": "An explicit research initial condition, not a demonstrated surgical exposure. Keep the bladder; removal is not a baseline or a validated exposure method."
+  },
+  "nvb": {
+    "representation": "model_risk_region",
+    "status": "blocked",
+    "world_coordinates": null,
+    "clinical_safe_distance_m": null,
+    "clinical_safety_validated": false,
+    "deformation_following_validated": false,
+    "note": "A future synthetic distribution-aware risk region, not a segmented patient NVB or proof of clinical safety. Static distance alone is insufficient during traction."
+  },
+  "material": {
+    "status": "uncalibrated",
+    "parameters": null,
+    "experimental_evidence": null,
+    "note": "PBD constraint strain is not measured tissue force; no P4 calibration has been performed."
+  },
+  "structures": [
+    {"key": "prostate", "name": "prostate", "fma": "FMA9600", "names": ["prostate"], "required": true, "expected_elements": ["FJ3139"]},
+    {"key": "bladder", "name": "urinary bladder", "fma": "FMA15900", "names": ["urinary bladder", "bladder"], "required": true, "expected_elements": ["FJ3149"]},
+    {"key": "right_seminal_vesicle", "name": "right seminal vesicle", "fma": "FMA19387", "names": ["right seminal vesicle"], "required": true, "expected_elements": ["FJ3143"]},
+    {"key": "left_seminal_vesicle", "name": "left seminal vesicle", "fma": "FMA19388", "names": ["left seminal vesicle"], "required": true, "expected_elements": ["FJ3137"]},
+    {"key": "urethra", "name": "urethra", "fma": "FMA19667", "names": ["urethra"], "required": true, "expected_elements": ["FJ3148"]},
+    {"key": "levator_ani", "name": "zone of levator ani", "fma": "FMA19089", "names": ["zone of levator ani", "levator ani"], "required": true, "expected_elements": ["FJ1453M", "FJ1457M", "FJ1458M", "FJ2544", "FJ2545", "FJ2546", "FJ2549", "FJ2550", "FJ2551"]},
+    {"key": "right_external_iliac_artery", "name": "right external iliac artery", "fma": "FMA18806", "names": ["right external iliac artery"], "required": true, "expected_elements": ["FJ3567"]},
+    {"key": "left_external_iliac_artery", "name": "left external iliac artery", "fma": "FMA18807", "names": ["left external iliac artery"], "required": true, "expected_elements": ["FJ3466"]},
+    {"key": "right_external_iliac_vein", "name": "right external iliac vein", "fma": "FMA18885", "names": ["right external iliac vein"], "required": true, "expected_elements": ["FJ3568"]},
+    {"key": "left_external_iliac_vein", "name": "left external iliac vein", "fma": "FMA18886", "names": ["left external iliac vein"], "required": true, "expected_elements": ["FJ3484", "FJ3522", "FJ3523", "FJ3524"]},
+    {"key": "rectum", "name": "rectum", "fma": "FMA14544", "names": ["rectum"], "required": true, "expected_elements": ["FJ2571"]},
+    {"key": "right_obturator_internus", "name": "right obturator internus", "fma": "FMA22324", "names": ["right obturator internus"], "required": true, "expected_elements": ["FJ1426"]},
+    {"key": "left_obturator_internus", "name": "left obturator internus", "fma": "FMA22325", "names": ["left obturator internus"], "required": true, "expected_elements": ["FJ1426M"]},
+    {"key": "tendinous_arch_levator_ani", "name": "tendinous arch of levator ani", "fma": "FMA46442", "names": ["tendinous arch of levator ani"], "required": true, "expected_elements": ["FJ1465", "FJ1465M", "FJ2552", "FJ2553"]},
+    {"key": "endopelvic_fascia", "name": "endopelvic fascia", "fma": null, "names": ["endopelvic fascia", "endo pelvic fascia"], "required": false, "expected_missing": true},
+    {"key": "prostatic_fascia", "name": "prostatic fascia", "fma": null, "names": ["prostatic fascia", "fascia of prostate", "periprostatic fascia"], "required": false, "expected_missing": true},
+    {"key": "denonvilliers_fascia", "name": "Denonvilliers fascia", "fma": null, "names": ["Denonvilliers", "rectoprostatic fascia", "rectovesical fascia", "rectogenital septum"], "required": false, "expected_missing": true},
+    {"key": "nvb", "name": "neurovascular bundle", "fma": null, "names": ["neurovascular bundle", "neurovascular bundles", "neuro vascular bundle", "NVB"], "required": false, "expected_missing": true}
+  ],
+  "gates": [
+    {"id": "distal_correct_and_p0", "status": "blocked", "requires": "Reviewed distal kinematics, independent roll/pitch/yaw/grip, atomic refusal/rollback, blade sweep and post-advance interlocks; replayable P0 regression evidence."},
+    {"id": "source_asset_integrity", "status": "pending_audit", "requires": "Reproducible FMA/name/complete element mapping, per-OBJ nonempty v/f and SHA256, plus source file hashes. Audit pass does not open other gates."},
+    {"id": "anatomical_roi_and_registration", "status": "blocked", "requires": "Expert-reviewed distinction of three fasciae, source annotation, transform/units/landmarks and validated ROI. If synthetic, label it explicitly and limit claims."},
+    {"id": "exposure_with_bladder", "status": "blocked", "requires": "Document preset exposure and retained bladder; verify occlusion, protection and reachability without deleting anatomy."},
+    {"id": "risk_region_following", "status": "blocked", "requires": "Explicit NVB model uncertainty and deforming risk-region correspondence with failure/stop tests; not a clinical safety envelope."},
+    {"id": "paired_benchmark_protocol", "status": "blocked", "requires": "Freeze seeds, initial conditions, budgets, success/failure definitions and paired active-view/traction ablations before experiments."},
+    {"id": "p4_material_calibration", "status": "blocked", "requires": "Independent measured material/cutting data, parameter identification, uncertainty and held-out validation; no calibrated parameters yet."}
+  ],
+  "proposed_comparisons": {
+    "status": "not_run",
+    "priority": "joint_active_view_and_traction_with_following_risk_region",
+    "arms": ["fixed_view_fixed_traction", "active_view_only", "adaptive_traction_only", "joint_active_view_and_traction"],
+    "risk_ablation": ["static_model_risk_region", "deformation_following_model_risk_region"],
+    "paired_seeds": null,
+    "metrics": ["task_success_and_failure_reason", "target_and_blade_visibility", "occlusion_duration", "cut_error_and_overcut", "proxy_strain_and_tears", "model_risk_region_violation", "rcm_error", "collision_refusals", "time_and_adjustment_budget"]
+  },
+  "references": [
+    {"key": "bodyparts3d", "doi": "10.1093/nar/gkn613"},
+    {"key": "cornu_2010_three_fasciae", "doi": "10.1007/s00276-010-0668-7"},
+    {"key": "siltari_2021_fascia_preservation_trial", "doi": "10.1016/j.jsxm.2020.11.003"},
+    {"key": "nvb_distribution", "doi": "10.1016/j.juro.2010.11.046"},
+    {"key": "automatic_camera", "doi": "10.3389/frobt.2022.832208"},
+    {"key": "prior_prostate_dissection_traction", "arxiv": "2511.08490"}
+  ]
+}

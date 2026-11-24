@@ -1,0 +1,10 @@
+{
+  "id": "ruler_endpoint_optics_v1",
+  "parent": "ruler_endpoint_v1",
+  "purpose": "Development optical feasibility only. A local read needs two independently visible flanks at the 8/9/10 boundary; a missing distant internal row is not the reason for this test. Not an acceptance set.",
+  "runs": "Replay the development cap=3 mm, goal=8 and 9 mm trajectories independently for each candidate. Require the original raw park RGB/depth and structural length, tissue-node hash and physical time to match before varying optics.",
+  "candidates": [{"name":"native_pose","target":[4.5,0,0.080]},{"name":"alternative","target":[0,0,0.080]}],
+  "selection_basis": "Default plus the candidate with the most pixels in the weakest 7..10 mm flank in the pre-existing frozen geometry's 4x sheet-only raster. No candidate selected by a confirmation label.",
+  "acquisition": "At the settled parked checkpoint use unchanged camera or ONE guard-accepted zero-step ECM command. Same endoscope, 70 degree FOV, all physical blade meshes and physical foreground present; directly render at 640x480 and 2560x1920, do not upsample. Use sensor resolution readback and exact image/depth sizes. No new camera, truth-coloured mesh, cutter motion or physics step between renders.",
+  "decision": "For each image print pixel counts and same-ordinal left/right 3D opening transects and intact tissue immediately ahead. Require direct near/far edge identities plus local adjacent 8..10 evidence, current tip independent of truth. If the best available tested optics still leave required flanks missing or hidden even after park, reject this optical layout, do not expose the reserved independent confirmation set to a known-failing candidate."
+}

@@ -65,12 +65,51 @@ end
 -- collision pair.
 local function render()
     local verts,indices={},{}
-    for _,x in ipairs(T.x) do verts[#verts+1]=x[1];verts[#verts+1]=x[2];verts[#verts+1]=x[3] end
     for i=1,#T.colors do indices[i]={} end
-    for _,tr in ipairs(T.tri) do
-        if T.springs[tr[4]].alive and T.springs[tr[5]].alive and T.springs[tr[6]].alive then
-            local idx=indices[tr[7]]
-            idx[#idx+1]=tr[1]-1;idx[#idx+1]=tr[2]-1;idx[#idx+1]=tr[3]-1
+    local function live(tr)
+        return T.springs[tr[4]].alive and T.springs[tr[5]].alive and T.springs[tr[6]].alive
+    end
+    if T.p.visualGap then
+        -- Only appearance recedes: the solver, spring state and independent scorer
+        -- still use T.x. A surviving face borders a physical fracture if its
+        -- neighbouring triangle no longer has all three load-bearing edges.
+        for _,tr in ipairs(T.tri) do
+            if live(tr) then
+                local col=0
+                for q=1,3 do col=col+(tr[q]-1)%T.nu end
+                col=col/3
+                local free=false
+                local row=math.floor((tr[1]-1)/T.nu)
+                if row>=T.p.visualGapStartRow and col>=9.5 and col<=13.5 then
+                    for q=4,6 do
+                        local refs=T.edgeRefs[tr[q]]
+                        if #refs==2 then
+                            local other=refs[1]==tr and refs[2] or refs[1]
+                            if not live(other) then free=true;break end
+                        end
+                    end
+                end
+                local sign=col<T.nu/2-0.5 and -1 or 1
+                local shift=free and sign*T.p.visualGap or 0
+                local idx=indices[tr[7]]
+                for q=1,3 do
+                    local x=T.x[tr[q]]
+                    idx[#idx+1]=#verts/3
+                    local vertexCol=(tr[q]-1)%T.nu
+                    local offset=(T.p.visualGapStyle=='edge' and
+                                  vertexCol~=T.nu/2-1 and vertexCol~=T.nu/2)
+                                  and 0 or shift
+                    for a=1,3 do verts[#verts+1]=x[a]+offset*T.visualAxis[a] end
+                end
+            end
+        end
+    else
+        for _,x in ipairs(T.x) do verts[#verts+1]=x[1];verts[#verts+1]=x[2];verts[#verts+1]=x[3] end
+        for _,tr in ipairs(T.tri) do
+            if live(tr) then
+                local idx=indices[tr[7]]
+                idx[#idx+1]=tr[1]-1;idx[#idx+1]=tr[2]-1;idx[#idx+1]=tr[3]-1
+            end
         end
     end
     if #T.shapes>0 then sim.removeObjects(T.shapes) end
@@ -85,6 +124,43 @@ local function render()
             sim.setShapeColor(shape,nil,sim.colorcomponent_emission,T.colors[band])
             sim.setObjectInt32Param(shape,sim.shapeintparam_static,1)
             sim.setObjectInt32Param(shape,sim.shapeintparam_respondable,0)
+        end
+    end
+    if T.bridgeRefs then
+        for lane,refs in ipairs(T.bridgeRefs) do
+            local intact=T.springs[refs[1]].alive or T.springs[refs[2]].alive or
+                         T.springs[refs[3]].alive
+            if intact or T.bridgeFractureFaces then
+                local i=lane+7
+                local a,b,c,d=T.x[8*T.nu+i+1],T.x[8*T.nu+i+2],
+                              T.x[9*T.nu+i+1],T.x[9*T.nu+i+2]
+                local function patch(umin,umax,color,alias)
+                    local vertices={}
+                    for _,sign in ipairs({1,-1}) do
+                        for _,uv in ipairs({{umin,0.18},{umax,0.18},{umax,0.82},{umin,0.82}}) do
+                            local u,v=uv[1],uv[2]
+                            for axis=1,3 do
+                                vertices[#vertices+1]=(1-u)*(1-v)*a[axis]+u*(1-v)*b[axis]+
+                                    (1-u)*v*c[axis]+u*v*d[axis]+sign*0.00015*T.bridgeNormal[axis]
+                            end
+                        end
+                    end
+                    local shape=sim.createMeshShape(0,0,vertices,{0,1,2,0,2,3,4,6,5,4,7,6})
+                    T.shapes[#T.shapes+1]=shape
+                    sim.setObjectAlias(shape,alias)
+                    sim.setShapeColor(shape,nil,sim.colorcomponent_ambient_diffuse,{0,0,0})
+                    sim.setShapeColor(shape,nil,sim.colorcomponent_specular,{0,0,0})
+                    sim.setShapeColor(shape,nil,sim.colorcomponent_emission,color)
+                    sim.setObjectInt32Param(shape,sim.shapeintparam_static,1)
+                    sim.setObjectInt32Param(shape,sim.shapeintparam_respondable,0)
+                end
+                if intact then
+                    patch(0.18,0.82,T.bridgeColors[lane],'TissueBridge'..i)
+                else
+                    patch(0.10,0.45,T.bridgeFractureColors[1],'TissueFractureL'..i)
+                    patch(0.55,0.90,T.bridgeFractureColors[2],'TissueFractureR'..i)
+                end
+            end
         end
     end
 end
@@ -105,12 +181,43 @@ function tissueCreate(spec)
     assert(not spec.ruler_print or (spec.ruler_print==true and surface))
     assert(spec.indexed_print==nil or (type(spec.indexed_print)=='boolean' and surface))
     assert(not (spec.ruler_print and spec.indexed_print))
+    assert(spec.visual_gap_m==nil or (finite(spec.visual_gap_m) and spec.visual_gap_m>0 and
+           spec.visual_gap_m<=0.0004 and not surface and spec.material_bands and not spec.nodes and
+           spec.nu==24 and spec.nv==14))
+    assert(spec.visual_gap_style==nil or (spec.visual_gap_style=='edge' and spec.visual_gap_m))
+    assert(spec.visual_gap_start_row==nil or (spec.visual_gap_start_row==7 and
+           spec.visual_gap_style=='edge'))
+    assert(spec.bridge_print==nil or (spec.bridge_print==true and spec.visual_gap_m==nil and
+           not surface and spec.material_bands and not spec.nodes and spec.nu==24 and spec.nv==14))
+    assert(spec.bridge_fracture_faces==nil or (spec.bridge_fracture_faces==true and spec.bridge_print))
     tissueRemove()
     local nu,nv,h=spec.nu,spec.nv,spec.spacing
     T={nu=nu,nv=nv,x={},prev={},pinned={},springs={},shapes={},cut=0,torn=0,cutLog={},tornLog={},maxStrain=0,
        seamMode=surface,seamRefs=surface and {} or nil,seamReleases=0,
        p={iterations=spec.iterations or 12,damping=spec.damping or 0.9,tear_ratio=spec.tear_ratio or 1.5,
-          cut_radius=spec.cut_radius or 3e-4,grasp_radius=spec.grasp_radius or 1.5e-3}}
+          cut_radius=spec.cut_radius or 3e-4,grasp_radius=spec.grasp_radius or 1.5e-3,
+          visualGap=spec.visual_gap_m,visualGapStyle=spec.visual_gap_style,
+          visualGapStartRow=spec.visual_gap_start_row or 0}}
+    if spec.visual_gap_m then
+        local L=vlen(spec.u)
+        assert(L>1e-12)
+        T.visualAxis=vmul(spec.u,1/L)
+    end
+    if spec.bridge_print then
+        local n={spec.u[2]*spec.v[3]-spec.u[3]*spec.v[2],
+                 spec.u[3]*spec.v[1]-spec.u[1]*spec.v[3],
+                 spec.u[1]*spec.v[2]-spec.u[2]*spec.v[1]}
+        local L=vlen(n)
+        assert(L>1e-12)
+        T.bridgeNormal=vmul(n,1/L)
+        T.bridgeColors={
+            {0.18,0.82,0.25},{0.27,0.72,0.43},{0.19,0.57,0.72},
+            {0.15,0.36,0.88},{0.47,0.76,0.32},{0.61,0.65,0.28},
+            {0.34,0.73,0.64}
+        }
+        T.bridgeFractureFaces=spec.bridge_fracture_faces
+        T.bridgeFractureColors={{0.12,0.94,0.17},{0.09,0.21,0.97}}
+    end
     local function id(i,j) return j*nu+i+1 end
     for j=0,nv-1 do for i=0,nu-1 do
         local k=id(i,j)
@@ -165,6 +272,28 @@ function tissueCreate(spec)
             end
         end
     end end
+    if spec.visual_gap_m then
+        T.edgeRefs={}
+        for _,tr in ipairs(T.tri) do
+            for q=4,6 do
+                local refs=T.edgeRefs[tr[q]] or {}
+                refs[#refs+1]=tr
+                T.edgeRefs[tr[q]]=refs
+            end
+        end
+    end
+    if spec.bridge_print then
+        T.bridgeRefs={}
+        for i=8,14 do
+            local a,b,c,d=id(i,8),id(i+1,8),id(i,9),id(i+1,9)
+            local function existing(x,y)
+                local ref=key[x..'_'..y] or key[y..'_'..x]
+                assert(ref)
+                return ref
+            end
+            T.bridgeRefs[#T.bridgeRefs+1]={existing(a,b),existing(a,d),existing(b,c)}
+        end
+    end
     if surface then
         local crossing=0
         for k,refs in pairs(T.seamRefs) do

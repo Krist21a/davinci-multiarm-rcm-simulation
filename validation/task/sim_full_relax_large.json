@@ -1,0 +1,603 @@
+{
+  "run_id": "907771bc2194402081248f7b37c310aa",
+  "success": false,
+  "mode": "full",
+  "scenario": "relax_large",
+  "error": null,
+  "cleanup_error": null,
+  "errors": [],
+  "acceptance_issues": [
+    "cut length below target"
+  ],
+  "controller_sha256": "f4381273830b4e8bb2d3b4be4585d3a3ac2f17dde164be719f948cb74206250e",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "events": {
+      "relax_m": 0.0005,
+      "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "cut": {
+      "length_m": 0.009,
+      "max_overcut_m": 0.001,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "total_ticks": 400
+    }
+  },
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "source_sha256": {
+    "scripts/task/cut_fsm.py": "e057fde02af6fb8c6c947278771fe04842c6faee4ec6fb6087eca0addcec33e3",
+    "scripts/task/sim_world.py": "3f0bc9acafd147eb17da317db2746e3e2041bbdfbbe39c6b0825486bf2ef432c",
+    "scripts/task/workspace.py": "cae1ed99e81d554bfcc448510bfcdd4f7ccfd8778c0f9527fedbdcd42a149362",
+    "scripts/task/ground_truth.py": "4fd5f62e060c52993de8a5a16c3570aa764114edd7a5c78cd72a542927f3b499",
+    "scripts/task/visibility.py": "7df52bcee081993da8fd9fc0be23b0e68c3c897b48e7c51fe9346c3b56854083",
+    "scripts/task/run_cut_task.py": "debd8a79c8069aa097f09d7b157c009292db8efe9844c4a63fc731c5bf7221bf",
+    "config/task/cut_task.json": "6fadc885b4d6d73f27fabdb8669dc3f71f728bc890abfc1325725b5413731e5f"
+  },
+  "roles": null,
+  "events": {
+    "relax": 11,
+    "relax_m": 0.0015
+  },
+  "trace": [
+    {
+      "tick": 1,
+      "tension": 0.0,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e3b0c44298fc1c14"
+    },
+    {
+      "tick": 2,
+      "tension": 0.01073504989969254,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba"
+    },
+    {
+      "tick": 3,
+      "tension": 0.01073504989969254,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba"
+    },
+    {
+      "tick": 4,
+      "tension": 0.0008132849878197401,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e5a1af9cc4a98d4e"
+    },
+    {
+      "tick": 5,
+      "tension": 0.003675297482626183,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e55ae8590c01b6df"
+    },
+    {
+      "tick": 6,
+      "tension": 0.026732913431097183,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "189b2250e2c5d0c2"
+    },
+    {
+      "tick": 7,
+      "tension": 0.04903786677751287,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8"
+    },
+    {
+      "tick": 8,
+      "tension": 0.04903786677751287,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8"
+    },
+    {
+      "tick": 9,
+      "tension": 0.05187931388921352,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "8c5605c8eac5ad33"
+    },
+    {
+      "tick": 10,
+      "tension": 0.05248574308494103,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "9ee779825b1db480"
+    },
+    {
+      "tick": 11,
+      "tension": 0.032032847278117615,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "7e4002bb0b963ca7"
+    },
+    {
+      "tick": 12,
+      "tension": 0.014110684264054707,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "b3297a99ba49d6ea"
+    },
+    {
+      "tick": 13,
+      "tension": 0.014110684264054707,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "b3297a99ba49d6ea"
+    },
+    {
+      "tick": 14,
+      "tension": 0.01218351809542606,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "281f5e4073027680"
+    },
+    {
+      "tick": 15,
+      "tension": 0.010844816962452097,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "f4ef5519582d39ec"
+    },
+    {
+      "tick": 16,
+      "tension": 0.009859056014402512,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "73fbaad5c0138b28"
+    },
+    {
+      "tick": 17,
+      "tension": 0.014288993941082073,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "0c585890342495f8"
+    },
+    {
+      "tick": 18,
+      "tension": 0.014288993941082073,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "0c585890342495f8"
+    }
+  ],
+  "final_observation": {
+    "cut_length_m": 0.003,
+    "tension": 0.014288993941082073,
+    "max_strain": 0.13506223371103432,
+    "torn": 0,
+    "faults": [],
+    "overcut_m": 0.0
+  },
+  "tissue": {
+    "cut": 16,
+    "torn": 0,
+    "cut_events": [
+      {
+        "from_angle": 0.5,
+        "arm": "psm2",
+        "to_angle": 0,
+        "constraints": 16,
+        "t": 13.100000000000051
+      }
+    ],
+    "torn_events": {}
+  },
+  "camera_moves": 0,
+  "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer.",
+  "refused_candidates": {},
+  "event_log": [
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 11,
+      "event": "retract",
+      "arm": "psm1",
+      "step": -0.0015,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 11,
+      "event": "relax",
+      "arm": "psm1",
+      "relax_m": 0.0015,
+      "accepted": true
+    },
+    {
+      "tick": 11,
+      "event": "retract",
+      "arm": "psm3",
+      "step": -0.0015,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 11,
+      "event": "relax",
+      "arm": "psm3",
+      "relax_m": 0.0015,
+      "accepted": true
+    },
+    {
+      "tick": 13,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 13,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 14,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 14,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 15,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 15,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 16,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 16,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    }
+  ],
+  "truth_reads": {
+    "tcp": 18,
+    "tissue_stats": 34,
+    "cut_line_tension": 18,
+    "cut_length": 54,
+    "cut_front": 19,
+    "nodes": 37
+  },
+  "timing": {
+    "sim_step": {
+      "count": 388,
+      "total_s": 24.71182360018429,
+      "mean_s": 0.06369026701078424,
+      "p95_s": 0.08611750500349442
+    },
+    "render": {
+      "count": 19,
+      "total_s": 0.8867604000261053,
+      "mean_s": 0.046671600001373964,
+      "p95_s": 0.07388381000928347
+    },
+    "call:tissueStats": {
+      "count": 35,
+      "total_s": 0.1122722000000067,
+      "mean_s": 0.0032077771428573342,
+      "p95_s": 0.0058215400000335635
+    },
+    "call:getRCMStats": {
+      "count": 60,
+      "total_s": 0.05947109997214284,
+      "mean_s": 0.000991184999535714,
+      "p95_s": 0.0014921450077963515
+    },
+    "call:tissueNodes": {
+      "count": 55,
+      "total_s": 0.272699399953126,
+      "mean_s": 0.004958170908238654,
+      "p95_s": 0.007455549997393971
+    },
+    "call:homeRCM": {
+      "count": 1,
+      "total_s": 0.729555400001118,
+      "mean_s": 0.729555400001118,
+      "p95_s": 0.729555400001118
+    },
+    "call:setRCMTarget": {
+      "count": 24,
+      "total_s": 0.3610063999949489,
+      "mean_s": 0.01504193333312287,
+      "p95_s": 0.04147770500130714
+    },
+    "call:tissueCreate": {
+      "count": 1,
+      "total_s": 0.008870599995134398,
+      "mean_s": 0.008870599995134398,
+      "p95_s": 0.008870599995134398
+    },
+    "call:tissueConstraints": {
+      "count": 53,
+      "total_s": 0.6399577000265708,
+      "mean_s": 0.012074673585406996,
+      "p95_s": 0.014841200000955722
+    },
+    "call:setGrip": {
+      "count": 8,
+      "total_s": 0.8350295000127517,
+      "mean_s": 0.10437868750159396,
+      "p95_s": 0.5054346500015523
+    },
+    "call:tissueGrasp": {
+      "count": 2,
+      "total_s": 0.0042172999965259805,
+      "mean_s": 0.0021086499982629903,
+      "p95_s": 0.0021168850020330866
+    },
+    "call:hold": {
+      "count": 3,
+      "total_s": 0.0016307000041706488,
+      "mean_s": 0.0005435666680568829,
+      "p95_s": 0.0006016100058332085
+    }
+  },
+  "final_state": "FAILED",
+  "final_label": "失败停止",
+  "reason": "retraction adjustment exhausted",
+  "ticks": 15,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "EXPOSE",
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE",
+    "RETRACT_ADJUST"
+  ],
+  "transitions": [
+    "ALIGN->CUT",
+    "CUT->RETRACT_ADJUST",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP",
+    "RETRACT_ADJUST->FAILED"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "建立抓持",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 7,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.049",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.63 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 10,
+      "frm": "CUT",
+      "to": "RETRACT_ADJUST",
+      "label": "牵拉调整",
+      "reason": "strain 0.014 outside band",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.21480686701988436,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.0141,
+        "max_strain": 0.2032,
+        "torn": 0,
+        "cut_length_m": 0.003,
+        "faults": []
+      }
+    },
+    {
+      "tick": 15,
+      "frm": "RETRACT_ADJUST",
+      "to": "FAILED",
+      "label": "失败停止",
+      "reason": "retraction adjustment exhausted",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.21392223143883118,
+        "grasped": {
+          "psm3": 22,
+          "psm1": 18
+        },
+        "tension": 0.0143,
+        "max_strain": 0.1351,
+        "torn": 0,
+        "cut_length_m": 0.003,
+        "faults": []
+      }
+    }
+  ]
+}

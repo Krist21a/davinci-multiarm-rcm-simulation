@@ -160,8 +160,8 @@ def set_grip(sim, by, arm, q, info):
 def choose_roll(sim, by, arm, info, labels, allowed, open_q):
     """Instrument roll (joint8) closest to the current one at which the jaws open without contact at home.
 
-    Roll turns the instrument about its own shaft: the shaft, the RCM point and the tool tip stay where they are,
-    only the plane in which the jaws open changes."""
+    Roll preserves the shaft axis and RCM point. An off-axis geometric TCP can move,
+    so this is an orientation search, not a promise of an invariant tool-tip position."""
     j8 = by[f'{arm}_joint8']
     q0 = sim.getJointPosition(j8)
     lo, hi = inst.descriptor(info['model'])['kinematics']['roll_limits_rad']
@@ -259,12 +259,15 @@ def runtime_check(client, sim, args):
     sim.setBoolParam(sim.boolparam_realtime_simulation, False)
     sim.startSimulation()
     sim.step()
-    sim.callScriptFunction('homeRCM', ctrl)
+    if not sim.callScriptFunction('homeRCM', ctrl):
+        raise RuntimeError('runtime check: home rejected')
+    sim.callScriptFunction('setAuto', ctrl, True)
     dt = sim.getSimulationTimeStep()
     for _ in range(int(round(24.0 / dt)) + 1):
         sim.step()
     stats = sim.callScriptFunction('getRCMStats', ctrl)
-    sim.callScriptFunction('homeRCM', ctrl)
+    if not sim.callScriptFunction('homeRCM', ctrl):
+        raise RuntimeError('runtime check: final home rejected')
     for _ in range(10):
         sim.step()
     grasps = {}
@@ -376,13 +379,29 @@ def main():
             e.update(hinge_slide=installed[a]['hinge_slide'], hinge_slope_m_per_rad=installed[a]['hinge_slope_m_per_rad'],
                      hinge_jaw_range_rad=installed[a]['hinge_jaw_range_rad'])
         table[a] = e
+    # Explicit wrist yaw: the former merged pitch/yaw housing and fixed TCP could
+    # only express symmetric grip. Preserve mesh-based identification before migrating.
+    from articulation import install_wrist_yaw, append_yaw_collision_pairs
+    for a in psms:
+        table[a]['articulation'] = install_wrist_yaw(sim, by, a, table[a]['model'])
+        by = aliases(sim)
+    old_labels = labels
+    labels = append_yaw_collision_pairs(labels, psms)
+    base_categories = list(pairs['categories']) + (extra_cats if access_report else [])
+    write_json(PAIRS_OUT, {'_note': 'Includes explicit wrist-yaw housing collision coverage.', 'labels': labels,
+                           'categories': base_categories + ['articulated_wrist'] * (len(labels) - len(old_labels))})
     table['ecm'] = dict(model='endoscope_camera', name='30 deg endoscope camera', capabilities=roles_report['ecm']['capabilities'])
     controller = ('CONFIG=' + lua(rcm) + '\nCOLLISION_PAIRS=' + lua(labels) + '\nINSTRUMENTS=' + lua(table) + '\n'
                   + read_text(ENDO_SRC / 'rcm_controller.lua') + '\n' + read_text(INSTRUMENT_SRC / 'capability_guard.lua')
+                  + '\n' + read_text(INSTRUMENT_SRC / 'articulation.lua')
                   + '\n' + read_text(TISSUE_SRC / 'tissue.lua'))
     sim.removeObjects([by['RCMController']])
     h = sim.createScript(sim.scripttype_simulation, controller, 0, 'lua')
     sim.setObjectAlias(h, 'RCMController')
+    # Replace the panel in this build too, so shaft yaw/pitch and wrist controls cannot be confused.
+    from simtools import panel_data, panel_source
+    panel = by['RCMControlPanel']
+    sim.setStringProperty(panel, 'code', panel_source(panel_data(read_json(ENDO_CONFIG / 'endoscope.json'), rcm)))
     time.sleep(.3)
     tcp_after = {a: tcp_length(sim, by, a) for a in psms}
     save_scene(sim, args, INSTRUMENT_SCENE)
@@ -397,7 +416,8 @@ def main():
     def clean(d):
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in d.items()}
     inputs = [ENDOSCOPE_SCENE, ENDO_CONFIG / 'rcm_config.json', ENDO_CONFIG / 'collision_pairs.json',
-              inst.INSTRUMENT_CONFIG / 'roles.json', ENDO_SRC / 'rcm_controller.lua', INSTRUMENT_SRC / 'capability_guard.lua', TISSUE_SRC / 'tissue.lua',
+              inst.INSTRUMENT_CONFIG / 'roles.json', ENDO_SRC / 'rcm_controller.lua', INSTRUMENT_SRC / 'capability_guard.lua',
+              INSTRUMENT_SRC / 'articulation.lua', TISSUE_SRC / 'tissue.lua',
               inst.DVRK / 'SOURCE.json'] + [inst.INSTRUMENT_CONFIG / f'{m}.json' for m in guard.MODELS] + ([PORT_PLAN] if port_plan else []) + ([access.ACCESS] if access_report else [])
     write_json(INSTRUMENT_VALIDATION / 'install_manifest.json', {
         'built_at_unix': int(time.time()),

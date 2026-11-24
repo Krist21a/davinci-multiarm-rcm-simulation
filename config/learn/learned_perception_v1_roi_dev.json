@@ -1,0 +1,25 @@
+{
+  "scope": "Phase A diagnostics only, no H1/H2 evaluation, controller, candidate freeze or gate change.",
+  "arms": ["full640", "roi640", "roi1280"],
+  "locator": {
+    "tcp_local_m": [0.00004150883956837402, 0.013052241044865022, 0.0015854031336883397],
+    "calibration_source": "Fixed tool calibration from validation/perception/frames/m5b_v1_10_marked_V_nominal/meta.json for the same marked scene; no historical images or per-exposure pose labels used.",
+    "method": "Existing ray-refined CutPerception._scissors on clean 640 RGB-D. Use the same projected tip and field of view for both crops. Center a native 192x192 crop at the rounded tip in 640 or a 384x384 crop centered at twice the rounded center in HD. Reject invalid fits, centers outside the sensor, or crops extending beyond it. Average-pool HD crop by 2 on both RGB and depth. No truth fallback.",
+    "half_width_640_px": 96
+  },
+  "training": {
+    "updates_per_arm": 1800,
+    "batch_size": 8,
+    "seed": 20261123,
+    "optimizer": "Same scratch 4-channel ResNet-18 and exact-row/uniform soft-label losses as curve_dev; AdamW lr=0.0003 weight_decay=0.01",
+    "population": "All 270 frozen dev train episodes, identical subset of localizable exposures for all arms. When there are no localizable pre-sheet exposures, the pre-sheet training loss bucket is undefined, not zero."
+  },
+  "validation": {
+    "population": "All 30 frozen dev validation episodes. Compare arms on the exact same localizable exposures; all arms abstain outside that common subset for the primary comparison. Also report full640 unrestricted so coverage cost is visible.",
+    "depth": "Native clean depth only. Noise robustness belongs to a later recipe.",
+    "confidence_cutoffs": [0.0, 0.5, 0.75, 0.9, 0.95, 0.99],
+    "threshold_policy": "As in curve_dev: fixed cutoffs and descriptive in-sample strict-above-largest-false-confidence rule, not a frozen threshold.",
+    "metadata": "Fit mode lookup on all sheet-present dev training exposures using proxy bite count and advance cap; no abstention. Report all and common-subset scores, plus counts on non-default advance caps. Exploratory: live audit saw no actual refused CUT closure.",
+    "image_pairs": "Use all Phase A dev episodes with a true 8 and a true 9 exposure; deterministic earliest exposure of each. Report pixel equality, RGB mean absolute difference and depth mean absolute difference at full native 640 and on the registered optically centered crops. Motion, occlusion and deformation can change these images independently of the structural row; differences do not prove identifiability, nor does lack of paired episodes prove absence of signal."
+  }
+}

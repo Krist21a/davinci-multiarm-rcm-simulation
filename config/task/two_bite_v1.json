@@ -1,0 +1,22 @@
+{
+  "id": "two_bite_v1",
+  "scope": "Independent development benchmark on the existing non-anatomical test sheet. Not an M5b endpoint run, M6/M7 comparison or signed gate. Do not change the default task.",
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "base_config_sha256": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+  "controller_sha256": "a682b6ad7c99a6dde5d5fee62a28e99490ba384eadf2b9e95767905bd575d52f",
+  "setup": "Same full-mode roles, initial ECM pose and v1.10 visual estimator, material chart, sweep, RCM, collision and recovery budgets. Scissors controlled by vision + proprioception, retractor planning and strain/grasp supervision as previously disclosed. The lower tension band switches on accepted closure, not structural length.",
+  "initial_ecm": [4.5, 0, 0.080],
+  "cases": {
+    "nominal": {"depth_noise_m": 0.0, "seed": 0},
+    "noise": {"depth_noise_m": 0.0005, "seed": 1},
+    "blocked": {"depth_noise_m": 0.0, "seed": 0}
+  },
+  "action_cap": 2,
+  "stop": "Count only accepted jaw closures. Require current-frame material-mapped front, scissors and all existing post-advance checks for each closure. After each bite require same-frame direct slit/bank_slit and the existing >=0.25 mm visual progress increase. No third bite, no reaching the old endpoint instead of the action cap. After bite two allow bounded observation recovery/back-off but no final park before fresh direct slit, both grasps, centred view and safe tension. Withdraw closed via the guarded six-axis command to the original ready pose. Report real TCP and grip readback. No structural progress drives the decision to park.",
+  "park_position_tolerance_m": 0.0005,
+  "park_rotation_tolerance_deg": 1.0,
+  "score": "Offline: exactly closure1 < reacquisition1 < closure2 < reacquisition2 <= final park, fix age zero, current scissors and direct material cell, >=0.25 mm visual increase at each reacquisition. Each accepted bite must independently increase structural cut length by >=1 material row (1 mm) from its tick to the next observation; no other growth or cut during withdrawal. Peak <=10 mm, no tear/fault, both grasps maintained at withdrawal, effective park readback within tolerances with jaws closed. A stopped FSM alone is not success. Report per-bite growth without targeting a particular final length.",
+  "negative": "In blocked only, after the first accepted cutting advance but BEFORE its fresh post-advance observation, cover the entire estimator RGB-D view with a simulated opaque shutter (uniform grey RGB, depth 20 mm) for all remaining renders. This is sensor-input occlusion, not a mesh collision. Require previous access to a sighted front, actual advance, no visual fix or scissors while blocked, no closure, zero structural growth, bounded visibility-related FAILED and no faults/tear. Expected refusal is a control pass, never task completion.",
+  "reference": "Re-run the unchanged strict truth task with the v1.10 marked optics at the same view, require exact trace identity with validation/task/m5b_v1_10_marked_truth.json, 10 mm, DONE and no tear or faults. Do not claim evidence of comparative benefit or noise robustness from these single-seed development runs."
+}

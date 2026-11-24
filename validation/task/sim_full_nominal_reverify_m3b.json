@@ -1,0 +1,706 @@
+{
+  "run_id": "e7c618f4aa04421eae1f8303c88c176a",
+  "success": true,
+  "mode": "full",
+  "scenario": "nominal",
+  "error": null,
+  "cleanup_error": null,
+  "errors": [],
+  "acceptance_issues": [],
+  "controller_sha256": "42749a56d8e394cf812d73b13e4fe83ef08addefc922388f4c591a8c41bcda89",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "events": {
+      "relax_m": 0.0005,
+      "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "perception": {
+      "mode": "off",
+      "markers": true,
+      "depth_noise_m": 0.0,
+      "camera_pose_error": {
+        "trans_m": 0.0,
+        "rot_deg": 0.0
+      },
+      "seed": 0,
+      "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run)."
+    },
+    "cut": {
+      "length_m": 0.009,
+      "max_overcut_m": 0.001,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "align_mode": "tool_pose",
+      "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
+      "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "total_ticks": 400
+    }
+  },
+  "scene": "scenes/davinci_si_articulated_verified.ttt",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "source_sha256": {
+    "scripts/task/cut_fsm.py": "e057fde02af6fb8c6c947278771fe04842c6faee4ec6fb6087eca0addcec33e3",
+    "scripts/task/sim_world.py": "e979c4c24e1e69e45e1c437c7c0748238ecc1d25f67f56252fe8870549dadf3a",
+    "scripts/task/workspace.py": "cae1ed99e81d554bfcc448510bfcdd4f7ccfd8778c0f9527fedbdcd42a149362",
+    "scripts/task/ground_truth.py": "4fd5f62e060c52993de8a5a16c3570aa764114edd7a5c78cd72a542927f3b499",
+    "scripts/task/visibility.py": "7df52bcee081993da8fd9fc0be23b0e68c3c897b48e7c51fe9346c3b56854083",
+    "scripts/task/tool_pose.py": "bd39e8533c66607f6d2c04c524d3f49e5174caca64fca4e684b564a6fc942f78",
+    "scripts/task/run_cut_task.py": "f15b355e6a835584f463c54bfb09127fbeeb55df2901ecda25e00e061b9a6459",
+    "config/task/cut_task.json": "1fc0f7efeeb08e45a6dee30daf5c5587f26727636bce1ebb25be11b7898d21bd"
+  },
+  "roles": null,
+  "events": {},
+  "trace": [
+    {
+      "tick": 1,
+      "tension": 0.0,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e3b0c44298fc1c14",
+      "protected_mm": {
+        "bladder": 0.030762273881493277,
+        "rectum": 0.053463033845740124,
+        "prostate": 0.025707777220679393,
+        "leftureter": 0.06911705992782213,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.013463544748122775,
+        "righthipbone": 0.011164602397788674,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 2,
+      "tension": 0.01073504989969254,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba",
+      "protected_mm": {
+        "bladder": 0.033426326362413,
+        "rectum": 0.06558231562939541,
+        "prostate": 0.030654910586352727,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01808850755741704,
+        "righthipbone": 0.011291674862573358,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 3,
+      "tension": 0.01073504989969254,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba",
+      "protected_mm": {
+        "bladder": 0.033426326362413,
+        "rectum": 0.06558231562939541,
+        "prostate": 0.030654910586352727,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01808850755741704,
+        "righthipbone": 0.011291674862573358,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 4,
+      "tension": 0.0008132849878197401,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e5a1af9cc4a98d4e",
+      "protected_mm": {
+        "bladder": 0.033407305135424406,
+        "rectum": 0.06445249064258739,
+        "prostate": 0.03081977650832846,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01737143812678675,
+        "righthipbone": 0.010595541137043023,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 5,
+      "tension": 0.003675297482626183,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e55ae8590c01b6df",
+      "protected_mm": {
+        "bladder": 0.03342099662194655,
+        "rectum": 0.06437774507775167,
+        "prostate": 0.030764723322836706,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.017479670723327866,
+        "righthipbone": 0.010641646496907149,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 6,
+      "tension": 0.026732913431097183,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "189b2250e2c5d0c2",
+      "protected_mm": {
+        "bladder": 0.03343555206121944,
+        "rectum": 0.06430353691290457,
+        "prostate": 0.03071088298817869,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.0175890495017349,
+        "righthipbone": 0.01069003336697168,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 7,
+      "tension": 0.04903786677751287,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 8,
+      "tension": 0.04903786677751287,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 9,
+      "tension": 0.05187931388921352,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "8c5605c8eac5ad33",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 10,
+      "tension": 0.05248574308494103,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "9ee779825b1db480",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 11,
+      "tension": 0.06134076360962404,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "d805f7261d308d5a",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 12,
+      "tension": 0.06032879914189937,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "ef7de4601656ad1e",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 13,
+      "tension": 0.07502010949653504,
+      "cut_length_m": 0.006,
+      "nodes_sha256": "0457af54b8ad0b1f",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 14,
+      "tension": 0.07626700488640736,
+      "cut_length_m": 0.006,
+      "nodes_sha256": "ec08fd27b132e754",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 15,
+      "tension": 0.08736402274955091,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "467a07e474e32861",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 16,
+      "tension": 0.08732297747934381,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "2aacac05bc3e6075",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 17,
+      "tension": 0.08732297747934381,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "2aacac05bc3e6075",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    }
+  ],
+  "final_observation": {
+    "cut_length_m": 0.01,
+    "tension": 0.08732297747934381,
+    "max_strain": 0.1378014087077466,
+    "torn": 0,
+    "faults": [],
+    "overcut_m": 0.0010000000000000009
+  },
+  "tissue": {
+    "cut": 64,
+    "torn": 0,
+    "cut_events": [
+      {
+        "constraints": 12,
+        "t": 13.100000000000051,
+        "to_angle": 0,
+        "from_angle": 0.5,
+        "arm": "psm2"
+      },
+      {
+        "constraints": 21,
+        "t": 14.40000000000007,
+        "to_angle": 0,
+        "from_angle": 0.5,
+        "arm": "psm2"
+      },
+      {
+        "constraints": 31,
+        "t": 15.700000000000088,
+        "to_angle": 0,
+        "from_angle": 0.5,
+        "arm": "psm2"
+      }
+    ],
+    "torn_events": {}
+  },
+  "camera_moves": 0,
+  "notes": "cut_length_m comes from the tissue node geometry (rows separated along the cut line), not from vision. Visibility uses the rendered endoscope depth buffer.",
+  "refused_candidates": {},
+  "event_log": [
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 4,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 5,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm1",
+      "step": 0.0002,
+      "side": -1.0,
+      "accepted": true
+    },
+    {
+      "tick": 6,
+      "event": "retract",
+      "arm": "psm3",
+      "step": 0.0002,
+      "side": 1.0,
+      "accepted": true
+    },
+    {
+      "tick": 8,
+      "event": "tool_align",
+      "refused": false,
+      "pos_err_m": 5.39148153710387e-06,
+      "axis_err_rad": 3.2691327412107632e-06,
+      "yaw_axis_err_rad": 1.0505836470720463e-05,
+      "iterations": 1,
+      "at_limit": []
+    }
+  ],
+  "truth_reads": {
+    "tcp": 17,
+    "tissue_stats": 23,
+    "cut_line_tension": 17,
+    "cut_length": 52,
+    "cut_front": 19,
+    "nodes": 36
+  },
+  "timing": {
+    "sim_step": {
+      "count": 342,
+      "total_s": 38.77624480000077,
+      "mean_s": 0.11338083274854026,
+      "p95_s": 0.1384976599999618
+    },
+    "render": {
+      "count": 18,
+      "total_s": 0.8591381000001093,
+      "mean_s": 0.04772989444445051,
+      "p95_s": 0.06273094999969545
+    },
+    "call:tissueStats": {
+      "count": 24,
+      "total_s": 0.1076932000009947,
+      "mean_s": 0.004487216666708112,
+      "p95_s": 0.008307495000008198
+    },
+    "call:getRCMStats": {
+      "count": 44,
+      "total_s": 0.06583599999748913,
+      "mean_s": 0.001496272727215662,
+      "p95_s": 0.0016576900001155084
+    },
+    "call:tissueNodes": {
+      "count": 53,
+      "total_s": 0.37713930000245455,
+      "mean_s": 0.007115835849102916,
+      "p95_s": 0.010021559999768214
+    },
+    "call:homeRCM": {
+      "count": 1,
+      "total_s": 1.2659371000004285,
+      "mean_s": 1.2659371000004285,
+      "p95_s": 1.2659371000004285
+    },
+    "call:setRCMTarget": {
+      "count": 11,
+      "total_s": 0.38038349999987986,
+      "mean_s": 0.03458031818180726,
+      "p95_s": 0.09517234999975699
+    },
+    "call:tissueCreate": {
+      "count": 1,
+      "total_s": 0.015574199999718985,
+      "mean_s": 0.015574199999718985,
+      "p95_s": 0.015574199999718985
+    },
+    "call:tissueConstraints": {
+      "count": 51,
+      "total_s": 0.9253282000022409,
+      "mean_s": 0.018143690196122372,
+      "p95_s": 0.022820150000143258
+    },
+    "call:setGrip": {
+      "count": 11,
+      "total_s": 3.965132899999844,
+      "mean_s": 0.3604666272727131,
+      "p95_s": 1.2948064500001237
+    },
+    "call:tissueGrasp": {
+      "count": 2,
+      "total_s": 0.007505900000069232,
+      "mean_s": 0.003752950000034616,
+      "p95_s": 0.004012104999856092
+    },
+    "call:getWristState": {
+      "count": 5,
+      "total_s": 0.0038061000000197964,
+      "mean_s": 0.0007612200000039592,
+      "p95_s": 0.0008537599996088829
+    },
+    "call:toolPoseFK": {
+      "count": 56,
+      "total_s": 0.6967932000002293,
+      "mean_s": 0.012442735714289808,
+      "p95_s": 0.016464649999761605
+    },
+    "call:setToolPose": {
+      "count": 5,
+      "total_s": 0.16969430000017383,
+      "mean_s": 0.033938860000034765,
+      "p95_s": 0.06803562000004602
+    }
+  },
+  "perception": [],
+  "protected_min_mm": {
+    "bladder": 0.030762273881493277,
+    "rectum": 0.053463033845740124,
+    "prostate": 0.025707777220679393,
+    "leftureter": 0.06911705992782213,
+    "rightureter": 0.05127913253313582,
+    "lefthipbone": 0.013463544748122775,
+    "righthipbone": 0.010595541137043023,
+    "sacrum": 0.08390891243552828
+  },
+  "final_state": "DONE",
+  "final_label": "完成",
+  "reason": "cut length 10.0 mm reached; scissors retracted",
+  "ticks": 12,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "GRASP",
+    "INIT",
+    "LOCALIZE"
+  ],
+  "transitions": [
+    "ALIGN->CUT",
+    "CUT->DONE",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "视觉定位",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "建立抓持",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "组织暴露",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23552052058712317,
+        "grasped": {},
+        "tension": 0.0107,
+        "max_strain": 0.1171,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 7,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "切割对准",
+      "reason": "tissue exposed, strain 0.049",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm1": 18,
+          "psm3": 22
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 8,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "切割执行",
+      "reason": "blades aligned (0.01 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23113965384220922,
+        "grasped": {
+          "psm1": 18,
+          "psm3": 22
+        },
+        "tension": 0.049,
+        "max_strain": 0.1098,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": []
+      }
+    },
+    {
+      "tick": 12,
+      "frm": "CUT",
+      "to": "DONE",
+      "label": "完成",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.1971839415084517,
+        "grasped": {
+          "psm1": 18,
+          "psm3": 22
+        },
+        "tension": 0.0873,
+        "max_strain": 0.1378,
+        "torn": 0,
+        "cut_length_m": 0.01,
+        "faults": []
+      }
+    }
+  ]
+}

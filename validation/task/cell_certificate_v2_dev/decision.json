@@ -1,0 +1,1648 @@
+{
+  "criteria": {
+    "id": "cell_certificate_v2_dev",
+    "scope": "Repair the optical reader on the already captured passive corner/face print. Development only, not a controller, a holdout, a new trajectory, or a substitute for the 70-degree co-visible tool/endpoint test.",
+    "geometry": "Keep the original cap-to-vertex physical bound. A cap is NOT its centroid. At an interior ordinal look for the cap directly adjoining the shared boundary between the two successive row inks on the same bank. On a locally visible continuous piece of that transverse material edge, the corner lies on the continuation of the observed boundary. Use only the short connected, straight, depth-continuous segment adjoining the cap. Intersect its finite-width continuation strip with the old bound, retaining uncertainty in the direction as well as the offset. Refuse ambiguity/multiple components, bends or lack of support; never make an unseen edge exact. This is an image-conditioned edge correspondence, not a proof that all folded/occluded sheets have this correspondence. Check projected containment of EVERY returned corner region independently in the saved dataset; one miss disqualifies this geometry for integration. No true vertices, poses, phase, action count or lengths enter the reader.",
+    "face": "For each available triangle require the entire sensor pixel footprint to be interior under its three corner regions; a connected 2x2 block of finite depth >2 mm beyond the farthest corner bound, with depth uncertainty, is positive absence. Opaque foreground and missing ink cannot certify OPEN. Connected, physically supported face ink certifies PRESENT. A lone unrelated colour elsewhere or at through-depth is not a material veto; a depth-supported contradiction within the feasible face remains unresolved. Missing local corners affect their own faces, not the entire frame.",
+    "terminal_geometry": "The first synthetic pass (cell_v2_synthetic_dev_01) correctly returned local progress but could not prove a prefix: row 0 has no previous bank colour. At rows 0 and 13 only, accept a straight transverse end visible against positive deep background on the outward side of the cap, with both end caps actually visible to distinguish it from the longitudinal lip. Keep the same cap/line uncertainty and demand the originally registered outcomes. No real replay results were used for this implementation correction.",
+    "output": "Always distinguish local_mm (unique visible OPEN/OPEN row followed by a resolved non-fully-open row and positive intact material beyond, no visible intervening bridge or later openings) from prefix/decision (all preceding rows positively open and observed connected). Missing upstream proof leaves decision UNKNOWN, even if local_mm is available. No action API. Uncut, ambiguity, a visible earlier bridge, target occlusion, or a beyond-budget front must not produce a misleading stop.",
+    "synthetic": "Validate 0, 3, 6, 8, 9, 10, 11 open rows, either half of the threshold cell remaining, interior bridge, target shutter, complete shutter, isolated colour at remote and through-depth locations, depth-supported competing ink, hidden entry and missing distant corner; also a slanted/transversely sheared raster at approximately 27 px per row, with the three-way printed cap/row contacts. Verify that geometry has nonempty robust area and encloses known projected vertices. Raw and 0.5 mm depth noise; no unexpected lower progress or STOP.",
+    "data": "Replay ALL high RGB-D archives under seam_rim_zoom_v1/asym/{pull,a,b,c,d,e}, seam_rim_near_v1/asym/near and seam_rim_look_v1/{near,b,c}. Actual 20-degree 2560x1920 camera. Raw and per-image seeded 0.5 mm noise; repeated physical checkpoints are not independent evidence. Also test the differently printed wide development work/look samples as incompatible-ink negatives. Seal blind results and input hashes before joining mechanical manifests or exact projected corners. Count work, backoff, park, uncut separately. No terminal score inferred from park.",
+    "gate": "Require all registered cases/files, hashes, synthetic controls, zero incorrect positive face/local/prefix claims and zero escaped corner bounds in both variants. All terminal work/backoff images must give exact local progress (<0.5 mm); report the stricter contiguous-prefix decision separately. Verify recovered nonempty geometries vs v1 on the same real frames. Failure does not alter signed gates. Native wide-field samples with just side inks must abstain. No confirmation or closed-loop runs on a failed or incompatible optical configuration."
+  },
+  "registration_sha256": "995375b2728f7055f00a7065b351bbdb84e1a0891fa4f1ea384f7337b457019f",
+  "predictions_sha256": "5bd3a3a86d2b8cdf5f5238e3e0030a02359487580df60bb6c996809341ee57f7",
+  "synthetic_sha256": "56e07d38346937ab99c63e0ca351084ebf87bbf52ac3c8f8025ce7f395cb9d38",
+  "synthetic_pass": 34,
+  "synthetic_total": 34,
+  "observations": 69,
+  "unique_images": 33,
+  "terminal_coverage": {
+    "work": [
+      8,
+      9,
+      10
+    ],
+    "backoff": [
+      8,
+      9,
+      10
+    ]
+  },
+  "incorrect_or_unbounded": [],
+  "passed": false,
+  "control_enabled": false,
+  "confirmation": false,
+  "rows": [
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/pull",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/pull",
+      "phase": "pulled",
+      "sensor": "85c802e71d7843dec255ff384691ac112b954edd9eda5dbec0750b10377b55c9",
+      "structure_sha256": "d45b5b3c01640e66fab40cceda8cd24d5f5d43e46ddf02e5b76c7b9d98476626",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/a",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/a",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/a",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/a",
+      "phase": "work",
+      "sensor": "cfad76f3046c7b906294596e30b621773d57c4b69981e251c9059ddc7565e37b",
+      "structure_sha256": "50c0dddddf6043e1497df7999aea9896b4d8f264c9afec6f1f830b32aa1c56c8",
+      "mm": 9,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/a",
+      "phase": "park",
+      "sensor": "35d7de14607dc90eb04b40988d731f5a4268835dceac594bdb015994260d92f3",
+      "structure_sha256": "9752c79ed0a229b4c0d04f3b330f443a9536b7803c72491765eb607e9b69666d",
+      "mm": 9,
+      "variants": [
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        },
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/b",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/b",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/b",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/b",
+      "phase": "work",
+      "sensor": "8b5cf3f7d340b197b89cee85ac102ebb7184e684ef5aa65ef05d1d67db341c03",
+      "structure_sha256": "df1b9c9d92a57120307311d43f4f96abcb36b956315a3c0ae7d8a6f458ffdfa1",
+      "mm": 9,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/b",
+      "phase": "park",
+      "sensor": "9e709bd53a553872fb0f9ec2bab8a24d269e95127ef900bf9ac488e6b80165ea",
+      "structure_sha256": "7dae3b6d5bedfad07afdd6bd73c742a8e0776398b282ce95543471ad4c6d0ba0",
+      "mm": 9,
+      "variants": [
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 18
+        },
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 18
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/c",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/c",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/c",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/c",
+      "phase": "work",
+      "sensor": "d1001852bc1632805e7f2d8210e8764dd0e87826cf6a7db423589139e3c721b5",
+      "structure_sha256": "6c8973f7795308b77f684406200f4971d3c698d59f58b6e23fc80b6291d819d1",
+      "mm": 10,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 19,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 19,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/c",
+      "phase": "park",
+      "sensor": "3117ffbecb26fd62cc9d87d491b9a563185bfd3a82ff3fd4d6a1775710d0d553",
+      "structure_sha256": "e30b7cc83cf115eb7dd1a2d3ed455de069fc145a129e9fe2ea549b9b64ea093b",
+      "mm": 10,
+      "variants": [
+        {
+          "local": 10,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 19
+        },
+        {
+          "local": 10,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 19
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "work",
+      "sensor": "e1751bcd8ba8b4ad5c4fa35a1e3df03affbab83a6d6b81578c57cc6a4ad4ef91",
+      "structure_sha256": "e39b0db337e8f0cf7c9944e607cd56d74d80c04d65e27088520d169c83126332",
+      "mm": 1,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 27,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 27,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "work",
+      "sensor": "2bc22e6c230d4c9c062494d14c0ff6851462c99f31aebfe0aa7917ecf8514c47",
+      "structure_sha256": "fca2cd3e4cd52806ae445b5587d59a233bed9b665f7bec322e8d66d20d6a9cca",
+      "mm": 4,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "work",
+      "sensor": "1a3ed7adbde75a4416e3ecae40e90c236deab54ab2a10948a103322161946b07",
+      "structure_sha256": "ab5d76f036b8f2bfacebb3dc8dd466d3bd2c3fd6371c5857aa73c6b802549adb",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "work",
+      "sensor": "e4a89578000daf2ba4904682ec5f1d64dd239bd7416951cd52464f39366a5366",
+      "structure_sha256": "1c2a4c838b76d95ebb547ab6469d32b0d21aace916f5a65632b511d4967f669a",
+      "mm": 9,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/d",
+      "phase": "park",
+      "sensor": "2a6e0f7f0e9286246d68bcf5ef64a84aef6fa3ba7a38e5b1bcf455c1c5cf34bb",
+      "structure_sha256": "112d0e2ed026a0584efb66c32c5bfa845b17555b31d0defe1fdc5a486fa5431c",
+      "mm": 9,
+      "variants": [
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        },
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "work",
+      "sensor": "e1751bcd8ba8b4ad5c4fa35a1e3df03affbab83a6d6b81578c57cc6a4ad4ef91",
+      "structure_sha256": "e39b0db337e8f0cf7c9944e607cd56d74d80c04d65e27088520d169c83126332",
+      "mm": 1,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 27,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 27,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "work",
+      "sensor": "2bc22e6c230d4c9c062494d14c0ff6851462c99f31aebfe0aa7917ecf8514c47",
+      "structure_sha256": "fca2cd3e4cd52806ae445b5587d59a233bed9b665f7bec322e8d66d20d6a9cca",
+      "mm": 4,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "work",
+      "sensor": "1a3ed7adbde75a4416e3ecae40e90c236deab54ab2a10948a103322161946b07",
+      "structure_sha256": "ab5d76f036b8f2bfacebb3dc8dd466d3bd2c3fd6371c5857aa73c6b802549adb",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "work",
+      "sensor": "e4a89578000daf2ba4904682ec5f1d64dd239bd7416951cd52464f39366a5366",
+      "structure_sha256": "1c2a4c838b76d95ebb547ab6469d32b0d21aace916f5a65632b511d4967f669a",
+      "mm": 9,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_zoom_v1",
+      "case": "asym/e",
+      "phase": "park",
+      "sensor": "2a6e0f7f0e9286246d68bcf5ef64a84aef6fa3ba7a38e5b1bcf455c1c5cf34bb",
+      "structure_sha256": "112d0e2ed026a0584efb66c32c5bfa845b17555b31d0defe1fdc5a486fa5431c",
+      "mm": 9,
+      "variants": [
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        },
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 17
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_near_v1",
+      "case": "asym/near",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_near_v1",
+      "case": "asym/near",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_near_v1",
+      "case": "asym/near",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_near_v1",
+      "case": "asym/near",
+      "phase": "work",
+      "sensor": "3875db18fbafe71a421eb2587cdd3cc977f9531a56ef2cff4f23822f8a539002",
+      "structure_sha256": "5cf88dae8b48adeeda7e8df13e78fc332820e0256506b3b3dd7abce71d89d44e",
+      "mm": 8,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 21,
+          "refined": 20,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 21,
+          "refined": 20,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_near_v1",
+      "case": "asym/near",
+      "phase": "park",
+      "sensor": "7c0407b76d6f680d1b8fc4e7df5c5112305277d1c3c5d8ab6bdd3b91f3083957",
+      "structure_sha256": "a9626d2919e80adf1eb4716a495faee67827bc0504b7a6336f6ca6ae3a631985",
+      "mm": 8,
+      "variants": [
+        {
+          "local": 8,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 15
+        },
+        {
+          "local": 8,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 15
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "near",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "near",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "near",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "near",
+      "phase": "work",
+      "sensor": "3875db18fbafe71a421eb2587cdd3cc977f9531a56ef2cff4f23822f8a539002",
+      "structure_sha256": "5cf88dae8b48adeeda7e8df13e78fc332820e0256506b3b3dd7abce71d89d44e",
+      "mm": 8,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 21,
+          "refined": 20,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 21,
+          "refined": 20,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "near",
+      "phase": "backoff",
+      "sensor": "58878d933aa2284b6ae1cc5a21b4b2a3cf7110afbd6f7ba31c12f3ebc9885f9e",
+      "structure_sha256": "451875f839a3a515acf6194b1b42468a317fb02ed79bfb77fa984423fc43ecaf",
+      "mm": 8,
+      "variants": [
+        {
+          "local": 8,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 11
+        },
+        {
+          "local": 8,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 25,
+          "refined": 24,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 11
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "b",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "8b5cf3f7d340b197b89cee85ac102ebb7184e684ef5aa65ef05d1d67db341c03",
+      "structure_sha256": "df1b9c9d92a57120307311d43f4f96abcb36b956315a3c0ae7d8a6f458ffdfa1",
+      "mm": 9,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 20,
+          "refined": 19,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "b",
+      "phase": "backoff",
+      "sensor": "fa3e966bc0983266ddbc535667beabe166e4f7afb67aaafe491df7ff8d1e9cae",
+      "structure_sha256": "38e29d237f48ae252c921b98607fd8849a740df4f6ea5fe87a122ec5a5487b1c",
+      "mm": 9,
+      "variants": [
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 24,
+          "refined": 23,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 11
+        },
+        {
+          "local": 9,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 24,
+          "refined": 23,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 11
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "c",
+      "phase": "loaded",
+      "sensor": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+      "structure_sha256": "f493adb451deec7acdf08518ddf3eb3eb8cf3aa3017076494a79effad5935bbd",
+      "mm": 0,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 28,
+          "refined": 27,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 0
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+      "structure_sha256": "e1d252420a54fe1d565eb81fbaed6394d1f3e2eadb0856feceb0a255d09520dc",
+      "mm": 3,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 26,
+          "refined": 25,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 2
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+      "structure_sha256": "290a832c61defe8b9501d07ab905d64ee05469610d22345a436d7fc911cececd",
+      "mm": 6,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 22,
+          "refined": 21,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "d1001852bc1632805e7f2d8210e8764dd0e87826cf6a7db423589139e3c721b5",
+      "structure_sha256": "6c8973f7795308b77f684406200f4971d3c698d59f58b6e23fc80b6291d819d1",
+      "mm": 10,
+      "variants": [
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 19,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        },
+        {
+          "local": null,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 19,
+          "refined": 18,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 1
+        }
+      ]
+    },
+    {
+      "study": "seam_rim_look_v1",
+      "case": "c",
+      "phase": "backoff",
+      "sensor": "e305c87560beff7ae6fc52e6ecf8d212065ca209ec9d63577a9637a4ffc313fd",
+      "structure_sha256": "cc7fcb9d5046b83249a7d24e244d6a57aa40e2bd69f480450dd5b2221c5984a0",
+      "mm": 10,
+      "variants": [
+        {
+          "local": 10,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 23,
+          "refined": 22,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 10
+        },
+        {
+          "local": 10,
+          "prefix": null,
+          "decision": "UNKNOWN",
+          "bounded": 23,
+          "refined": 22,
+          "escaped": [],
+          "wrong_faces": [],
+          "empty_to_deep_faces": 10
+        }
+      ]
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "pull",
+      "phase": "loaded",
+      "sensor": "b5be64baec25744c5e6bd1596462768e08625a0e897d751f6176d75e5593aba4",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "pull",
+      "phase": "pulled",
+      "sensor": "09f07ae1ac9fd701fbb9ba9fd290088fad4d453e2ac0c17d26848e2d0700e16f",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "loaded",
+      "sensor": "b5be64baec25744c5e6bd1596462768e08625a0e897d751f6176d75e5593aba4",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "work",
+      "sensor": "21ac19680021fe33287d375ce854fc8abece4e438bad4f2aeb871ef828e50b2b",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "work",
+      "sensor": "9a8481c19552a6fbf874b5e2ddab23a04d0efda4aeccff8216dab9a5f712b5c7",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "work",
+      "sensor": "9617dfb6fd5c4280d6d17ce816045450263d9802a28e55a45253fcac2efd348a",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "look",
+      "sensor": "2e3d2cf1ce910eba6ec325c7407b8659ab32e66d3f2e54cbfd1e7e72c15416cd",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "a",
+      "phase": "park",
+      "sensor": "b0296ce2634de5ee1adb891fa206e2908fd60cb55f7d6afc465b13e12c193630",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "loaded",
+      "sensor": "b5be64baec25744c5e6bd1596462768e08625a0e897d751f6176d75e5593aba4",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "21ac19680021fe33287d375ce854fc8abece4e438bad4f2aeb871ef828e50b2b",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "9a8481c19552a6fbf874b5e2ddab23a04d0efda4aeccff8216dab9a5f712b5c7",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "work",
+      "sensor": "dd4bf4245f50391770e33c634a8f4cd7ab27c810ff8cd862e8b54758a3773a9d",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "look",
+      "sensor": "975ccb8e3ce6737dcdd6832750126e7cf22f0022bbca9c28bcdc7978c9a8bdac",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "b",
+      "phase": "park",
+      "sensor": "de5fc0f784be11d9c8cc3d5661135cea0f0e80c56be53ef69aaed72973dbc88c",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "loaded",
+      "sensor": "b5be64baec25744c5e6bd1596462768e08625a0e897d751f6176d75e5593aba4",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "21ac19680021fe33287d375ce854fc8abece4e438bad4f2aeb871ef828e50b2b",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "9a8481c19552a6fbf874b5e2ddab23a04d0efda4aeccff8216dab9a5f712b5c7",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "work",
+      "sensor": "73dcd0c2016da47e74806615ff27ccf2598af39b6890bc2d8c9fd4f4e24a0d0f",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "look",
+      "sensor": "eb80a6d4d6cb55bbef35f6264df612d3b5048375601b4e1acd5dbe1c6a7cd4ea",
+      "incompatible_print_ok": true
+    },
+    {
+      "study": "m5_local_hd_dev_v1",
+      "case": "c",
+      "phase": "park",
+      "sensor": "7dd9d5c4f3bf734ff36cb5e59e7e917eb92d2dc01cdc0d84e0a7c3ce68ea6fb5",
+      "incompatible_print_ok": true
+    }
+  ]
+}

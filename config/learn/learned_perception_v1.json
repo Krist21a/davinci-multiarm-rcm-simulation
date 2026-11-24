@@ -1,0 +1,205 @@
+{
+  "id": "learned_perception_v1",
+  "status": "REGISTERED 2026-11-23 after user approval (Q1-Q3 answered: follow the recommendations). Binding from the registering commit onward; committed before any study data, model or holdout exists. No value below may be loosened after this point; failures are reported as failures.",
+  "scope": "Offline feasibility study of a learned RGB-D reader on the non-anatomical simulation test sheet. Simulation only; model quantities; no clinical, anatomical, sim-to-real or tissue-force claim. Not an M5 pass, not an M5a/M5b amendment and not a controller change. Integration into any controller requires a separate, later registration.",
+  "question": "At the observation poses the executing controller actually uses, can an estimator that sees only RGB-D (no truth, no tick, no FSM state, no bite count) read the independently scored structural cut length well enough to distinguish 8 / 9 / 10 mm, abstaining where it cannot, without producing a false endpoint?",
+  "references": {
+    "git_head_at_draft": "9996c2dfa73f07811b976969c9a67929397dad8c (work tree dirty; the registering commit records the exact state)",
+    "scene": "scenes/davinci_si_articulated_verified.ttt",
+    "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "base_config": "config/task/cut_task.json",
+    "base_config_sha256": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "specimen_and_optics_parent": "config/task/m5_live_same_bite_v1.json (marked v1.10 conventional sheet), sha256 f779b3755ea7f21948bc3950575b94a945f92d4ccb869ac0833965265204b7ff",
+    "ecm_envelope_source": "config/task/m5b_ecm_view_study_v1.json, sha256 a5e80a1d5b73279664304e47c979bdbf60c64124fe4e72e007012b3681dabc1b; eligible candidates in validation/task/m5b_ecm_view_study_v1_selection.json",
+    "label_definition_source": "scripts/task/ground_truth.py GroundTruth.cut_length, sha256 1be4edc3499e2ff64a0fb180caf701f712b18e4ec9bcbf5b471b894a6879de57",
+    "collection_cost": "validation/task/learn_throughput_v1.json, validation/task/learn_profile_v1/"
+  },
+  "known_limits_stated_in_advance": [
+    "The structural label requires the reverse (non-face) diagonal of a centre cell to be cut. That spring belongs to no rendered triangle, so its state reaches the image only through deformation (validation/task/m5b_v19_frozen_label_ambiguity.json: restoring one such spring at fixed vertices changes 10 mm to 7 mm). Identical renders can carry different labels; the reader must abstain there.",
+    "At the 10 mm look-back one terminal half-cell projects onto zero pixel centres even in 1280x960 (validation/task/m5_local_hd_dev_v1/terminal_rays.json). No model can recover information that is not sampled.",
+    "At 8 mm a scored centre node can have zero surviving rendered triangles (validation/task/m5_junction_hd_dev_v1/material_support.json).",
+    "H1 episodes are truth-controlled: they cover the work poses the FSM visits plus randomised ECM views, but not the vision-mode CLEAR_VIEW look-back poses. Those exist only in the historical real-controller frames (H2, ungated).",
+    "A negative result of this study is evidence about observability at these poses with this sensor, not a proof of impossibility; a positive result is not an M5 pass."
+  ],
+  "data_generation": {
+    "collector": "New script scripts/learn/collect.py. Builds SimWorld + CutTaskFSM itself from a deep copy of the base config with the per-episode overrides below. Does not modify run_cut_task.py, sim_world.py, cut_fsm.py, configs or scenes. All label reads are wrapped in GroundTruth.purpose('dataset_label').",
+    "control": "truth control only (cut.control_source = truth); every existing guard, budget, collision envelope, joint limit, tear and overcut monitor unchanged. Refused or FAILED episodes are kept and labelled, never retried with different parameters.",
+    "episode_randomisation": {
+      "seed": "episode_seed = first 8 bytes of sha256('learned_perception_v1/' + split + '/' + index) as uint64; every sampled value is recorded in the episode manifest",
+      "advance_m": {
+        "choices": [
+          0.002,
+          0.0025,
+          0.003,
+          0.0035,
+          0.004
+        ],
+        "basis": "decorrelates cut length from bite count; 0.003 is the base value"
+      },
+      "target_length_m": {
+        "choices": [
+          0.004,
+          0.005,
+          0.006,
+          0.007,
+          0.008,
+          0.009,
+          0.01
+        ],
+        "weights": [
+          1,
+          1,
+          1,
+          2,
+          3,
+          3,
+          3
+        ],
+        "basis": "oversamples the 8/9/10 mm decision region; never above the 10 mm already reached by the base truth run; cut.max_overcut_m unchanged"
+      },
+      "scenario": {
+        "choices": [
+          "nominal",
+          "occlusion_transient",
+          "slip_regrasp",
+          "relax"
+        ],
+        "weights": [
+          4,
+          2,
+          1,
+          1
+        ],
+        "basis": "relax_large / handover scenarios excluded: they fail or tear by design"
+      },
+      "ecm_initial_view_deg_deg_m": {
+        "yaw": [
+          -4.5,
+          4.5
+        ],
+        "pitch": [
+          0.0,
+          4.5
+        ],
+        "insertion": [
+          0.072,
+          0.088
+        ],
+        "basis": "convex hull of the eligible view-study candidates; negative pitch was ineligible. Applied after homing through the existing guard; a refused pose is recorded as refused."
+      },
+      "perception_noise_at_capture": "none. Raw depth is stored; depth noise is applied offline with recorded seeds."
+    },
+    "auxiliary_views": {
+      "what": "K = 4 extra RGB-D renders per tick from a separate auxiliary vision sensor with the ECM camera's intrinsics, at poses sampled inside the same ECM envelope. The ECM sensor, its pose and its control image are never moved or replaced.",
+      "proof_of_no_control_change": "Before any production collection: paired runs with and without auxiliary renders for at least 3 seeds must have identical nodes_sha256 traces at every tick (the M5a v6 probe precedent). If not identical, auxiliary views are dropped, not fixed by tolerance.",
+      "status": "Training/augmentation data only. Evaluation uses only actual ECM-sensor frames."
+    },
+    "optics": {
+      "primary_640": "ECM camera 640x480, 70 deg (config/endoscope/endoscope.json), every tick; this is the control image.",
+      "hd_twin_1280": "Q1 = yes. A separate render-only vision sensor co-located with the ECM camera each tick (same pose, 70 deg, 1280x960). Rendered every tick, so the HD subset is not selected by truth. Covered by the same trace-identity proof as the auxiliary views. Fallback, decided in phase A from measured render cost only (never from model results) and recorded before any H1 episode: render HD only on ticks after the first closure, a controller-observable condition."
+    },
+    "per_frame_record": "rgb, raw depth, camera pose, ECM target readback, tick; labels stored separately in the same npz under a 'label_' prefix: cut_length, tissue_alive, nodes, cut_front, tcp_M, yaw_M, marker_pos, grasped_pts, tension, scenario events. The training loader may only pass rgb/depth (and camera intrinsics) to the model.",
+    "storage": "F:/davinci_m5_learn/learned_perception_v1/<split>/<episode>/, written as temp-file-then-rename; the repository keeps only manifests (episode params, file sha256).",
+    "specimen_flags": "Same render-relevant perception configuration as scripts/task/run_same_bite.py: mode shadow, markers, material_pattern, exclude_tcp_marker (plus the other v1.10 chain flags, which only affect the estimator). The collector skips the shadow estimator itself and only dumps frames and labels.",
+    "storage_estimate": "~17 MB (640) + ~70 MB (HD twin) + ~68 MB (4 aux 640 views) per 17-tick episode, about 0.5 TB for 3300 episodes; fits the 931 GB F: drive. Re-measured in phase A."
+  },
+  "splits": {
+    "development": "D: seeds index 0..N_dev-1. Train/validation split by episode (90/10), never by frame.",
+    "holdout_H1": "Fresh episodes from split name 'holdout', generated only AFTER the model, abstention threshold and code are frozen and their sha256 written into a sealed record. Scored once. If it fails it is burned (as m5a v2) and a new version needs a new holdout.",
+    "holdout_H2_historical": "Q3 = yes. Archived real-controller frames already on disk (m5_live_same_bite_v1, m5_live_active_look_v1 including its HD recovery frames, m5b v1.10, m5_local_hd_dev_v1 work/look frames), scored with the stream of matching resolution. Inspected during earlier development but never seen by a model; reported separately as 'previously inspected', never gated.",
+    "frozen_counterfactuals": "The frozen label-ambiguity frame and its two alternative labels (validation/task/m5b_v19_frozen_label_ambiguity.json)."
+  },
+  "model": {
+    "inputs": "RGB (3) + depth (1, metres, clipped to the camera far plane), optional depth noise augmentation. Nothing else.",
+    "architecture": "Small encoder-decoder (ResNet-18/34 class encoder) trained from scratch or ImageNet-initialised; fits an 8 GB RTX 4060 Laptop GPU with mixed precision.",
+    "heads": {
+      "length": "softmax over structural rows 0..13 (1 mm), the primary output",
+      "masks": "auxiliary: sheet / slit gap / instrument segmentation, labels rendered offline by projecting live triangles and the instrument from recorded poses",
+      "front_and_tip": "secondary: cut-front and cutter-tip pixel + depth, scored with the unchanged M5a v3 definitions for information only"
+    },
+    "abstention": "Output is a length only if the calibrated max probability >= tau; otherwise ABSTAIN. tau is chosen on the development validation split as the smallest value giving zero false-endpoint readings there, then frozen with the model. tau is never re-chosen on a holdout.",
+    "forbidden_inputs": "tick, FSM state, bite or closure count, controller target, any truth array, any previous frame's label",
+    "streams": "Two input streams are trained and scored separately with the same recipe: 640x480 ECM and 1280x960 HD twin. Each stream has its own frozen model and tau. A stream passes only if every gate passes in that stream; both results are always reported (two pre-registered attempts, not a post-hoc choice)."
+  },
+  "metrics": {
+    "reading": "per frame: integer mm in 0..13 or ABSTAIN",
+    "false_endpoint": "reading in {9, 10} while true structural length is not in [9, 10] mm",
+    "wrong": "reading != true length (in mm rows)",
+    "vbw_rate": "#wrong / #non-abstained",
+    "coverage": "#non-abstained / #frames",
+    "endpoint_recall": "on frames with true length in {9, 10}: #(reading in {9,10}) / #frames",
+    "eight_nine_accuracy": "on frames with true length in {8, 9}, among non-abstained: #correct / #non-abstained",
+    "metadata_baseline": "the best classifier that predicts length from bite count and advance_m alone (fit on D); reported so a shortcut-free model can be compared against it",
+    "depth_variants": [
+      0.0,
+      0.0005
+    ]
+  },
+  "reported_not_gated": [
+    "H2 historical frames: all metrics, per source run",
+    "learning curve: validation metrics at 25 / 50 / 100 % of D, to separate data scarcity from non-observability",
+    "confusion matrix by true length and by scenario",
+    "M5a v3 front/tip metrics of the secondary heads"
+  ],
+  "decision": {
+    "all_gates_pass": "Propose (not run) a separate registration for an opt-in estimator in a new controller protocol version, keeping every existing guard. Nothing is integrated by this study.",
+    "any_gate_fails_and_learning_curve_flat": "Report as evidence that 8/9/10 mm is not resolved by this sensor at these poses; the user decides whether to change the observation, the specimen or the endpoint definition. The agent changes none of these.",
+    "any_gate_fails_and_learning_curve_rising": "Report as inconclusive; one more data tranche may be proposed as a new version with a fresh holdout."
+  },
+  "budget": {
+    "phase_A_pilot": "300 development episodes, purpose: validate the collector, the auxiliary-view identity proof and the training pipeline. Not scored against gates.",
+    "phase_B": "up to 3000 development episodes, then one H1 of 300 episodes",
+    "measured_cost": "3 parallel instances: 143 nominal episodes/hour, 2439 frames/hour, ~0.95 MB/frame at 640x480 (validation/task/learn_throughput_v1.json). Phase B at that rate is about 21 hours of collection before auxiliary views."
+  },
+  "gate_scope": "Gates apply per stream and per depth variant on H1 frames rendered from the actual ECM pose (640 sensor or its HD twin); auxiliary views are never scored.",
+  "gates_on_H1_actual_ECM_frames": [
+    {
+      "id": "L1_false_endpoint",
+      "metric": "false_endpoint count",
+      "op": "==",
+      "value": 0,
+      "per_depth_variant": true
+    },
+    {
+      "id": "L2_vbw",
+      "metric": "vbw_rate",
+      "op": "<",
+      "value": 0.05,
+      "per_depth_variant": true
+    },
+    {
+      "id": "L3_endpoint_recall",
+      "metric": "endpoint_recall",
+      "op": ">=",
+      "value": 0.5,
+      "per_depth_variant": true,
+      "basis": "historical readers: 0 at 9 mm. A closed loop may look again, so per-frame 0.5 is the minimum worth integrating.",
+      "set_by": "user, 2026-11-23 (accepted the proposed value)"
+    },
+    {
+      "id": "L4_eight_nine",
+      "metric": "eight_nine_accuracy",
+      "op": ">=",
+      "value": 0.95,
+      "per_depth_variant": true,
+      "set_by": "user, 2026-11-23 (accepted the proposed value)"
+    },
+    {
+      "id": "L5_counterfactual",
+      "metric": "frozen counterfactual frame",
+      "op": "==",
+      "value": "ABSTAIN or a reading consistent with every alternative label (here: impossible, so ABSTAIN)"
+    },
+    {
+      "id": "L6_not_metadata",
+      "metric": "endpoint_recall minus metadata_baseline endpoint_recall on H1 episodes whose advance_m differs from 0.003",
+      "op": ">",
+      "value": 0.0
+    }
+  ],
+  "answered_questions": {
+    "Q1_endpoint_zone_hd": "yes (implemented as an every-tick HD twin, see data_generation.optics)",
+    "Q2_gate_values": "L3 = 0.5, L4 = 0.95 as proposed",
+    "Q3_H2": "yes, separate and ungated"
+  }
+}

@@ -1,0 +1,566 @@
+{
+  "protocol": {
+    "id": "surface_seam_pilot_v1",
+    "scope": "Development gate for a new non-anatomical single-layer coupon. Not original M5b, not vision control. Keep all historical files, the verified scene, full-mode layout, grasp sites, guard limits and budgets unchanged.",
+    "parent": "config/task/ruler_endpoint_v1.json",
+    "parent_sha256": "3db41e914047b8300d7dd36bd245637f977fa790a0bba22db45e081f18f5a1a6",
+    "material": "Only cell column 11 (0-based, between the two central banks) changes mechanics. Remove the 13 non-face crossing diagonals from the spring array at creation, preserving every original triangle, all regular node positions, remaining rest lengths and relative iteration order. After damage a central crossing edge is load bearing only while incident to a surviving triangle. Release orphan crossing edges before the next mechanical solve; log releases separately from direct blade hits and strain tears. No pre-cut, no ink changes on fracture, no hidden-constraint overlay. Use the same permanent left/right print as the parent; changing mechanics is the single intervention.",
+    "structural_label": "One mm per consecutive central material cell from the free entry for which neither of its two triangles survives. Independently reconstruct this prefix from saved spring endpoints and flags and verify it equals the prefix with both the near transverse bond and the sole crossing diagonal severed. Require every live central crossing to have a live incident face. This is a NEW structural definition; do not compare lengths as interchangeable with historical labels. Check the furthest fully severed cell, including the old +/-3 neighbouring lanes with their original three-bond rule, as a separate conservative upper-limit monitor even for disconnected damage.",
+    "development_runs": [
+      {
+        "id": "pull",
+        "goal_mm": 9,
+        "cap_mm": 3,
+        "pull_only": true
+      },
+      {
+        "id": "a",
+        "goal_mm": 8,
+        "cap_mm": 3
+      },
+      {
+        "id": "b",
+        "goal_mm": 8.5,
+        "cap_mm": 3
+      },
+      {
+        "id": "c",
+        "goal_mm": 9,
+        "cap_mm": 3
+      },
+      {
+        "id": "d",
+        "goal_mm": 8,
+        "cap_mm": 2
+      },
+      {
+        "id": "e",
+        "goal_mm": 9,
+        "cap_mm": 2
+      }
+    ],
+    "capture": "Collect every listed run, no replacement of safety failures and no rounding a goal into a label. Use the existing legal flat layout, ordinary full task, native sensor with the parent view, unhidden physical instruments and the registered transparent marker correction. Pull-only at the first supervised ALIGN: both ordinary grasps; apply exactly one guarded outward 0.2 mm step per retractor, re-observe and check between actions; never open/close the scissors. Save loaded and pulled negatives. In cutting runs save the first current working RGB-D observation after each accepted closure, before any further command (including withdrawal), loaded and returned-to-ready frames. Require both grasps, no tears or faults, positive growth per bite, no peak above goal+1 mm (never >10), a real closed-jaw return within 0.5 mm / 1 degree for mechanical success. Keep failed or missing cases; don't use a park frame as a working sample.",
+    "image_gate": "Freeze the identical RGB-D-only parent reader before acquisition. UUID sensor files contain just rgb/depth. Run the reader on all raw and deterministically noised (0.5 mm std) images before joining to the separate structural oracle. For development require at least one safe working sample at each actual 8 and 9 mm on distinct runs; ALL safe working images at those lengths must be explicitly BELOW and STOP respectively, never UNKNOWN. Other safe working samples must never give a wrong authorization. Loaded, traction-only and synthetic shutter negatives must never claim a cut (UNKNOWN). A numerical model label from a failed run, or a parked image, cannot substitute. Inspect local ink/crossings as diagnostics only, never as permission to cut.",
+    "next": "Only after mechanics, negative control and working-pair gates pass may a separately locked independent 7/8/9/10 mm confirmation with noise and occlusion begin. No use of the reader to move, close or park before that confirmation. Safe refusal is not successful endpoint completion."
+  },
+  "protocol_sha256": "6cde144e410c12f6850efe859f28c5146266490f308337f0ce57587cfca079b8",
+  "prediction_sha256": "693eb1a77e47bb91e36e9cdda8d0d2d7747aaec91376d37ba00aa94f0ac0d183",
+  "gates": {
+    "all_mechanical": true,
+    "actual_working_pair": true,
+    "all_optical": false,
+    "shutter_unknown": true
+  },
+  "passed": false,
+  "coverage": {
+    "8": [
+      "a",
+      "d",
+      "e"
+    ],
+    "9": [
+      "b"
+    ]
+  },
+  "runs": [
+    {
+      "case": "pull",
+      "run_id": "80cef9e02aeb437983134b91ac185f9c",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "traction-only capture complete; not a cutting task completion",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "5a627118baeac13dbc1dec5258fe068f098c55989b17a7de7fb7a194b783e7b6",
+      "rows": [
+        {
+          "key": "ecb5d62d5194443b8993eed748c87bda",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "3bf33bf4444a4a3d9d8f61af2b0a43ec",
+          "phase": "pulled",
+          "tick": 9,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "09f171efc69a3e1c745339d18b8741977b62865edd44b38b8e8e6d9050672346"
+        }
+      ],
+      "park": null,
+      "pull_motion_m": {
+        "psm1": 0.0002005220805641215,
+        "psm3": 0.00019997495636228156
+      }
+    },
+    {
+      "case": "a",
+      "run_id": "6229aa1b550c4ba8bb89628c135a20c1",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "cut length 8.0 mm reached; scissors retracted",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "d5cc7db2f4fc94aee34eedc8678c4149b1d704f773c88b2b345eefaa4eb1fba7",
+      "rows": [
+        {
+          "key": "5df8bee493da4c6fbbf744ba0e8915c6",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "cc61d5a340724d72895caeb49796617c",
+          "phase": "work",
+          "tick": 10,
+          "actual_mm": 3,
+          "farthest_mm": 3,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "fe6132228de8fe4b4523a1b2fb81da82ba85701e1ebb90de1309c1d9104e6fe2"
+        },
+        {
+          "key": "d1e097204bd048a584827f6b37230b39",
+          "phase": "work",
+          "tick": 12,
+          "actual_mm": 6,
+          "farthest_mm": 6,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "3fb05f85c19365d92fa2c3dfefead1e019365d963605057ad42189a2c37ab776"
+        },
+        {
+          "key": "7318f320da254cf4b3dca8fa860f435d",
+          "phase": "work",
+          "tick": 14,
+          "actual_mm": 8,
+          "farthest_mm": 8,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": false,
+          "sha256": "39f7acd77c9d0bc1855b5e13a0d7dc29f59f622949e952a423709c819c1e1ba0"
+        },
+        {
+          "key": "815fdcac713c4d738ec5694df8b9d24a",
+          "phase": "park",
+          "tick": 16,
+          "actual_mm": 8,
+          "farthest_mm": 8,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "67505da00fd3f0719955724c0a7725788824409e7b711bbe047d3d21c9aa394b"
+        }
+      ],
+      "park": {
+        "error_mm": 1.8287054749402236e-05,
+        "error_deg": 0.0006889979774238826,
+        "closed": true
+      },
+      "pull_motion_m": {}
+    },
+    {
+      "case": "b",
+      "run_id": "142e97bf3c1846ac908cdd3aab473ab4",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "b0c21df33b3416bf8827bd1529ad0e028c23626c98995a3446833fd11622b59f",
+      "rows": [
+        {
+          "key": "5cd18a3344ec4fbc966bed0b1703cc8c",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "84bcdfc326de4c018f047bc8d7e696be",
+          "phase": "work",
+          "tick": 10,
+          "actual_mm": 3,
+          "farthest_mm": 3,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "fe6132228de8fe4b4523a1b2fb81da82ba85701e1ebb90de1309c1d9104e6fe2"
+        },
+        {
+          "key": "9fea6aad26a74ac68e8256a0ffde7cbe",
+          "phase": "work",
+          "tick": 12,
+          "actual_mm": 6,
+          "farthest_mm": 6,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "3fb05f85c19365d92fa2c3dfefead1e019365d963605057ad42189a2c37ab776"
+        },
+        {
+          "key": "a57ba8092a1c46829a988c7848590083",
+          "phase": "work",
+          "tick": 14,
+          "actual_mm": 9,
+          "farthest_mm": 9,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": false,
+          "sha256": "0e47012e5e8c396bce76f0db2adfb5c03fc805329848f6fc977f9ebfe73334f8"
+        },
+        {
+          "key": "ed1214546e324e70a8559e6653d929d6",
+          "phase": "park",
+          "tick": 16,
+          "actual_mm": 9,
+          "farthest_mm": 9,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "a07dde1085a0947e05a3e325d5bce22a281605c5a767518a385673e05d96decc"
+        }
+      ],
+      "park": {
+        "error_mm": 1.83195741705422e-05,
+        "error_deg": 0.0006933125655608153,
+        "closed": true
+      },
+      "pull_motion_m": {}
+    },
+    {
+      "case": "c",
+      "run_id": "cad451731de94e059fc9d59a660496d4",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "40cf6e549b13ed0157bea8cb46a6bd3112bbbf48c095efb40b3d2017d5247552",
+      "rows": [
+        {
+          "key": "6bd933d7bb08439abe58a0ba95469cff",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "7cf76217fc30499ebf1b18ef9a44a5fe",
+          "phase": "work",
+          "tick": 10,
+          "actual_mm": 3,
+          "farthest_mm": 3,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "fe6132228de8fe4b4523a1b2fb81da82ba85701e1ebb90de1309c1d9104e6fe2"
+        },
+        {
+          "key": "62e84feb046549f8b38ea43f3e6f9fc4",
+          "phase": "work",
+          "tick": 12,
+          "actual_mm": 6,
+          "farthest_mm": 6,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "3fb05f85c19365d92fa2c3dfefead1e019365d963605057ad42189a2c37ab776"
+        },
+        {
+          "key": "ecd400ee46de4e639eddc698b84968c7",
+          "phase": "work",
+          "tick": 14,
+          "actual_mm": 10,
+          "farthest_mm": 10,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "6ff2c8fa7b96ab7defd594c83e51716809535bd0c24cf2a675d2a41a4dbc1fab"
+        },
+        {
+          "key": "37af1f39e4b14ab9a6356f854438d178",
+          "phase": "park",
+          "tick": 16,
+          "actual_mm": 10,
+          "farthest_mm": 10,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "0f5a886afa6c22978e5e5ed3dd242d1a7a49350c781d6a8aa4918d6431091faf"
+        }
+      ],
+      "park": {
+        "error_mm": 1.8353004321473435e-05,
+        "error_deg": 0.0006976255462982379,
+        "closed": true
+      },
+      "pull_motion_m": {}
+    },
+    {
+      "case": "d",
+      "run_id": "97b9ff3208184199b1a091f27f6ca435",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "cut length 8.0 mm reached; scissors retracted",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "4a470795c76817fcbc24d56783d17ab7bbdd56ff67c04b2ba09179120262d8a1",
+      "rows": [
+        {
+          "key": "a747a2d9076249ac99987c4746e2f320",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "fc824f0b6f304dbcbcd689842a2a1a7f",
+          "phase": "work",
+          "tick": 10,
+          "actual_mm": 2,
+          "farthest_mm": 2,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "72f08a7125f5ed2400be9ef363e1afc627016764ee2182fb65a0000fbeb71cb3"
+        },
+        {
+          "key": "6f5a9fe79d5f4b779dacc306aff0c57a",
+          "phase": "work",
+          "tick": 12,
+          "actual_mm": 4,
+          "farthest_mm": 4,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "e021c6f9ae5ae87c67af828412d9c6257ab5fb05d39e49c3c40523e8901a9a1d"
+        },
+        {
+          "key": "26da90305a134831919070859d7ca72f",
+          "phase": "work",
+          "tick": 14,
+          "actual_mm": 6,
+          "farthest_mm": 6,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "36912b557defe4569c143ff8fc5adf1de55ed85a93aadda1f76b6b83a911ca12"
+        },
+        {
+          "key": "dbb865edb27c4cf98ec8f93aad104da4",
+          "phase": "work",
+          "tick": 16,
+          "actual_mm": 8,
+          "farthest_mm": 8,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": false,
+          "sha256": "558c2cc173f12da4f582e6707fe261c298b40c76cc7dde5fb60dbc04bc862101"
+        },
+        {
+          "key": "03a3d9fb26ef415e90f1a477ba31734c",
+          "phase": "park",
+          "tick": 18,
+          "actual_mm": 8,
+          "farthest_mm": 8,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "f62e2f16b9e85f0563537ad7022deffffab2a973fb7f2f52d38235158e175e20"
+        }
+      ],
+      "park": {
+        "error_mm": 1.8290160407044773e-05,
+        "error_deg": 0.0006887154452847327,
+        "closed": true
+      },
+      "pull_motion_m": {}
+    },
+    {
+      "case": "e",
+      "run_id": "937ba90a90b6493eabb1fe6f699bfd4a",
+      "controller": "321045737747e24151435dfea9c0bbfe6ebd754469e612c3d9ca7378a24ef257",
+      "state": "DONE",
+      "reason": "cut length 10.0 mm reached; scissors retracted",
+      "mechanics_ok": true,
+      "issues": [],
+      "oracle_sha256": "39e9acf82b79f5ae0e0c01c886627d9e8e1b1d07b9c6172f2e070c4d603ad516",
+      "rows": [
+        {
+          "key": "c4e4fa43bbd149b1bd5bf7026e05e3c9",
+          "phase": "loaded",
+          "tick": 7,
+          "actual_mm": 0,
+          "farthest_mm": 0,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "4b77deb9bcda838d21a4b5976c1c40c9172c2528a00a6e0b78f327f515f19f9f"
+        },
+        {
+          "key": "c0e23287c9914c3187e4a19b76e03167",
+          "phase": "work",
+          "tick": 10,
+          "actual_mm": 2,
+          "farthest_mm": 2,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "72f08a7125f5ed2400be9ef363e1afc627016764ee2182fb65a0000fbeb71cb3"
+        },
+        {
+          "key": "8e5ee96f661d4e3191b2e17173884552",
+          "phase": "work",
+          "tick": 12,
+          "actual_mm": 4,
+          "farthest_mm": 4,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "e021c6f9ae5ae87c67af828412d9c6257ab5fb05d39e49c3c40523e8901a9a1d"
+        },
+        {
+          "key": "503b2206f3074f49b7a5ddc0e129c30b",
+          "phase": "work",
+          "tick": 14,
+          "actual_mm": 6,
+          "farthest_mm": 6,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "36912b557defe4569c143ff8fc5adf1de55ed85a93aadda1f76b6b83a911ca12"
+        },
+        {
+          "key": "e2adcd7856dd46d8b361f6d056849b5c",
+          "phase": "work",
+          "tick": 16,
+          "actual_mm": 8,
+          "farthest_mm": 8,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": false,
+          "sha256": "558c2cc173f12da4f582e6707fe261c298b40c76cc7dde5fb60dbc04bc862101"
+        },
+        {
+          "key": "0049d93dc42b4ac9a36f0fac1895d0d0",
+          "phase": "work",
+          "tick": 18,
+          "actual_mm": 10,
+          "farthest_mm": 10,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "7af28683c2af1dd7c5152bb2ca06b3e861f18c518648d23bd6b73160714e245f"
+        },
+        {
+          "key": "1d4d2a42de134ca894b36e421c5e1cf7",
+          "phase": "park",
+          "tick": 20,
+          "actual_mm": 10,
+          "farthest_mm": 10,
+          "decisions": [
+            "UNKNOWN",
+            "UNKNOWN"
+          ],
+          "optical_ok": true,
+          "sha256": "080b7c696e9ef9362a968c14c258f81bdfc04ce0237740080fe22647c1e81af1"
+        }
+      ],
+      "park": {
+        "error_mm": 1.8332013755175645e-05,
+        "error_deg": 0.0006959297476085565,
+        "closed": true
+      },
+      "pull_motion_m": {}
+    }
+  ],
+  "confirmation_run": false,
+  "visual_control": false
+}
