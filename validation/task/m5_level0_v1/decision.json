@@ -1,0 +1,424 @@
+{
+  "protocol": {
+    "id": "m5_level0_v1",
+    "scope": "One nominal truth-feedback simulation reference. No vision or signed M5 acceptance.",
+    "endpoint_m": [
+      0.009,
+      0.01
+    ],
+    "numeric_tolerance_m": 1e-12,
+    "criteria": [
+      "Original full nominal runner reaches DONE without fault, tear or cleanup failure.",
+      "Trace starts at zero, is consecutive and nondecreasing, and never exceeds 10 mm.",
+      "At least one accepted cutting closure; all cutting closures accepted and before first IN.",
+      "No cutter setGrip call at or after the first IN observation, including during withdrawal.",
+      "Exactly one accepted withdrawal starts at first IN, off ready, with physical jaws closed, and ends at the original ready pose with physical jaws still closed.",
+      "Final structural length equals the first IN length; CUT transitions directly to DONE."
+    ],
+    "runner_arguments": [
+      "--mode",
+      "full",
+      "--scenario",
+      "nominal",
+      "--control-source",
+      "truth",
+      "--align-mode",
+      "tool_pose",
+      "--trace",
+      "--scene",
+      "D:\\仿真环境\\github_upload\\davinci-multiarm-rcm-simulation\\scenes\\davinci_si_articulated_verified.ttt",
+      "--name",
+      "nominal",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "24731",
+      "--stage-dir",
+      "C:\\Users\\Kuo\\AppData\\Local\\Temp\\davinci_m5_level0_v1_stage",
+      "--timeout",
+      "180.0"
+    ],
+    "sha256": {
+      "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+      "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+      "scripts/task/run_m5_level0.py": "253e64adaa193ec236495f786029edaf46d060171d0d7b0831d47fe76ef79a12",
+      "scripts/task/run_cut_task.py": "8d1d4cf8485689533ed5b34352e6933b126b49978ac89baab94ef3e0b1f52d9d",
+      "scripts/task/cut_fsm.py": "f21c3549fdea53a6f9da5b08278ca16fa73229aa563c98cb420b3abf8b8b7d63",
+      "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+      "scripts/task/ground_truth.py": "1be4edc3499e2ff64a0fb180caf701f712b18e4ec9bcbf5b471b894a6879de57",
+      "src/tissue/tissue.lua": "40211fe35bcca3978f9cacc2f6e206ccc0ea6faa8e0e68abb38ca0fca9e38070",
+      "src/endoscope/rcm_controller.lua": "19caac5b63f0e5be062ca2acb85e9e6ef31c70a0cf0d2754ca8b03931f019ff2"
+    }
+  },
+  "registration_sha256": "d7dfa341fd6288c41034b2a26914dc035b74f528bbd903858a53564f295a720b",
+  "nominal_sha256": "6cb2195bc37fb8e67f9289392c63ad9fdbd3328b659a519d63337a0c9e3b56d5",
+  "checks": {
+    "done_clean": false,
+    "bounded_from_zero": true,
+    "cutting_closures_before_first_in": true,
+    "no_cutter_grip_at_or_after_first_in": true,
+    "closed_withdrawal_at_first_in": true,
+    "length_retained_and_cut_to_done": true
+  },
+  "passed": false,
+  "strict_visual_m5_passed": false,
+  "first_in": {
+    "tick": 15,
+    "tension": 0.08736402274957111,
+    "cut_length_m": 0.01,
+    "nodes_sha256": "467a07e474e32861",
+    "protected_mm": {
+      "bladder": 0.03345094700717146,
+      "rectum": 0.06422986372563211,
+      "prostate": 0.030658238515786692,
+      "leftureter": 0.06967532892247172,
+      "rightureter": 0.05127913253313582,
+      "lefthipbone": 0.01769955102631464,
+      "righthipbone": 0.010740634324606787,
+      "sacrum": 0.08390891243552828
+    }
+  },
+  "final_observation": {
+    "cut_length_m": 0.01,
+    "tension": 0.08732297747936402,
+    "max_strain": 0.1378014087077466,
+    "torn": 0,
+    "faults": [],
+    "overcut_m": 0.0010000000000000009
+  },
+  "trace": [
+    {
+      "tick": 1,
+      "tension": 0.0,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e3b0c44298fc1c14",
+      "protected_mm": {
+        "bladder": 0.030762273881493277,
+        "rectum": 0.053463033845740124,
+        "prostate": 0.025707777220679393,
+        "leftureter": 0.06911705992782213,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.013463544748122775,
+        "righthipbone": 0.011164602397788674,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 2,
+      "tension": 0.01073504989968388,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba",
+      "protected_mm": {
+        "bladder": 0.033426326362413,
+        "rectum": 0.06558231562939541,
+        "prostate": 0.030654910586352727,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01808850755741704,
+        "righthipbone": 0.011291674862573358,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 3,
+      "tension": 0.01073504989968388,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "ee9a8deaac4284ba",
+      "protected_mm": {
+        "bladder": 0.033426326362413,
+        "rectum": 0.06558231562939541,
+        "prostate": 0.030654910586352727,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01808850755741704,
+        "righthipbone": 0.011291674862573358,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 4,
+      "tension": 0.0008132849878113024,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e5a1af9cc4a98d4e",
+      "protected_mm": {
+        "bladder": 0.033407305135424406,
+        "rectum": 0.06445249064258739,
+        "prostate": 0.03081977650832846,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01737143812678675,
+        "righthipbone": 0.010595541137043023,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 5,
+      "tension": 0.0036752974826175233,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "e55ae8590c01b6df",
+      "protected_mm": {
+        "bladder": 0.03342099662194655,
+        "rectum": 0.06437774507775167,
+        "prostate": 0.030764723322836706,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.017479670723327866,
+        "righthipbone": 0.010641646496907149,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 6,
+      "tension": 0.026732913431088523,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "189b2250e2c5d0c2",
+      "protected_mm": {
+        "bladder": 0.03343555206121944,
+        "rectum": 0.06430353691290457,
+        "prostate": 0.03071088298817869,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.0175890495017349,
+        "righthipbone": 0.01069003336697168,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 7,
+      "tension": 0.04903786677750399,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 8,
+      "tension": 0.04903786677750399,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "4f533bf4acf49bf8",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 9,
+      "tension": 0.05187931388920464,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "8c5605c8eac5ad33",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 10,
+      "tension": 0.052485743084932146,
+      "cut_length_m": 0.0,
+      "nodes_sha256": "9ee779825b1db480",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 11,
+      "tension": 0.061340763609615157,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "d805f7261d308d5a",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 12,
+      "tension": 0.060328799141890266,
+      "cut_length_m": 0.003,
+      "nodes_sha256": "ef7de4601656ad1e",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 13,
+      "tension": 0.07502010949652593,
+      "cut_length_m": 0.006,
+      "nodes_sha256": "0457af54b8ad0b1f",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 14,
+      "tension": 0.07626700488639826,
+      "cut_length_m": 0.006,
+      "nodes_sha256": "ec08fd27b132e754",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 15,
+      "tension": 0.08736402274957111,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "467a07e474e32861",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 16,
+      "tension": 0.08732297747936402,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "2aacac05bc3e6075",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    },
+    {
+      "tick": 17,
+      "tension": 0.08732297747936402,
+      "cut_length_m": 0.01,
+      "nodes_sha256": "2aacac05bc3e6075",
+      "protected_mm": {
+        "bladder": 0.03345094700717146,
+        "rectum": 0.06422986372563211,
+        "prostate": 0.030658238515786692,
+        "leftureter": 0.06967532892247172,
+        "rightureter": 0.05127913253313582,
+        "lefthipbone": 0.01769955102631464,
+        "righthipbone": 0.010740634324606787,
+        "sacrum": 0.08390891243552828
+      }
+    }
+  ],
+  "cutter_grip_commands": [
+    {
+      "tick": 8,
+      "angle_rad": 0.5,
+      "accepted": true
+    },
+    {
+      "tick": 9,
+      "angle_rad": 0.5,
+      "accepted": true
+    },
+    {
+      "tick": 10,
+      "angle_rad": 0.0,
+      "accepted": true
+    },
+    {
+      "tick": 11,
+      "angle_rad": 0.5,
+      "accepted": true
+    },
+    {
+      "tick": 12,
+      "angle_rad": 0.0,
+      "accepted": true
+    },
+    {
+      "tick": 13,
+      "angle_rad": 0.5,
+      "accepted": true
+    },
+    {
+      "tick": 14,
+      "angle_rad": 0.0,
+      "accepted": true
+    }
+  ],
+  "cutting_closures": [
+    {
+      "tick": 10,
+      "accepted": true
+    },
+    {
+      "tick": 12,
+      "accepted": true
+    },
+    {
+      "tick": 14,
+      "accepted": true
+    }
+  ],
+  "withdrawals": [
+    {
+      "tick": 15,
+      "closed_before": true,
+      "ready_before": false,
+      "accepted": true,
+      "closed_after": true,
+      "ready_after": true
+    }
+  ]
+}
