@@ -1,0 +1,16 @@
+{
+  "id": "m5_v3_sensor_margin_calibration_v1",
+  "scope": "Offline only. Use both work exposures of the uncut readonly_v4 acquisition and all 70-degree work exposures of positive_outer_v2 nominal. Exclude the previous fifth-bite trajectory and all final outcome labels from the calibration and seed choice.",
+  "sources": {
+    "validation/task/m5_v3_readonly_v4/decision.json": "629f0b0a7352de2371abf6e74336c16939171b23fd6391b461233fa06a625545",
+    "validation/task/m5_v3_positive_outer_v2/decision.json": "7be12dde4b1d4b88be09b6d13814ab2103d0344ca2ab02416157fc96183cc6d6",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672"
+  },
+  "depth_sigmas_m": [0.0, 0.0005],
+  "development_seeds": [6100, 6101, 6102, 6103, 6104, 6105, 6106, 6107, 6108, 6109, 6110, 6111],
+  "check_seeds": [6120, 6121, 6122, 6123, 6124, 6125, 6126, 6127, 6128, 6129, 6130, 6131],
+  "noise": "Independent Gaussian optical-axis depth noise on the same full RGB-D array for both the outer-bank work reader and ray marker estimator. SeedSequence([seed, case_id, tick]); case_id 0 for readonly and 1 for outer_v2. No RGB, camera or q changes. Record refusals explicitly. Seed splits are not independent physical scenes.",
+  "reference": "A true longitudinal calibration needs an independently bounded, same-state 3D midpoint of loaded material row 10 (center seam columns 11/12, zero based), plus independent cutter reference. The joint FK translation with held-out errors is an independent tip comparison for diagnosis. Unloaded fixture coordinates, outer-bank extrapolation, beam travel inferred from an outcome, post-move narrow images, and a lone central cap are not registered 3D midpoint references. Audit cap support and face transitions for reference visibility without using them as truth.",
+  "metric": "One-sided distance optimism on each estimated axis d: e = dot((limit - tip_opt) - (row10_ref - tip_ref), d), adding the longitudinal reference uncertainty envelope. Score late frames only when the limit is row 10; early conservative row 8-or-earlier readings are reported separately and do not qualify for a smaller bound by comparison with row 10. As diagnostics only, compute tip optimism dot(tip_fk - tip_opt, d), the direct noise-induced clearance change relative to the raw estimate, and the change with the raw axis held fixed.",
+  "qualification": "For certified references only: clean intercept is the maximum positive development e including reference uncertainty, rounded upward to 0.01 mm; noisy coefficient is the maximum nonnegative excess over that intercept divided by 0.5 mm and rounded upward to 0.1. The check split must be contained by the frozen envelope, not used to refit it. These empirical results are bounded to the registered domain, not a universal bound on Gaussian noise. If there is no independently validated reference for both closed and open late exposures, or this procedure cannot qualify a smaller envelope, do not replace the existing 0.250 mm, create an executable positive protocol, or run cutting. Diagnostic deltas and refusal rates do not qualify a bound."
+}

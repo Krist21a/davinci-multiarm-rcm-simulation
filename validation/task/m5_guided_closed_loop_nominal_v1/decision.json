@@ -1,0 +1,73 @@
+{
+  "predictions_sha256": "8cbb7c3c5ee187cf16e5c148857193171473375660ee20d24d6b1ca85f7b889d",
+  "passed": true,
+  "checks": {
+    "runtime_ok": true,
+    "terminal_done_closed_ready": true,
+    "strict_truth_purposes": true,
+    "bounded_structure": true,
+    "safety_clean": true,
+    "guarded_closures_and_reacquisitions": true,
+    "fresh_below_then_fresh_target": true,
+    "same_frame_replay_and_fixed_ecm": true,
+    "single_third_advance_with_native_reserve": true,
+    "guarded_closed_reverse": true,
+    "one_current_permit_withdrawal": true
+  },
+  "final_state": "DONE",
+  "reason": "cut length 9.0 mm reached; scissors retracted",
+  "terminal_structure": {
+    "prefix_rows": 9,
+    "farthest_row_end": 9
+  },
+  "peak_m": 0.009000000000000001,
+  "final_m": 0.009000000000000001,
+  "closures": [
+    29,
+    35,
+    44
+  ],
+  "reacquired": [
+    31,
+    36,
+    45
+  ],
+  "actual_closed": true,
+  "actual_ready": true,
+  "optical": [
+    {
+      "event": "nominal_live_optical_review",
+      "tick": 40,
+      "phase": "continue",
+      "file": "040_certificate.npz",
+      "frame_sha256": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d",
+      "verdict": "BELOW",
+      "prefix_mm": 7,
+      "decision_reason": "",
+      "optically_permitted": true
+    },
+    {
+      "event": "nominal_live_optical_review",
+      "tick": 47,
+      "phase": "withdraw",
+      "file": "047_certificate.npz",
+      "frame_sha256": "ba606a9a62d78b11cfb21f07368ef8abc60b10a2b4f3ab731473e04a06ef7787",
+      "verdict": "TARGET",
+      "prefix_mm": 9,
+      "decision_reason": "",
+      "optically_permitted": true
+    }
+  ],
+  "withdrawal": [
+    {
+      "event": "nominal_guarded_withdrawal",
+      "tick": 47,
+      "attempt": 1,
+      "ready_before": false,
+      "ready_after": true,
+      "closed_after": true,
+      "accepted": true
+    }
+  ],
+  "perturbations_tested": false
+}

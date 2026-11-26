@@ -1,0 +1,27 @@
+{
+  "plan": {
+    "id": "m5_guided_ahead_window_v1",
+    "scope": "Offline opt-in working-view candidate only. No change to frozen sources, actual controller selection, endpoint reader, or acceptance.",
+    "pins": {
+      "validation/task/m5_guided_slip_terminal_trace_v1/registration.json": "5fdbd2222c7ef5942d04c451dc068762d99ced344c3f6434d8db298e2f4969ed",
+      "validation/task/m5_guided_slip_terminal_trace_v1/diagnosis.json": "f8749fcdee20701edc123861a72397c424c6949e2e623ec36bc706deff66dc81",
+      "validation/task/m5_guided_slip_terminal_trace_v1/window_boundary.json": "2c24c9644456eda6ef761e9813432cded36304234fb15f76348d4ad38e75cde2",
+      "scripts/vision/m5_guided_entry_bin_v1.py": "ff948f383b0f371f9645222f65ed9e33175a768d969325f34b6fac5880f6d2b8"
+    },
+    "rule": "Keep native seen, foreground and sheet guards. Use the same half-open window as the material check. Retain a veto for any existing occupied bin at or beyond the original guarded first bin if at least one of its native contributing rays lies inside the window; never count a bin with no in-window contributor. Retain even a single in-window ray of a mixed occupied bin as a conservative veto. Apply the same predicate to candidate proof and lateral scan recovery.",
+    "gate": "Reproduce all 28-30 native estimates with exact captured state; then require full unchanged 28 and 29 estimates and direct current slit or bank_slit on tick 30 with valid tool and material mapping, never memory. Compare physical and working chart labels only offline and report disagreement. Synthetic tests must cover wholly out-of-window bins at both ends, boundary equality, mixed bins with retained in-window deep or missing support, and intact material/foreground failures. This candidate does not prove an endpoint, authorize any motion, or change the 1/4 matrix."
+  },
+  "source_run_registration_sha256": "5fdbd2222c7ef5942d04c451dc068762d99ced344c3f6434d8db298e2f4969ed",
+  "sources": {
+    "config/task/m5_guided_ahead_window_v1.json": "58e4c6845e622ea1b92e1793ac9a5f0b7bc6a36c09917686fed6cfab4249fb73",
+    "scripts/analysis/replay_m5_guided_ahead_window_v1.py": "2f3a0b5a2da80bacd6694e2dd65d3cf9281350b47438d7df70deb82590fad292",
+    "scripts/analysis/audit_m5_guided_slip_terminal_trace_v1.py": "f1b5d5f5ce45fd51accd0cb060a020b5aea11e17e7cca222a2efabdd52eb2281",
+    "scripts/vision/m5_guided_ahead_window_v1.py": "f27d44284c42cb5b81cebe5463f77bb8dd320da2faacd1d813f93f32acd26345",
+    "scripts/tests/test_m5_guided_ahead_window_v1.py": "4252ced7a82205eff8c828eab7dea683fdb085321f84e8916fa002f50aacac2a"
+  },
+  "frames": {
+    "28": "ea7e710a79b1220b542a68b0be23fde0c8ceffa864f6d8d4a72970ae83ba6728",
+    "29": "c023910ad77fa71c667f8d5f53d91ac0ccc535e660a950dc697208d266220327",
+    "30": "8362b8157b2976e346519259024d702670695149b6d475291aed742363206574"
+  }
+}

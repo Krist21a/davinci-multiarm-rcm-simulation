@@ -1,0 +1,489 @@
+{
+  "protocol": {
+    "id": "m5_v3_distal_workspace_v1",
+    "scope": "Offline distal workspace model only. No controller calls, proximal IK, physical interval readbacks, collision tests, scene changes or motion authorization.",
+    "ray_decision_sha256": "e8ece6c7cb6caafc0d6833f40a5dbac8f773d010ddf9bc2364f243942d348cb4",
+    "ray_registration_sha256": "745fc16f383caf96054d43201079523fa4df7e6961b3a17cc39be637073ae293",
+    "tool": "420179",
+    "calibration": "All six closure TCP rotations/positions and their immediately previous accepted cut-advance commands. Fit only one scalar: the median pitch-pivot distance from RCM minus insertion, using the installed dVRK wrist transforms and recorded wrist yaw.",
+    "validation": "All six distinct pre-advance readbacks in the same two archives, paired to the latest earlier confirmed closed ALIGN tool command. Require every reconstruction within 0.01 degrees shaft yaw/pitch, 0.01 mm insertion and 0.001 radians wrist pitch/yaw. These are within-archive model checks, not independent scene validation.",
+    "screen": "Use predecessor's frozen row center and approach/backoff samples, both original views, the three corresponding closed-blade TCP rotations per view, and the same 0/3/4/5 mm positive transverse_x translations and independent +/-0.5 mm perturbations. Hold each TCP rotation fixed exactly; solve the distal shaft line and wrist angles from the closed-tip geometry. Require modeled shaft, insertion and wrist limits with native margins, plus yaw in [-2.5,+1.0] degrees. Do not infer scene reachability from this screen.",
+    "checks": {
+      "shaft_deg": 0.01,
+      "insertion_m": 1e-05,
+      "wrist_rad": 0.001
+    }
+  },
+  "sources": {
+    "config/task/m5_v3_distal_workspace_v1.json": "adec0976d9815f22510fda5204d7b931af317ff045a26408c6d3d3e33d446ccc",
+    "scripts/analysis/screen_m5_v3_distal_workspace_v1.py": "df9efded8ab2bd5decb7002ee5727a6612123321b0f80c17c8c46ab0d675a9d7",
+    "validation/task/m5_v3_yaw_screen_v1/decision.json": "e8ece6c7cb6caafc0d6833f40a5dbac8f773d010ddf9bc2364f243942d348cb4",
+    "validation/task/m5_v3_yaw_screen_v1/registration.json": "745fc16f383caf96054d43201079523fa4df7e6961b3a17cc39be637073ae293",
+    "scripts/build/instruments.py": "8bf1da77bb21bdb40646734d6201f37459d1185415017d4bc4a2186d541ff453",
+    "scripts/build/articulation.py": "208aec7e0bae0e94b3907671b04859494a0c723b75cd79fc4d1ab9ac72e5f9da",
+    "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+    "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/wrist_pitch/wrist_pitch_0091.urdf.xacro": "1251eb7274ce583e8a08ae2c24945f222dbdfe66a6950a4206c3666425f5fbd8",
+    "models/meshes/instrument/dvrk/meshes/instruments/wrist_pitch/0091/wrist_pitch_0091.obj": "a0fbe4dffaa3561b42f1b50019b9fcecab9308298a5592df917bea38b5ac8390",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/wrist_yaw/wrist_yaw_0091.urdf.xacro": "ec297ba7807366eb4e1766591d0b72b05f0757878d204aaf15ef7780de095cb9",
+    "models/meshes/instrument/dvrk/meshes/instruments/wrist_yaw/0091/wrist_yaw_0091.obj": "9a6b64b0ce58833b0bbfa8be57e577dcece4425781bb0962ce242f8f3105bf8f",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/tip/tip_179.urdf.xacro": "f6304059cdb9e00e6c97c2430aae85354e372f9479faa4e7db7b162a6776ad90",
+    "models/meshes/instrument/dvrk/meshes/instruments/tip/179/tip_179_1.obj": "26806f6cd70515e7a9619ef8367c2aef987c4b59a5d04ce374c0dac8c7fc76fc",
+    "models/meshes/instrument/dvrk/meshes/instruments/tip/179/tip_179_2.obj": "3590e1dba0651bd835ef15e6c620872ef9749fdf78edb4a02c7cf963417c72d2"
+  },
+  "samples": [
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 8,
+      "command_tick": 7,
+      "command": [
+        -4.091321201442805,
+        -3.798166411787324,
+        0.019654909901921386,
+        -0.13794204931743909,
+        0.030627353941762747,
+        5.622133893373132e-05
+      ],
+      "tcp": [
+        [
+          -0.9143560057988602,
+          0.3053765068567122,
+          -0.2658914886180969,
+          -0.0747552619145173
+        ],
+        [
+          -0.12612285526020112,
+          0.4092027216740014,
+          0.9036847669157672,
+          -0.9980617346339669
+        ],
+        [
+          0.38476761823283606,
+          0.8598245877122742,
+          -0.3356420091777077,
+          0.6992358953113254
+        ]
+      ],
+      "sha256": "dd938f0219358c129bd782aef857c871da222722cb53bb86e9c146106434954b",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/008_closure1.npz"
+    },
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 14,
+      "command_tick": 13,
+      "command": [
+        -3.712543082871699,
+        -3.7536368102613635,
+        0.0227211769333484,
+        -0.13656466804416015,
+        0.024083260011073974,
+        1.3706486343314239e-05
+      ],
+      "tcp": [
+        [
+          -0.914361559101396,
+          0.3052292148506871,
+          -0.2660414735324136,
+          -0.07521030830717051
+        ],
+        [
+          -0.12604990173454605,
+          0.4098239551283025,
+          0.9034133871466078,
+          -0.9952531084638186
+        ],
+        [
+          0.3847783277555742,
+          0.8595809747805198,
+          -0.3362531580297736,
+          0.697985896046887
+        ]
+      ],
+      "sha256": "04175d48d04bb1dc9094f6230cea9abc671f63e83a6b09f6cddb06c5728ac609",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/014_closure2.npz"
+    },
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 24,
+      "command_tick": 23,
+      "command": [
+        -2.8862515148145556,
+        -3.8080297947644546,
+        0.024538025094783315,
+        -0.13348934678445246,
+        -0.03681885075043794,
+        -0.0003871450711684501
+      ],
+      "tcp": [
+        [
+          -0.9008714060145715,
+          0.3058652172306472,
+          -0.3080213932728986,
+          -0.07561726324864174
+        ],
+        [
+          -0.16776690069902878,
+          0.4091204842501752,
+          0.8969251342206572,
+          -0.9934924204527015
+        ],
+        [
+          0.4003560625932507,
+          0.8596900012535629,
+          -0.3172508863493968,
+          0.6974315373572582
+        ]
+      ],
+      "sha256": "532367c7841f8a1e09b2d009460ab0665a2ec46386270b142a0720d2d330f02d",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/024_closure3.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 7,
+      "command_tick": 5,
+      "command": [
+        -4.168357875529836,
+        -3.7996280581469355,
+        0.016656441716155372,
+        -0.13820754607689395,
+        0.03196636276666837,
+        5.8598031465112054e-05
+      ],
+      "tcp": [
+        [
+          -0.9143597208101897,
+          0.3053633350927048,
+          -0.26589384073530814,
+          -0.07396120041763116
+        ],
+        [
+          -0.12613127331408291,
+          0.4092004608360189,
+          0.9036846157502949,
+          -1.0007733290602656
+        ],
+        [
+          0.3847560302998266,
+          0.8598303416562192,
+          -0.33564055284674565,
+          0.7002443888743902
+        ]
+      ],
+      "sha256": "0806fe158941135f80ed8904652c36e478e0bf94530fb71f181de3e565a7fcae",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/007_advance1.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 13,
+      "command_tick": 11,
+      "command": [
+        -3.7705277181082812,
+        -3.7548052971810844,
+        0.019722117128200125,
+        -0.13676217210355282,
+        0.025091232160928775,
+        1.43367432194055e-05
+      ],
+      "tcp": [
+        [
+          -0.9143586755944535,
+          0.3052362063982734,
+          -0.26604336238430626,
+          -0.07441492042162104
+        ],
+        [
+          -0.12604857180911028,
+          0.4098250585446135,
+          0.9034130721512654,
+          -0.9979637596024861
+        ],
+        [
+          0.3847856155186161,
+          0.8595779660347831,
+          -0.33625250987533883,
+          0.6989958115542785
+        ]
+      ],
+      "sha256": "383d42997019d76b18b46973009293e3a994ea7c63ba0f2098085fc2b0fba0bf",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/013_advance2.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 23,
+      "command_tick": 21,
+      "command": [
+        -2.83014441082933,
+        -3.807359874771246,
+        0.02253945712029301,
+        -0.13330310015512462,
+        -0.03779400706810987,
+        -0.0003961872746039399
+      ],
+      "tcp": [
+        [
+          -0.9008705562496195,
+          0.3058695399433641,
+          -0.3080195860937036,
+          -0.07499947399400772
+        ],
+        [
+          -0.1677632331255308,
+          0.4091210856769504,
+          0.8969255458876073,
+          -0.9952859718698832
+        ],
+        [
+          0.40035951155651406,
+          0.8596881770673297,
+          -0.3172514770917252,
+          0.6980652912297322
+        ]
+      ],
+      "sha256": "20c843ee52a03afa1da0e53ab5bb3d51ecd89463796167363effe9e5c0f02744",
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/023_advance3.npz"
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 8,
+      "command_tick": 7,
+      "command": [
+        -4.370533725809174,
+        -3.783418435653034,
+        0.019702832909508364,
+        -0.13894915058537427,
+        0.051521410005384835,
+        0.0005151816643645639
+      ],
+      "tcp": [
+        [
+          -0.9185348560805926,
+          0.3053050899170096,
+          -0.2511623384103821,
+          -0.07477306672362519
+        ],
+        [
+          -0.111659061200287,
+          0.40909430736966024,
+          0.9056346403101023,
+          -0.9980673433217905
+        ],
+        [
+          0.37924394816117396,
+          0.8599015349146113,
+          -0.341677301023378,
+          0.6992120286369183
+        ]
+      ],
+      "sha256": "af265426ce6890ae725093236abfda2f4f90d7cfb9b3cbaefd6f9f9dda7814f2",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/008_closure1.npz"
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 14,
+      "command_tick": 13,
+      "command": [
+        -3.850074588692335,
+        -3.8121852373210148,
+        0.0227658783988294,
+        -0.1372239042015435,
+        0.042200907741928514,
+        -0.0011288647468170256
+      ],
+      "tcp": [
+        [
+          -0.9184512683574031,
+          0.30511418352800457,
+          -0.2516994292061817,
+          -0.07504242266221578
+        ],
+        [
+          -0.11187802535297191,
+          0.4099677291343635,
+          0.9052125543271775,
+          -0.995188281900322
+        ],
+        [
+          0.37938183284891003,
+          0.8595532537768981,
+          -0.3423998084487634,
+          0.697990702764387
+        ]
+      ],
+      "sha256": "0a603891294737dc96a061fdcd8830bf367f9f54cfc48d3c7c288275a3af75fb",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/014_closure2.npz"
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 24,
+      "command_tick": 23,
+      "command": [
+        -3.7748404264169166,
+        -3.7681201045703583,
+        0.02471262334506416,
+        -0.13638082522478265,
+        0.03626407177513695,
+        0.0004228030197907744
+      ],
+      "tcp": [
+        [
+          -0.9171283446134897,
+          0.3057725476983785,
+          -0.2556926838620191,
+          -0.07562428349641373
+        ],
+        [
+          -0.11585034736599599,
+          0.4093080235613211,
+          0.9050114026151841,
+          -0.9934482116345247
+        ],
+        [
+          0.38138470934438057,
+          0.8596336957811552,
+          -0.33996413421997085,
+          0.6973045335228573
+        ]
+      ],
+      "sha256": "67dd44946ba43efc1ef317657a5aed821fa6b878ec164f9324e804888300ebea",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/024_closure3.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 7,
+      "command_tick": 5,
+      "command": [
+        -4.5,
+        -3.7849338086604654,
+        0.016707163028824454,
+        -0.1393958023316155,
+        0.053771502047909626,
+        0.000535327750682099
+      ],
+      "tcp": [
+        [
+          -0.9185388574177109,
+          0.30528980623474866,
+          -0.2511662828146261,
+          -0.07402567450404077
+        ],
+        [
+          -0.11167012699218451,
+          0.40909161079171863,
+          0.9056344939971018,
+          -1.0007851476163143
+        ],
+        [
+          0.3792309984050836,
+          0.8599082440522284,
+          -0.34167478932414275,
+          0.7002396323569331
+        ]
+      ],
+      "sha256": "19fdefcfea92dc0d6d01b45553876ce5bc56d9ef50c62af4b06f458117b21084",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/007_advance1.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 13,
+      "command_tick": 11,
+      "command": [
+        -3.95155559058247,
+        -3.8166874995687055,
+        0.01976877298504095,
+        -0.13757942939634205,
+        0.04396554544280411,
+        -0.001170553683108474
+      ],
+      "tcp": [
+        [
+          -0.9184535905996505,
+          0.3051046834745788,
+          -0.2517024712562189,
+          -0.0742920644107448
+        ],
+        [
+          -0.11188553347713544,
+          0.4099659614640523,
+          0.9052124269139219,
+          -0.9979045407775742
+        ],
+        [
+          0.3793739966222611,
+          0.8595574690285301,
+          -0.3423979090533713,
+          0.6990200575438541
+        ]
+      ],
+      "sha256": "97f9896a812accb0ce2634e8720f10b2cc7597b90bc9fdbf000e950813547083",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/013_advance2.npz"
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 23,
+      "command_tick": 21,
+      "command": [
+        -3.8299766083781237,
+        -3.7687104637603612,
+        0.0227140042194814,
+        -0.13656757790259785,
+        0.037222386336723555,
+        0.0004328583964621816
+      ],
+      "tcp": [
+        [
+          -0.9171261032832962,
+          0.30577777168312076,
+          -0.2556944759295779,
+          -0.0751146340503119
+        ],
+        [
+          -0.11584970051465987,
+          0.40930887235293445,
+          0.9050111015362369,
+          -0.9952584937712144
+        ],
+        [
+          0.3813902955858471,
+          0.8596314334397471,
+          -0.33996358786679726,
+          0.6979851706093769
+        ]
+      ],
+      "sha256": "48476208353f4d8712b4f8c06c717ecaf5840133bb9349475620b0ba736269df",
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/023_advance3.npz"
+    }
+  ],
+  "limit_order": [
+    "yaw_deg",
+    "pitch_deg",
+    "ins_m",
+    "wrist_pitch_rad",
+    "wrist_yaw_rad"
+  ],
+  "soft_low": [
+    -4.5,
+    -4.5,
+    0.001,
+    -1.37626,
+    -1.37626
+  ],
+  "soft_high": [
+    4.5,
+    4.5,
+    0.044,
+    1.37626,
+    1.37626
+  ]
+}

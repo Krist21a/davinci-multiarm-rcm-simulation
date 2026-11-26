@@ -1,0 +1,120 @@
+{
+  "protocol": {
+    "id": "m5_v3_yaw_screen_v1",
+    "scope": "Pure offline psm2 kinematic screening for the existing non-anatomical sheet. No FK RPC, collision check, actuation, scene edit, or optical qualification.",
+    "alignment_capture_sha256": "e71329a722ae8c673dc8679d78639cfb87ba3d947efdbd41a9d5ce0712228749",
+    "rcm": "config/instruments/rcm_config.json",
+    "rcm_sha256": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+    "views": [
+      "original",
+      "plus3"
+    ],
+    "shift_mm": [
+      0,
+      3,
+      4,
+      5
+    ],
+    "direction": "Positive psm2 transverse_x from the scene's registered RCM configuration, same world-space translation for the whole specimen.",
+    "target_sampling": "Both sealed loaded align1 sheets: sample the midpoints of material columns 11 and 12 at rows 0 through 10, plus the 1 mm approach and 3 mm review backoff at the original entry and row 10. Retain the chosen material directions. Evaluate nominal plus +/-0.5 mm deterministic offsets on each of transverse_x, transverse_y, and axis_home independently. Not a simulated noise trial.",
+    "screen": "Report the literal RCM-to-point ray and a translated calibrated ray carrying the angular offset between matched recorded shaft commands and TCP rays. Use only capture ticks immediately following accepted closed-alignment or cut-advance commands. Calibrated yaw is a sensitivity estimate, not full wrist IK; cross-check spread on each view before reporting margin. Coarse candidate requires all perturbed yaw estimates inside [-2.5,+1.0] degrees and pitch inside unchanged native soft interval; do not promote a ray result to tool-pose, grasp, optics or path feasibility."
+  },
+  "sources": {
+    "config/task/m5_v3_yaw_screen_v1.json": "906d5900078d6675c9ecf038cb51f5b76bdecb33c232ee933d8139d26b1c6ca2",
+    "scripts/analysis/screen_m5_v3_yaw_v1.py": "b265c7b8e95c1b6b6e992fd704865cf76eb780a4537d4f08787f43c3e1a5b30e",
+    "validation/task/m5_guided_alignment_capture_v2_5/decision.json": "e71329a722ae8c673dc8679d78639cfb87ba3d947efdbd41a9d5ce0712228749",
+    "config/instruments/rcm_config.json": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+    "scripts/task/tool_pose.py": "bd39e8533c66607f6d2c04c524d3f49e5174caca64fca4e684b564a6fc942f78",
+    "config/rcm_config.json": "c576471f18d61920f22afaa19f8e0defd1fb8ebb0a58cd033008f254642ebf80",
+    "src/endoscope/rcm_controller.lua": "19caac5b63f0e5be062ca2acb85e9e6ef31c70a0cf0d2754ca8b03931f019ff2",
+    "scripts/analysis/replay_cell_v2.py": "8fb72b7d988fd7ed7da4e4e1f34f46dec8a70d03197024039db52d06f719cb61",
+    "validation/task/m5_guided_alignment_capture_v2_5/original/registration.json": "520c157f53fc849a27d248e0181bc63f4ad826c44ba1030178c1876e68399759",
+    "validation/task/m5_guided_alignment_capture_v2_5/original/nominal.json": "dffd7dbd90eedb0bd680b7929d38e3aaf83296cae39d128d5c4d76a188a8f127",
+    "validation/task/m5_guided_alignment_capture_v2_5/plus3/registration.json": "81e92a5b85e18a26ca66b59816980514b7530bb8fe1fd701a6d52488af3d1f53",
+    "validation/task/m5_guided_alignment_capture_v2_5/plus3/nominal.json": "3a6b0618cb2a798fa13c62672baf45d5409d7ed900bd2dd20b1e171ba787a4d4"
+  },
+  "frames": [
+    {
+      "view": "original",
+      "stage": "align1",
+      "tick": 5,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/005_align1.npz",
+      "sha256": "ba065c1571b6b3f9c92c1d2ee6f6a510e72abf0cf134e8c06d356ac58204f04f"
+    },
+    {
+      "view": "original",
+      "stage": "closure1",
+      "tick": 8,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/008_closure1.npz",
+      "sha256": "dd938f0219358c129bd782aef857c871da222722cb53bb86e9c146106434954b"
+    },
+    {
+      "view": "original",
+      "stage": "closure2",
+      "tick": 14,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/014_closure2.npz",
+      "sha256": "04175d48d04bb1dc9094f6230cea9abc671f63e83a6b09f6cddb06c5728ac609"
+    },
+    {
+      "view": "original",
+      "stage": "closure3",
+      "tick": 24,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/024_closure3.npz",
+      "sha256": "532367c7841f8a1e09b2d009460ab0665a2ec46386270b142a0720d2d330f02d"
+    },
+    {
+      "view": "plus3",
+      "stage": "align1",
+      "tick": 5,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/005_align1.npz",
+      "sha256": "c180727484b8ad016b49eb1d4b890645e4810936a6e867f43562bdd274a76ddd"
+    },
+    {
+      "view": "plus3",
+      "stage": "closure1",
+      "tick": 8,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/008_closure1.npz",
+      "sha256": "af265426ce6890ae725093236abfda2f4f90d7cfb9b3cbaefd6f9f9dda7814f2"
+    },
+    {
+      "view": "plus3",
+      "stage": "closure2",
+      "tick": 14,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/014_closure2.npz",
+      "sha256": "0a603891294737dc96a061fdcd8830bf367f9f54cfc48d3c7c288275a3af75fb"
+    },
+    {
+      "view": "plus3",
+      "stage": "closure3",
+      "tick": 24,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/024_closure3.npz",
+      "sha256": "67dd44946ba43efc1ef317657a5aed821fa6b878ec164f9324e804888300ebea"
+    }
+  ],
+  "basis_world": [
+    [
+      -0.24659852723078676,
+      0.8797495902408088,
+      -0.4064847166115064
+    ],
+    [
+      0.930520231961339,
+      0.0977483007530264,
+      -0.35295519207189996
+    ],
+    [
+      -0.2707789952677697,
+      -0.4652804833334683,
+      -0.8427293797837787
+    ]
+  ],
+  "rcm_world_m": [
+    -0.048448429529702866,
+    -1.0851640378533396,
+    0.7313999960021021
+  ],
+  "soft_limits_deg": [
+    4.5,
+    4.5
+  ]
+}

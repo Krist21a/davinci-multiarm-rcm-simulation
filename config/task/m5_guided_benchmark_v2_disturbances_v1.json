@@ -1,0 +1,21 @@
+{
+  "id": "m5_guided_benchmark_v2_disturbances_v1",
+  "scope": "Four once-only runs of the frozen generic v2 controller on the non-anatomical guided sheet. The terminal-only exact-10-mm path is prerequisite evidence, not imported control.",
+  "pins": {
+    "validation/task/m5_guided_benchmark_v2/decision.json": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+    "validation/task/m5_guided_benchmark_v2/registration.json": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+    "validation/task/m5_guided_10mm_terminal_online_v1/decision.json": "050ca49b3fe938e0eb68b2faac832cc92a0896a9705729172e14cc512b7f2420",
+    "validation/task/m5_guided_10mm_terminal_online_v1/registration.json": "164b114edf32648f021d379247bce279cb1ace8cde2e4b7e8ba301f935f09c62",
+    "scripts/task/m5_guided_controller_v2.py": "688c6c38541e084d7e845a5eab547f58f0e6caf16e309e8d89df641d1efb98e7",
+    "config/task/m5_live_same_bite_v1.json": "f779b3755ea7f21948bc3950575b94a945f92d4ccb869ac0833965265204b7ff"
+  },
+  "cases": {
+    "depth_noise_0p5": ["nominal", 0.0005, 1],
+    "occlusion_transient": ["occlusion_transient", 0.0, 0],
+    "slip_regrasp": ["slip_regrasp", 0.0, 0],
+    "relax": ["relax", 0.0, 0]
+  },
+  "injection": "Use original scenario_events: occluder ticks 6 to 8, primary hold release at tick 13, and registered 0.5 mm inward retractor command at tick 11. Use registered seed and sigma in both working and certificate images. Log observed coverage separately from configured coverage.",
+  "execution": "One attempt per case, in listed order, each from a fresh scene. Use exactly GuidedWorldV2 and GuidedFSMV2, 9 mm target plus existing 1 mm maximum, original 3/3 shared camera budget, scoped truth and reserve. No recovery amendment, threshold change, exact-10-mm variant, or replacement. Continue after a recorded protective refusal; stop launching new cases on unhandled runtime or simulator cleanup failure.",
+  "gate": "Seal measured live optical replay before loading independent constraint labels. Each case requires exercised disturbance, fresh visual closure evidence, ordered fresh reacquisitions, current measured TARGET(9 or 10) with no wrong-known online prediction, exactly one guarded same-tick closed withdrawal, independently scored exact matching structural prefix within 9 to 10 mm and farthest damage at most 10 mm with no terminal growth, no fault, tear, runtime, perception or cleanup error, and physically closed measured ready at DONE. No override for UNKNOWN or lack of evidence. Report incomplete or refused cases individually, without counting protective refusal as a pass."
+}

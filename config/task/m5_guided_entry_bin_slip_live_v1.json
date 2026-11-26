@@ -1,0 +1,14 @@
+{
+  "id": "m5_guided_entry_bin_slip_live_v1",
+  "scope": "One isolated development validation of the deterministic entry-grid candidate under registered slip_regrasp. Not a replacement for matrix v1.",
+  "pins": {
+    "validation/task/m5_guided_entry_bin_v1/decision.json": "b479a7e19ffdc44017bee184cc587103b776321f7ae0779625a5977e36b07062",
+    "validation/task/m5_guided_entry_bin_v1/registration.json": "4144dedc61169952b75629a182386d31ab02175226200935b892ce42188f19ba",
+    "validation/safety/regressions_m5_guided_entry_bin_v1.json": "bd193c972f485eb33d1cae69d77dcf1c5689a56928670e6a6f754d22df200147",
+    "validation/task/m5_guided_benchmark_v2_disturbances_v1/registration.json": "8322a349e5d2c4b604d9a1557d76c1418ee5edf36d9e8936c27da59868e69548",
+    "validation/task/m5_guided_benchmark_v2_disturbances_v1/slip_regrasp.json": "8713cbc413c5aa16bd2bd3f81532ce61848b9a586efa458236435df39b76929f"
+  },
+  "case": "slip_regrasp",
+  "procedure": "One fresh scene and original slip injection, same generic v2 controller and original mechanical, visual, sweep, reserve, camera and closure interlocks. Opt in to EntryBinPerception instead of the frozen default working estimator, preserving the native estimator metadata and reset lifecycle. Record estimator construction and actual advance return values without using those logs for decisions. Do not alter the endpoint reader or gain a retry, extra budget or nominal-only closure path.",
+  "gate": "First confirm slip at tick 13 on the primary hold, observed regrasp and ALIGN->CUT. Intermediate success requires accepted first advance and current direct same-frame front and tool at guarded first closure, followed by a fresh current slit. Full success also requires frozen measured endpoint agreement online and in sealed replay, exact matching independent 9 or 10 mm prefix and no farther damage than 10 mm, no growth across single closed ready-pose withdrawal, physically closed and ready at DONE, no fault, tear, overcut, or runtime/cleanup/perception errors. Distinguish first-advance success from full acceptance. Refusal or partial progress is a result, not a retry."
+}

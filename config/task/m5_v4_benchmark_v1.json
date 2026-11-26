@@ -1,0 +1,21 @@
+{
+  "id": "m5_v4_benchmark_v1",
+  "scope": "New guided non-anatomical benchmark. No retroactive changes to v3, original M5b, signed gates or default controller.",
+  "target_mm": 9,
+  "accepted_prefix_mm": [9, 10],
+  "absolute_full_and_partial_limit_mm": 10,
+  "max_closures": 5,
+  "reserve_m": 0.00015,
+  "cut_radius_m": 0.0003,
+  "sensor_margin": {"c0_m": 0.0, "k": 0.2},
+  "fixture": "m5_v3_frozen_fixture_v1; no bending or guide, loading, print or workspace changes",
+  "work": "Use v11 with FK v2. No extrapolation of noise qualification to different fixtures or optics.",
+  "review": "New views cannot be fused. Carry only an accepted optical material ordinal within the same run and specimen, never old pixel geometry or an old motion permit. Re-observe the last OPEN row, every new row, the terminal boundary and intact next row together. Preserve bank, face, bridge and width vetoes. Reject contradictory historical evidence. Each successful receipt binds the immediately following closure count and a fresh closed exposure. An UNKNOWN may use one preregistered guarded alternative ECM view per episode with the cutter stationary and closed; otherwise hold.",
+  "finish": "Fresh optical TARGET(9 or 10) permits only closed withdrawal. Independently require the matching structural prefix, full and partial extent <= 10, both terminal faces cut, no additional damage during withdrawal, accepted safe moves, zero tear/fault, original ready joint and jaw readback. No fixed bite sequence or exact-10 requirement. No structural truth, FK tip truth, bite count or scoring file may supply visual progress.",
+  "staging": "First qualify read-only view probe. Then independently preregister fresh nominal runs. Only then preregister the frozen nominal, depth_noise_0p5, occlusion_transient, relax and slip_regrasp matrix, its seeds, exposure/recovery budgets and exercises. Recovery invalidates all working geometry and needs fresh optical material registration. M6/M7 remain blocked. Neither this spec nor a diagnostic pass enables motion.",
+  "pins": {
+    "config/task/m5b_protocol.json": "4edb3cf377fb4c501d8b882b8f97da6e97ad8cd5b3b83714b1d1cd82b81dd403",
+    "config/task/m5_v3_positive_outer_v5.json": "b7d64ee8413bd785081d43f61b692c64319c828df1a420e97688c3dea2c8c839",
+    "config/task/m5_v3_frozen_fixture_v1.json": "ff31b2b02c6fa9e38754f889b56c6598899bf89f9e4e8d95de12d9913b367115"
+  }
+}

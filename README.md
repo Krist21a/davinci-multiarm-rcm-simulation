@@ -6,7 +6,7 @@
 
 ![Simulator](https://img.shields.io/badge/Simulator-CoppeliaSim_Edu_4.10-blue)
 ![Architecture](https://img.shields.io/badge/Architecture-3%C3%97PSM_%2B_1%C3%97ECM_(6--DOF_EndoWrist)-teal)
-![Offline Tests](https://img.shields.io/badge/Offline_Regressions-428_Passed-brightgreen)
+[![Offline Tests](https://img.shields.io/badge/M5--v4_Offline_Regressions-513_Passed-brightgreen)](validation/safety/regressions_m5_v4_hinge_closed_loop_v3_final.json)
 ![Dataset](https://img.shields.io/badge/RGB--D_Dataset-300_Ep_%2F_35%2C046_Frames-orange)
 ![Scope](https://img.shields.io/badge/Scope-Research_Simulation_(Non--Clinical)-lightgrey)
 
@@ -18,7 +18,8 @@
 
 > [!IMPORTANT]
 > - **当前主入口场景**：[`scenes/davinci_si_articulated_verified.ttt`](scenes/davinci_si_articulated_verified.ttt)（各历史演进场景及验证数据完整保留于仓库中以供溯源）。
-> - **最新研发进度（2026-11-24）**：已完成 **Phase A 300 轨迹 / 35,046 帧高清多视角 RGB-D 数据采集**、**U-Net 可见切缝首轮 RGB-D 训练**（开发集有标签像素 IoU **78.2%**）以及 **三标记 Kabsch + 固定深度遮挡弃权规则独立确认**（48/48 明确遮挡帧全部拒接，3D 中位误差 0.29 / 0.42 mm）；**M5 严格 9–10 mm 自主视觉停刀尚未通过**。
+> - **视觉闭环里程碑**：[M5-v4 非解剖导轨基准](docs/M5_V4_HINGE_CLOSED_LOOP_V3.md)的五个预注册场景均由光学 `TARGET(9)` 停刀，闭刀回到原 `ready`，独立评分确认撤回无新增损伤。该结论限于注册试样、种子和扰动幅度，不重判原 M5b，也不代表 M6/M7 已完成。
+> - **感知支线（2026-11-24）**：已完成 **Phase A 300 轨迹 / 35,046 帧高清多视角 RGB-D 数据采集**、**U-Net 可见切缝首轮 RGB-D 训练**（开发集有标签像素 IoU **78.2%**）以及 **三标记 Kabsch + 固定深度遮挡弃权规则独立确认**（48/48 明确遮挡帧全部拒接，3D 中位误差 0.29 / 0.42 mm）。
 > - **科研仿真边界声明**：切割目标为仿真中的**非解剖合成测试片（PBD Sheet）**；关节限位、穿刺点规则与组织参数均为探索性仿真设定，**未经真机或临床数据标定，不构成任何解剖定位、神经保护或临床有效性声明**。
 
 ![系统总览：三条 PSM、ECM、分腿手术台和 BodyParts3D 人体](docs/overview_si_instruments.png)
@@ -328,9 +329,12 @@ flowchart LR
 | **M3** | 前列腺邻近解剖定位可行性研究 | **阻塞（已严谨证伪）** | 见下方可达性分析与 [开发路线图](docs/DEVELOPMENT_ROADMAP_zh.md) |
 | **M4** | 影子视觉感知与传感器退化基准 | **已完成** | 零副作用全帧导出；深度噪声与位姿扰动退化曲线 |
 | **M5a / M5b** | 非解剖测试片严格 9–10 mm 视觉闭环自主停刀 | **研发中（未验收）** | 真值基线 10 mm 稳定复现；视觉闭环已达 9 mm（标称）/ 8 mm（噪声），停刀尚未过关 |
+| **M5-v4 导轨基准** | 铰链试样上的视觉停刀与闭刀撤回 | **注册矩阵 5/5 通过** | [逐场景独立评分](validation/task/m5_v4_hinge_closed_loop_v3/matrix.json)；结构前缀、最远完整及局部损伤均为 9 mm |
 | **Phase A 学习感知** | 35,046 帧 RGB-D 数据集、切缝 U-Net 与尖端遮挡门控 | **阶段完成** | 切缝弱标签 IoU 78.2%；三标记固定深度规则通过 40 轨迹独立确认 |
 | **M6** | 基于视觉张力代理的自适应牵拉与主动视野协同 | **未开始** | 待 M5 视觉停刀解决或显式签署后启动 |
 | **M7** | 多种子配对消融评估（固定 vs 视野 vs 牵拉 vs 联合） | **未开始** | 实验对照设计与护栏已预写入 [开发路线图](docs/DEVELOPMENT_ROADMAP_zh.md) |
+
+**M5-v4 检查点归档范围：** Git 保存冻结源码、协议、前置依赖和评分 JSON，包括 v1/v2 的失败记录。核查结果从 [v3 完成回执](validation/task/m5_v4_hinge_closed_loop_v3/completion.json) 开始，依次核对矩阵、各场景评分和运行记录的 SHA-256。原始 RGB-D 曝光及同拍评分数组（`.npz`）保留在实验机，未随本次提交打包；仅凭干净检出不能逐帧重评分，需先按注册路径和哈希恢复对应采集文件。
 
 ### 代表性负向研究发现：M3 前列腺邻近定位可达性证伪
 

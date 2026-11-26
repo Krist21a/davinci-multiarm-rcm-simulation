@@ -1,0 +1,21 @@
+{
+  "id": "m5_guided_10mm_closed_reacquire_v1",
+  "scope": "One new 10 mm acquisition variant after the exact control proved physical 10 mm. No change to the nominal controller or disturbance budget.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "nominal_v2_decision_sha256": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+  "nominal_v2_registration_sha256": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+  "prior_control_sha256": "2f6a659333a666bec4e0e64f7d0d9be84a89fcfc617e085a0bff78a33144a11a",
+  "exact_decision_sha256": "1d67cb9f1773110adc920c895c5b89f7d796d39e8ae8c165a38831b146a8dde3",
+  "exact_registration_sha256": "62a89fc92ff586cd5b3fc3eb073c4545811795e691c4e2c13f25b3a5c96e121f",
+  "target_m": [0.009, 0.010],
+  "exact_control_target_m": 0.010,
+  "exact_control_overcut_m": 0.0,
+  "absolute_limit_m": 0.010,
+  "max_recorded_waypoints": 8,
+  "maximum_closures": 3,
+  "ordinary_advance_cap_m": 0.003,
+  "recovery_max_backoff_m": 0.003,
+  "procedure": "Reproduce the exact same controller and cut settings through the third closure. If the first new wide image lacks fresh slit evidence but sees both tissue and scissors, allow one diagnostic guarded reverse along the last recorded cutter segment only; verify it is behind the current tip and within the existing 3 mm backoff envelope. Require physically closed jaws, same ECM target, recorded start and destination pose and original mechanical interlocks. After this single move require genuinely reacquired current wide slit and tool evidence; otherwise stop closed. Only then use unchanged remaining guarded reverse and online narrow endpoint review. This step does not authorize ready-pose motion and does not waive the fresh slit prerequisite for review.",
+  "gate": "One attempt; no newly issued camera move, recovery retry or fourth closure. Require fresh measured BELOW before the third bite and TARGET(10) after the original fresh slit guard is fulfilled, exact same-frame replay, independent actual 10 mm and no farther damage or post-target growth, and a single one-tick guarded closed return to ready pose with DONE. A missing observation is not UNKNOWN, a protection stop is not a pass. Disturbance evaluation stays blocked on a miss."
+}

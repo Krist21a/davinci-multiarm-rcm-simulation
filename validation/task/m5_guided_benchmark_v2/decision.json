@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "checks": {
+    "terminal_closed_and_ready": true,
+    "strict_scoring": true,
+    "independent_length_and_no_growth": true,
+    "no_fault_tear_or_perception_error": true,
+    "three_guarded_closures_and_reacquisitions": true,
+    "fresh_below_and_target": true,
+    "closed_path_and_visual_cap": true,
+    "unchanged_shared_camera_budget": true,
+    "unique_guarded_withdrawal": true
+  },
+  "predictions_sha256": "19cb359057f232c570ce516c67b3477d685c8d996dad6a51fead42f085c44412",
+  "terminal_structure": {
+    "prefix_rows": 9,
+    "farthest_row_end": 9
+  },
+  "final_m": 0.009000000000000001,
+  "actual_closed": true,
+  "actual_ready": true,
+  "closures": [
+    29,
+    35,
+    45
+  ],
+  "optical": [
+    {
+      "event": "guided_v2_optical",
+      "tick": 40,
+      "verdict": "BELOW",
+      "prefix_mm": 7,
+      "sigma": 0.0,
+      "file": "040_certificate.npz",
+      "frame_sha256": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d"
+    },
+    {
+      "event": "guided_v2_optical",
+      "tick": 50,
+      "verdict": "TARGET",
+      "prefix_mm": 9,
+      "sigma": 0.0,
+      "file": "050_certificate.npz",
+      "frame_sha256": "fcdd793140b62d5e32ea4607681c0fcba153ecb96daaef7da45839578cdc6841"
+    }
+  ],
+  "withdrawal": [
+    {
+      "event": "guided_v2_withdrawal",
+      "tick": 50,
+      "accepted": true,
+      "ready_before": false,
+      "ready_after": true,
+      "closed_after": true
+    }
+  ],
+  "camera": [
+    {
+      "event": "guided_v2_camera",
+      "tick": 38,
+      "action": "move",
+      "attempts": 2
+    },
+    {
+      "event": "guided_v2_camera",
+      "tick": 46,
+      "action": "reuse",
+      "attempts": 3
+    }
+  ],
+  "real_10_mm_tested": false,
+  "disturbances_tested": false
+}

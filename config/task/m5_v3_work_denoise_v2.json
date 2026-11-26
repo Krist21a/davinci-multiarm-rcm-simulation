@@ -1,0 +1,27 @@
+{
+  "id": "m5_v3_work_denoise_v2",
+  "scope": "Offline development gate only. No simulator, motion, margin change or clinical claims. Do not retune this version on replay outcomes.",
+  "sources": {
+    "config/task/m5_v3_work_denoise_v1.json": "0f071bcca5e1d13233efbf1e950cd4b808b165c414439a2c9e2651fb674619dd",
+    "validation/task/m5_v3_work_denoise_v1/decision.json": "bc1d92ce88fe9e37f79c51560b371a60db384d842d73b86fdc93b39763d33d5d",
+    "scripts/analysis/replay_m5_v3_work_denoise_v1.py": "aa7d9ba67de970be54efef7046e7da3c04f8afeaeff856f27a228ebe650ef278",
+    "scripts/vision/m5_v3_perception_v5.py": "9328141b10af1e11e0c589e410a2abfad83364b327489b5112c7b58193ca156f",
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "validation/task/m5_v3_sensor_margin_calibration_v1/registration.json": "422d8572e8cf091de07941dacf38936a4723cb62ec705b038340b363157190e2",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae"
+  },
+  "reader": "Keep the original two-dimensional outer-rim witness, adjacent-code station construction, scatter test, chord/skew checks, local step and minimum projected bank limit. At each witnessed rim ray, fit a full quadratic in image coordinates to inverse depth in a 10.5 px Euclidean disk, using the local depth-continuous 4-component containing both witnesses. Allow only valid raw pink and same-side bank-coded pixels. Require at least eight samples, full rank and center leverage <= 0.125. Correct reciprocal transformations to second order in the depth noise.",
+  "direction": "Fit a linear slope of bilateral midpoint against material row index on all eligible observed rows, including measured rows behind the front when they pass the same chord and skew checks. Seed with all width-qualified rows and re-screen longitudinal skew against the updated fit until membership is stable; refuse if it cycles, has fewer than three rows or loses either mandatory ahead station. No interpolation of an unobserved bound and no special weights for the terminal samples.",
+  "sampling": "Reuse the exact 15 sealed 70-degree work frames and 360 draws, the original prefix and goal 10, and the unchanged ray marker fit on the same noisy depth. The reused seeds are a paired development screen, not independent confirmation. Rerun the four-frame legacy outer-bank gate, both goals and both unchanged narrow controls.",
+  "clean_abs_fixed_axis_limit_delta_mm_lt": 0.03,
+  "clean_front_closed_open_delta_mm_lt": 0.05,
+  "clean_axis_closed_open_delta_deg_lt": 0.5,
+  "late_pair_min_count": 69,
+  "late_noisy_axis_delta_deg_lt": 1.5,
+  "late_noisy_optimism_delta_mm_lt": 0.20,
+  "gate": "All 15 clean charts and marker fits must pair, and v4 and v6 must select the same directly observed hard-limit row. Clean bias is the maximum absolute change in the minimum of the two selected station point projections on the same clean v4 axis, not a projection of the v6 chart's already-projected limit. Preserve every legacy outer-bank gate, and additionally require the uncut closed/open pair to meet both tighter consistency thresholds. All valid late noisy pairs must meet the per-draw axis and positive room-increase thresholds relative to their own clean v6 frame, with refusals counted in the 72 denominator. Comparing directions with v4 is diagnostic only. Absolute station/axis errors versus the physical seam require a separately preregistered same-exposure reference."
+}

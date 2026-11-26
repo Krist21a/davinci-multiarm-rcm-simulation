@@ -1,0 +1,168 @@
+{
+  "plan": {
+    "id": "m5_v3_positive_outer_v3",
+    "scope": "Two development positives on the same non-anatomical two-axis coupon. One fresh registered scene per goal, no retry, view sweep, disturbance or signed acceptance.",
+    "outer_replay_sha256": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "corridor_v5_decision_sha256": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+    "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "cases": {
+      "nominal": 9,
+      "exact_10mm": 10
+    },
+    "views": {
+      "work_deg": 70,
+      "work_size": [
+        1280,
+        960
+      ],
+      "review_deg": 20,
+      "review_size": [
+        2560,
+        1920
+      ],
+      "ecm_work": [
+        3.0,
+        0.0,
+        0.08
+      ],
+      "ecm_review": [
+        0.0,
+        4.5,
+        0.088
+      ]
+    },
+    "startup": "Identical to outer v2: dual-arm load, settle for 30 PBD steps, optical front minus 5 mm closed entrance waypoint and unchanged uncut optics gate. Continue to use the same optical work reader.",
+    "change": "Use the v5 corridor for post-closure certificates only, after the frozen 25-control, 32-archive, 10-recent development replay passes. No change to any motion, branch, closure, sweep, IK, limit or safety threshold. No structural truth authorization.",
+    "success": "Nominal: four guarded closures and growing optical BELOW(3), BELOW(5), BELOW(7), TARGET(9); exact_10mm: same first four closures, then one additional guarded closure after TARGET(9) and exact optical TARGET(10). Each needs closed withdrawal to actual initial ready joints, independent optical re-read, exact contiguous final structural length without more distal damage, and no faults."
+  },
+  "calibration_plan": {
+    "id": "m5_v3_sensor_margin_calibration_v2",
+    "scope": "Exactly one fresh non-anatomical nominal 9 mm scoring-reference collection after the v8 offline gate. No exact-10 execution, fifth closure, event injection, camera sweep, or alternate trial. No calibrated value or truth geometry in live control.",
+    "sources": {
+      "validation/task/m5_v3_work_denoise_v4/decision.json": "a80dfcf3a25a17be6b26d96ac5d9073f2efdd0d54595865a09bccd845684af00",
+      "validation/task/m5_v3_work_denoise_v4/registration.json": "9cf4a30753e93dd515442ad63d880cf4c07a3810d19bb107b363c3d6c8c92dbc",
+      "validation/task/m5_v3_positive_outer_v3/nominal/registration.json": "5b3ed56bbace56ad8471b46de49083430b23b8f97d312feb6bf4599dfed7fa73",
+      "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+      "scripts/vision/m5_v3_perception_v8.py": "6527d04b7ae2cebc1051a6632d16edaa81c592c8e1c224166008d9eabd9e1947",
+      "scripts/task/ground_truth.py": "1be4edc3499e2ff64a0fb180caf701f712b18e4ec9bcbf5b471b894a6879de57",
+      "scripts/task/workspace.py": "e6dc9fd1c4549732f8d55a0ea7987183b299c86c971229ace6b269ec082ae079",
+      "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+      "scripts/analysis/score_m5_v3_outer_positive_v3.py": "d3fcc6d2596086c979ca695111b6485526399a220692857b44099af499346151",
+      "scripts/analysis/score_m5_v3_outer_positive_v1.py": "ac447fe421fbea77a90ee1e3d045b5a8be10d89a20be30fbc5e76e7e808fefa1"
+    },
+    "capture": "Reuse the pinned nominal fixture, v5 controller (v4 work), startup, 0.250 mm margin, guards and fixed optics. Match the original nominal receipt sequence and verify closed ready before extra sampling. Capture every 70-degree frame with same-instant simulation node/TCP readback tagged scoring and kept in separate sidecars. Collect exactly one closed and one open frame at prefix 9: follow the already recorded closed 5 mm entrance-clear waypoint from ready, set the original work ECM while closed, capture, open in place and capture. No open-jaw translation or further closure; hold and stop the dedicated simulator. Independently require no structure change or faults in this terminal probe. This is a calibration collection, not a new positive result.",
+    "prefixes": [
+      0,
+      3,
+      5,
+      7,
+      9
+    ],
+    "required_receipts": [
+      [
+        "BELOW",
+        3
+      ],
+      [
+        "BELOW",
+        5
+      ],
+      [
+        "BELOW",
+        7
+      ],
+      [
+        "TARGET",
+        9
+      ]
+    ],
+    "noise_case_id": 2,
+    "reference": "Exact per-exposure virtual nodes and cutter TCP from GroundTruth, world coordinates. Read only at the same frozen simulation time as the RGB-D. Reference row midpoint C[j]=(nodes[j,11]+nodes[j,12])/2. Absolute global direction reference is the positive-row least-squares slope of C[0:13] against row index, matching the full outer-bank print span. Also report the local row-9-to-10 chord angle for late frames, as a diagnostic. Compare independent rigid-FK translation to the exact TCP (provenance sanity check).",
+    "metric": "Replay v8 in goal-10 mode for all labelled prefixes, including 9, keeping the recorded marker estimator. e_mm=1000*((limit_world-tip_opt_world)-(C[10]-tcp_truth_world)) dot direction_world. Also report signed distance difference on the true global axis to expose projection effects, and global absolute axis error. Only direct row-10 late frames tune or check the margin; earlier deliberately shorter bounds are diagnostic only.",
+    "statistics": "Retain the v1 sigma and seed lists exactly. Role of clean frames is development for c0; the split is held-out noise draws, not independent physical trajectories. c0 is the maximum positive clean late e rounded upward to 0.01 mm. k is the maximum nonnegative development-noise excess above c0 divided by 0.5 mm, rounded upward to 0.1. Freeze before evaluating the check-seed envelope; never refit using check outcomes. This is empirical over the registered domain, not a bound on unbounded Gaussian noise.",
+    "absolute_global_axis_deg_lt": 5.0,
+    "fk_tcp_max_error_mm": 0.01,
+    "late_pair_min_fraction_each_split": 0.95,
+    "legacy_margin_mm": 0.25,
+    "qualification": "Require the nominal optical sequence, four closures, exact 9 mm structure, closed ready before the terminal probe, no faults or structure change and all prefix-by-jaw coverage. Every clean reference frame must have a valid chart/marker, a valid same-exposure sidecar and matched FK. Each late noise split must retain at least 95% pairs and represent both jaws at both late prefixes. Require absolute full-span axis error below the existing 5-degree alignment tolerance for every scored clean and noisy result. Require c0 strictly smaller than 0.250 mm and every valid check-seed optimism contained by the frozen c0+k*sigma envelope. If any gate fails, issue no replacement margin or positive protocol. No fifth-bite outcome is used in this calibration."
+  },
+  "case": "nominal",
+  "goal_mm": 9,
+  "run_id": "7b29eb75f9844af995d271755a3cc758",
+  "sources": {
+    "validation/task/m5_v3_work_denoise_v4/decision.json": "a80dfcf3a25a17be6b26d96ac5d9073f2efdd0d54595865a09bccd845684af00",
+    "validation/task/m5_v3_work_denoise_v4/registration.json": "9cf4a30753e93dd515442ad63d880cf4c07a3810d19bb107b363c3d6c8c92dbc",
+    "validation/task/m5_v3_positive_outer_v3/nominal/registration.json": "5b3ed56bbace56ad8471b46de49083430b23b8f97d312feb6bf4599dfed7fa73",
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "scripts/vision/m5_v3_perception_v8.py": "6527d04b7ae2cebc1051a6632d16edaa81c592c8e1c224166008d9eabd9e1947",
+    "scripts/task/ground_truth.py": "1be4edc3499e2ff64a0fb180caf701f712b18e4ec9bcbf5b471b894a6879de57",
+    "scripts/task/workspace.py": "e6dc9fd1c4549732f8d55a0ea7987183b299c86c971229ace6b269ec082ae079",
+    "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+    "scripts/analysis/score_m5_v3_outer_positive_v3.py": "d3fcc6d2596086c979ca695111b6485526399a220692857b44099af499346151",
+    "scripts/analysis/score_m5_v3_outer_positive_v1.py": "ac447fe421fbea77a90ee1e3d045b5a8be10d89a20be30fbc5e76e7e808fefa1",
+    "config/task/m5_v3_work_denoise_v3.json": "525b95eb187255fc7da549779117026b749b29a9a12fa1b339b0052c6a792a8e",
+    "validation/task/m5_v3_work_denoise_v3/decision.json": "a6a0e6a4802a1bf71868618cf134b99b699e21fdc1a45a06d5b58a2d108eb374",
+    "validation/task/m5_v3_work_denoise_v3/registration.json": "2a5f402051031feff2a24d11162fbd38eea7637334cb65238d89e8fad67adbb0",
+    "scripts/analysis/replay_m5_v3_work_denoise_v3.py": "9b3f52ed5d61254596f4ed161438a50087b0aec5cbaf3a4e85ec0dbb4f2f38ba",
+    "scripts/analysis/replay_m5_v3_work_denoise_v1.py": "aa7d9ba67de970be54efef7046e7da3c04f8afeaeff856f27a228ebe650ef278",
+    "scripts/vision/m5_v3_perception_v7.py": "59b7da086386e232b8d46af98c185093b01a093adc5f204954001f0283522f9a",
+    "scripts/vision/m5_v3_perception_v6.py": "fb73ea8745f5210c8e14f0a9e197a6213a086b0589c1fb412f818446769339c3",
+    "scripts/vision/m5_v3_perception_v5.py": "9328141b10af1e11e0c589e410a2abfad83364b327489b5112c7b58193ca156f",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "validation/task/m5_v3_sensor_margin_calibration_v1/registration.json": "422d8572e8cf091de07941dacf38936a4723cb62ec705b038340b363157190e2",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae",
+    "validation/task/m5_v3_readonly_v4/decision.json": "629f0b0a7352de2371abf6e74336c16939171b23fd6391b461233fa06a625545",
+    "validation/task/m5_v3_positive_outer_v2/decision.json": "7be12dde4b1d4b88be09b6d13814ab2103d0344ca2ab02416157fc96183cc6d6",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "validation/task/m5_v3_readonly_v4/registration.json": "eff450ce0eed801b8618571870f2f00ef4977f6de7e50a9200c41582b61fd505",
+    "validation/task/m5_v3_positive_outer_v2/nominal/run.json": "6800eebb35930d17ff6a5070e9980c3af265f7ddb240a20b24deb7645611c607",
+    "validation/task/m5_v3_positive_outer_v2/nominal/registration.json": "fa7dc79fb47e7787972532c607cb4e7f99a2491a1865ba4f4f7f3805fcc622b4",
+    "validation/task/m5_v3_readonly_v4/work_closed.npz": "77ca367fa1359bfa367e695eeb198d657dff361b8b45f35187284da02dd635cc",
+    "validation/task/m5_v3_readonly_v4/work_open.npz": "7383fa6b6a2a76be0782a7ad2f2c23a9e69634f58406b6186ad89b1c7aa06745",
+    "validation/task/m5_v3_positive_outer_v2/nominal/001_work.npz": "aeac16290682ab603ed0d9ed573450cfed25a3f130a18ce8e4263d5c4d3a092a",
+    "validation/task/m5_v3_positive_outer_v2/nominal/003_work.npz": "49edd6f095770391376939ba1c0e3924077222c0aa69b2261d18b72e87f6cd8e",
+    "validation/task/m5_v3_positive_outer_v2/nominal/004_work.npz": "3965a9f1ab0d31812f8a4a48611c9e620ea4bfafb336c2c6062deb280b42e894",
+    "validation/task/m5_v3_positive_outer_v2/nominal/005_work.npz": "09120e65d699c18f49c7eb766a10049d6eb290fc59a8b9d89daa1ff8d9d4a199",
+    "validation/task/m5_v3_positive_outer_v2/nominal/007_work.npz": "1eddf1d67d92b452346b02f870575212a12454416bd9b9cebcc77787547866fc",
+    "validation/task/m5_v3_positive_outer_v2/nominal/008_work.npz": "c5b9f38899e5f97d93840cc5c17d739f3a471c7e36527cee398a95ed4bafd4ee",
+    "validation/task/m5_v3_positive_outer_v2/nominal/009_work.npz": "b75e051c56ac1269fc6ca140f339cec360848eb205c00db067ea5cc0639e6da9",
+    "validation/task/m5_v3_positive_outer_v2/nominal/011_work.npz": "0bc7b0cef811fee765e15f5333504199b3cd7bd811855dc102f8ff6ba1dd1ead",
+    "validation/task/m5_v3_positive_outer_v2/nominal/012_work.npz": "4ea4f3f146b93bdbf182df8249e23b97605b3d0fbb8dd5874c2913dab6a71dc8",
+    "validation/task/m5_v3_positive_outer_v2/nominal/013_work.npz": "400d3e7ccdc61cb3370a3a45509bf60dc470fc21765254a7960c05b322266a5e",
+    "validation/task/m5_v3_positive_outer_v2/nominal/015_work.npz": "172c96e4f6e5e9a2cc32f6c2c5705acd1d00ab5cb0d3eed8bf9b7cbd9aae8675",
+    "validation/task/m5_v3_positive_outer_v2/nominal/016_work.npz": "7900c98cde6bbc414ec1c28295cc0268bc2914f37d58e833986b305472d8a00a",
+    "validation/task/m5_v3_positive_outer_v2/nominal/017_work.npz": "9fe0f9c33b8713986bcb469b31f7459dbd2d5383479db7885f35c4677e162916",
+    "scripts/analysis/calibrate_m5_v3_sensor_margin_v1.py": "fa25a9dd933ed6312a01a8c02aa5b1be4e2874da9f467644a76e5a9e5b901d77",
+    "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42",
+    "scripts/task/capture_m5_v3_readonly_v4.py": "ec717b58b1f2bab256c56153f362e6bdc93418e620ae0b82ecba8610beea581c",
+    "scripts/vision/cell_certificate_v1.py": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+    "scripts/vision/cut_perception.py": "c9246433b35cc449d229ec017b1729ae1e69fa188b15a38dd35137cb4667417c",
+    "scripts/vision/ruler_readout.py": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+    "config/task/m5_v3_outer_bank_v1.json": "2e1754af654c0abdbb2be4ef9fb4f62cb191e51b7546c4f203ceced8e555bc81",
+    "scripts/analysis/replay_m5_v3_outer_bank_v1.py": "76b7f114d5f05aae0eaaa6a7ab4a026e4c9676fadc8701813437e0eea74d1de5",
+    "scripts/vision/m5_v3_perception_v3.py": "a9918c468e8ada3059e7d8194318d77ff2bf77fdb7054e7e15b3d627452f80c3",
+    "scripts/vision/m5_v3_corridor_v4.py": "5e9182c65ea4c33dd7f233dbf74a59ce9dba0f8145c3e6525b7504b417c85975",
+    "scripts/task/m5_v3_controller_v2.py": "0971ba292c6fa09de361d994b6709927679f074abe05b4b3fcc54689246d906e",
+    "validation/task/m5_v3_readonly_v4/narrow_before_backoff.npz": "05acecba9e3b13f1e6f4dba9149a103673cf907ccbbdfb5d2cc88edb7110acb6",
+    "validation/task/m5_v3_readonly_v4/narrow_entry_clear.npz": "7fa80b4837207c3da2356b31158f33840e51b24b713b3a848f3bf3ad9c2951da",
+    "config/task/m5_v3_work_denoise_v4.json": "95a849ef4e964bac3e297d1b35dee4df0454bc7251b2609596774c96290b0dff",
+    "scripts/analysis/replay_m5_v3_work_denoise_v4.py": "8341bd434001337bf0bca8669c9fd284e8df2b0540ce0ed05fadd4ff479779a2",
+    "validation/task/m5_v3_corridor_screen_v5/decision.json": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "validation/task/m5_v3_fixture_preflight_v1/decision.json": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "validation/task/m5_v3_fixture_preflight_v1/registration.json": "d41cef1ea2df1db980c10353ee7e0d4f210bd232a395d1520471c4deb7a6a094",
+    "validation/task/m5_v3_distal_workspace_v2/decision.json": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "scripts/task/run_m5_v3_outer_positive_v3.py": "b05abf00877b5c5965aa9c8f103fc59f84f2e3e003e1eb63e5cf940a5a8bdf67",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/task/seam_topology.py": "bb3b961a14a6aaf1ef894dabd6e78a33d7743589143e8e2e1d8ba0bfbe9d1fb7",
+    "src/tissue/cell_certificate_print.lua": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d",
+    "config/task/m5_v3_sensor_margin_calibration_v2.json": "6536be7a08e36be1507f0ce91526829ea0a9c333f748c0b37af374473e17c73b",
+    "scripts/task/capture_m5_v3_sensor_reference_v1.py": "d81f74a4eaf072531ac3719d973ed932cf2dcb89c691a23ff4407c196a2214f3",
+    "scripts/analysis/calibrate_m5_v3_sensor_margin_v2.py": "e360d99ae2b5c2268283f1fdb94016469d362b9d42a2b10fa5ec9e9206c83ad9",
+    "validation/task/m5_v3_work_denoise_v4/measurements.json": "a07f5936261dd277e816aa5a208a4f729869a0ffc0a86bae18e61614834d78e5"
+  }
+}

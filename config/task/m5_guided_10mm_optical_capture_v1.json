@@ -1,0 +1,23 @@
+{
+  "id": "m5_guided_10mm_optical_capture_v1",
+  "scope": "One acquisition-only contrast. No endpoint authority, additional closure, ready-pose request, or disturbance run.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "nominal_v2_decision_sha256": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+  "nominal_v2_registration_sha256": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+  "prior_control_sha256": "2f6a659333a666bec4e0e64f7d0d9be84a89fcfc617e085a0bff78a33144a11a",
+  "exact_decision_sha256": "1d67cb9f1773110adc920c895c5b89f7d796d39e8ae8c165a38831b146a8dde3",
+  "exact_registration_sha256": "62a89fc92ff586cd5b3fc3eb073c4545811795e691c4e2c13f25b3a5c96e121f",
+  "reverse_gate_sha256": "54d956daca96cbca30946850eac02334e19103ad3dfda4580d1687690611eb00",
+  "reverse_registration_sha256": "fe750f57eeb79622ceb73fbfaa3a0ebedea06574b7d68d240e10dbb97043c482",
+  "target_m": [0.009, 0.010],
+  "exact_control_target_m": 0.010,
+  "exact_control_overcut_m": 0.0,
+  "absolute_limit_m": 0.010,
+  "max_recorded_waypoints": 8,
+  "maximum_closures": 3,
+  "ordinary_advance_cap_m": 0.003,
+  "recovery_max_backoff_m": 0.003,
+  "capture": "Preserve the exact established approach and first two closures including live BELOW. After the third closure allow acquisition only. Require physical closed jaws, original mechanical supervisor, matched actual last waypoint, original ECM review target and no ECM move. Capture native 70-degree RGB-D then existing 20-degree certificate at the same held time. Traverse only actual immediately preceding recorded cutter waypoints in reverse with native guarded setToolPose and fresh readback. Capture the same two optics after the first segment and at the entrance anchor. Optics/estimator states after third closure never choose a move; missing, invalid or refused mechanics stop. Hold closed without ready pose. Save constraints and material nodes for independent scoring only.",
+  "analysis": "Seal optical predictions before reading structure: frozen v3 raw and deterministic 0.5 mm noise on all three narrow images; report the archived working estimator outcome per wide exposure without using it as truth. Then verify exact 10 mm and unchanged constraints at all three positions, same pre-reverse path as the established exact trial, and unchanged ECM pose/time across each paired shot. For offline visibility only, project the terminal material row from saved nodes into the three wide files and report projected sample depths versus the measured z-buffer. A ray in front of or near the projected point is not by itself a cutter-versus-material identity. A valid TARGET(10) would qualify this optical-only contrast, not online withdrawal or the disturbance gate."
+}

@@ -1,0 +1,17 @@
+{
+  "id": "m5_guided_bank_corridor_v3",
+  "scope": "Development replay only. The row-6 failure was already observed on both matched controls. Success on those frames would be a diagnostic, not independent confirmation or motion authority.",
+  "prediction_pins": {
+    "validation/task/m5_guided_bank_corridor_v2/registration.json": "8fa86a391643773f0552959dc451a74e8c31fff0616100056db39ab43578ab72",
+    "validation/task/m5_guided_reverse_capture_v1/predictions.json": "c36dbdb63e0a785251d5622006b8c146304c446ff37b0d1dcc18d61c9965b40d"
+  },
+  "scoring_pins": {
+    "validation/task/m5_guided_bank_corridor_v2/decision.json": "111e7772ed9598ce444795376d223e26a3f6752780655a17ed5663a9eeb509c1",
+    "validation/task/m5_guided_reverse_capture_v1/decision.json": "066183bd54470db1beede2956f814fb2ce3f80425ca3c0e19922ebe4ade28246"
+  },
+  "inputs": "All pinned v2 replay inputs and both paired reverse exposures for each case, deduplicated by sealed exposure digest. Use raw depth and the existing deterministic 0.5 mm noise variant. Do not load the scoring decisions until after writing predictions.",
+  "shore_graph": "Keep v2 anchors, chord raster and flank depths. Only reconsider unresolved chords of at least nine samples with no central-face code on the chord and at least four positively deep samples. Every nondeep sample must be in the first or last four samples, on the corresponding bank. Require a four-connected path of at most 12 pixel steps to the unique v2 patch of that same bank and current row. Usable pixels have finite valid depth, same-side whole-bank ink of the current or adjacent row or the current row's near/far cap, no center ink, and absolute flank and neighbor depth agreement within the existing v2 1 mm + 3 sigma bound. Never jump a pixel. Archive each successful support path.",
+  "crossing": "Do not relabel any bank sample as deep. Require all remaining deep samples in the same four-connected positive-depth component in a two-pixel Manhattan dilation of the original chord. Keep open hulls, conservative flank thresholds, central-face veto and common corridor test without weakening v2. No changes to terminal INTACT/PARTIAL rules or travel guards. Core, detached, invalid or unclassified samples still veto the chord.",
+  "synthetic": "Exercise 4-connected near-shore acceptance, detached same-code island, depth jump, wrong-side code, uninked foreground, invalid depth, a core island and a central-face bridge. Both original and deterministic noisy depths must give each expected result.",
+  "gate": "Require the true cleared 7 mm calibration to remain BELOW, the three obstructed guided frames to remain UNKNOWN, and the cleared matched 8/9 mm frames to read BELOW(8)/TARGET(9) exactly in both variants. Across all scored records, no known verdict with an incorrect prefix is allowed. Historical mismatched specimens may still abstain. The 10 mm control, independent optical confirmation and nominal closed-loop stop and withdrawal are not covered here."
+}

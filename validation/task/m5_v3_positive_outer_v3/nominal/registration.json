@@ -1,0 +1,61 @@
+{
+  "plan": {
+    "id": "m5_v3_positive_outer_v3",
+    "scope": "Two development positives on the same non-anatomical two-axis coupon. One fresh registered scene per goal, no retry, view sweep, disturbance or signed acceptance.",
+    "outer_replay_sha256": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "corridor_v5_decision_sha256": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+    "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "cases": {
+      "nominal": 9,
+      "exact_10mm": 10
+    },
+    "views": {
+      "work_deg": 70,
+      "work_size": [
+        1280,
+        960
+      ],
+      "review_deg": 20,
+      "review_size": [
+        2560,
+        1920
+      ],
+      "ecm_work": [
+        3.0,
+        0.0,
+        0.08
+      ],
+      "ecm_review": [
+        0.0,
+        4.5,
+        0.088
+      ]
+    },
+    "startup": "Identical to outer v2: dual-arm load, settle for 30 PBD steps, optical front minus 5 mm closed entrance waypoint and unchanged uncut optics gate. Continue to use the same optical work reader.",
+    "change": "Use the v5 corridor for post-closure certificates only, after the frozen 25-control, 32-archive, 10-recent development replay passes. No change to any motion, branch, closure, sweep, IK, limit or safety threshold. No structural truth authorization.",
+    "success": "Nominal: four guarded closures and growing optical BELOW(3), BELOW(5), BELOW(7), TARGET(9); exact_10mm: same first four closures, then one additional guarded closure after TARGET(9) and exact optical TARGET(10). Each needs closed withdrawal to actual initial ready joints, independent optical re-read, exact contiguous final structural length without more distal damage, and no faults."
+  },
+  "case": "nominal",
+  "goal_mm": 9,
+  "run_id": "a3036ee6899c4ae999651eda13f57b81",
+  "sources": {
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "validation/task/m5_v3_corridor_screen_v5/decision.json": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "validation/task/m5_v3_fixture_preflight_v1/decision.json": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "validation/task/m5_v3_fixture_preflight_v1/registration.json": "d41cef1ea2df1db980c10353ee7e0d4f210bd232a395d1520471c4deb7a6a094",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "validation/task/m5_v3_distal_workspace_v2/decision.json": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "scripts/task/run_m5_v3_outer_positive_v3.py": "b05abf00877b5c5965aa9c8f103fc59f84f2e3e003e1eb63e5cf940a5a8bdf67",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "scripts/task/capture_m5_v3_readonly_v4.py": "ec717b58b1f2bab256c56153f362e6bdc93418e620ae0b82ecba8610beea581c",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/task/seam_topology.py": "bb3b961a14a6aaf1ef894dabd6e78a33d7743589143e8e2e1d8ba0bfbe9d1fb7",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "scripts/vision/m5_v3_corridor_v4.py": "5e9182c65ea4c33dd7f233dbf74a59ce9dba0f8145c3e6525b7504b417c85975",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "src/tissue/cell_certificate_print.lua": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d"
+  }
+}

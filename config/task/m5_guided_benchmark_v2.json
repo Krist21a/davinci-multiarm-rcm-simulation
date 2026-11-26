@@ -1,0 +1,13 @@
+{
+  "id": "m5_guided_benchmark_v2",
+  "scope": "Opt-in non-anatomical guided-sheet controller. First gate: one nominal reproduction only. Prior v1 artifacts and acceptance states are immutable. No disturbance activation before a new nominal pass and a registered real 10 mm control.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "target_m": [0.009, 0.010],
+  "max_recorded_waypoints": 8,
+  "review": "The existing 6 mm wide-view trigger schedules the first closed review. After that, each successful bounded closure requires another closed review before work resumes. Use measured RGB-D and registered depth sigma only. Do not compare to historical exposures. UNKNOWN, missing freshness or path, a rejected command or an unavailable camera pose must not permit another closure or withdrawal.",
+  "camera": "One unchanged shared camera adjustment budget. Count requested guarded movements, including refused moves, and reuse an already-matching target without a charge. No reserve or extra move absent an independently approved protocol.",
+  "continuation": "After BELOW, take the visual remainder to 9 mm as an additional upper bound; the native reservation and sweep limits still apply. Return closed along the recorded path to the near-cut waypoint, verify a fresh direct wide view, then enter the original ALIGN. Only one subsequent accepted advance and closure per such review, without an ordinal limit. Require another fresh BELOW after that closure before another advance.",
+  "withdrawal": "After closed reverse with original guards, only TARGET 9 or 10 on the current narrow frame can issue one jaw-preserving guarded ready-pose command on that tick. Structural reads remain safety and scoring only. Require same-frame evidence, physical readbacks, no fault, tear or extra growth, and observed ready pose.",
+  "verification_order": ["nominal", "real_10_mm_control", "depth_noise_0p5", "occlusion_transient", "slip_regrasp", "relax"]
+}

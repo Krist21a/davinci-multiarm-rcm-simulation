@@ -1,0 +1,12 @@
+{
+  "id": "m5_v3_positive_outer_v2",
+  "scope": "Two development positives on the same non-anatomical two-axis coupon. One new scene per goal, no retries, view sweeps or disturbances.",
+  "outer_replay_sha256": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+  "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+  "cases": {"nominal": 9, "exact_10mm": 10},
+  "views": {"work_deg": 70, "work_size": [1280, 960], "review_deg": 20, "review_size": [2560, 1920], "ecm_work": [3.0, 0.0, 0.08], "ecm_review": [0.0, 4.5, 0.088]},
+  "startup": "After the guarded dual-arm load, settle for 30 PBD steps. Derive the closed entrance-clear joint target optically at front minus 5 mm along the observed axis; the fixed preflight joints are not used. Before first opening require 26 bank codes with at least 8 valid depth pixels per code and rows 0 through 6 INTACT at the entrance-clear view. No condition on the intact distal odd rows in this uncut check.",
+  "success": "FSM DONE, exact optical TARGET(goal) reproduced from a held, closed exposure at the recorded entrance-clear waypoint after a real closure, followed by closed guarded path to the original ready joints and FK pose. Terminal structure is independently scored after stopping: contiguous prefix equals goal, farthest damaged row end at goal, no tear, no collision or RCM fault, no truth fallback. No early stop or partial result passes.",
+  "safety": "The original sweep, solver, closure and path guards are unchanged. Cut certificates use byte-identical m5_v3_corridor_v4 with the same 2x2 evidence, continuous through-depth connection, and TARGET/BELOW semantics. Structure only vetoes unsafe operation or independently scores the stopped result.",
+  "diagnostics": "Observe direct work-frame bilateral stations 9 and 10 if a certified prefix reaches 6 mm. Record the independent row 9 and 11 narrow statuses on the held review images. Diagnostic visibility failures never grant progress or motion."
+}

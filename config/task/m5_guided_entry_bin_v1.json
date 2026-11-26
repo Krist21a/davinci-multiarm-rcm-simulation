@@ -1,0 +1,13 @@
+{
+  "id": "m5_guided_entry_bin_v1",
+  "scope": "Offline opt-in candidate only. Preserve the original working reader, endpoint reader, controller and all historical results.",
+  "pins": {
+    "scripts/vision/cut_perception.py": "c9246433b35cc449d229ec017b1729ae1e69fa188b15a38dd35137cb4667417c",
+    "validation/task/m5_guided_short_gap_attribution_v1/bin_boundary.json": "bd2101fcbb3082688ebc698c09b9950977f161f2139e6a81bd2406555d5522d6",
+    "validation/task/m5_guided_short_gap_attribution_v1/diagnosis.json": "70287cc48e654a8b7fb3d9b7a71602494a0fee18531f90a5dbbcd95cdecec88f",
+    "validation/task/m5_guided_short_gap_attribution_v1/registration.json": "6d9f58c4721cbe75fa87e009ad492fb1827f11bef69c63e972974a080ae13ce8"
+  },
+  "grid_um": {"pre_entry": 1000, "entry_guard": 1000, "bin_width": 500},
+  "rule": "Use the integer start index (pre_entry + entry_guard) / bin_width on the existing bin grid, clamped only as in the original implementation. Preserve existing sample bins, depths, support, downstream gap and look-ahead logic. Only the rounding-sensitive start-index expression changes in the isolated copy.",
+  "gate": "All four archived slip frames at ticks 29 to 32 must reproduce their original decisions in the legacy reader before replaying the candidate. At 29 and 30 require unchanged full estimates; at 31 and 32 require a valid pre-cut front with zero reported cut progress, valid tool and material chart, and native gap occupancy unchanged. Synthetic scans must ignore border bin 3 consistently across neighboring origins, still veto valid-depth and missing-depth gap support at bin 4, keep the foreground and material evidence vetoes, and leave a two-bin true slit unchanged when the native start index is 4. No new positive label beyond the matched uncut slip frames, no control authorization, and no live scan."
+}

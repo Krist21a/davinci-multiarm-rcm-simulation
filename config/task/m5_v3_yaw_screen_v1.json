@@ -1,0 +1,12 @@
+{
+  "id": "m5_v3_yaw_screen_v1",
+  "scope": "Pure offline psm2 kinematic screening for the existing non-anatomical sheet. No FK RPC, collision check, actuation, scene edit, or optical qualification.",
+  "alignment_capture_sha256": "e71329a722ae8c673dc8679d78639cfb87ba3d947efdbd41a9d5ce0712228749",
+  "rcm": "config/instruments/rcm_config.json",
+  "rcm_sha256": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+  "views": ["original", "plus3"],
+  "shift_mm": [0, 3, 4, 5],
+  "direction": "Positive psm2 transverse_x from the scene's registered RCM configuration, same world-space translation for the whole specimen.",
+  "target_sampling": "Both sealed loaded align1 sheets: sample the midpoints of material columns 11 and 12 at rows 0 through 10, plus the 1 mm approach and 3 mm review backoff at the original entry and row 10. Retain the chosen material directions. Evaluate nominal plus +/-0.5 mm deterministic offsets on each of transverse_x, transverse_y, and axis_home independently. Not a simulated noise trial.",
+  "screen": "Report the literal RCM-to-point ray and a translated calibrated ray carrying the angular offset between matched recorded shaft commands and TCP rays. Use only capture ticks immediately following accepted closed-alignment or cut-advance commands. Calibrated yaw is a sensitivity estimate, not full wrist IK; cross-check spread on each view before reporting margin. Coarse candidate requires all perturbed yaw estimates inside [-2.5,+1.0] degrees and pitch inside unchanged native soft interval; do not promote a ray result to tool-pose, grasp, optics or path feasibility."
+}

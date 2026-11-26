@@ -1,0 +1,12 @@
+{
+  "id": "m5_guided_bank_corridor_v4",
+  "scope": "Development-only offline gate before collecting new scenes; no prior decision changes.",
+  "archives": {
+    "m5_guided_benchmark_v2": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+    "m5_guided_10mm_terminal_online_v1": "164b114edf32648f021d379247bce279cb1ace8cde2e4b7e8ba301f935f09c62",
+    "m5_guided_benchmark_v2_disturbances_v1": "8322a349e5d2c4b604d9a1557d76c1418ee5edf36d9e8936c27da59868e69548",
+    "m5_guided_benchmark_v2_1": "141763406bdc72e24428a34a3895a43cd1a8c6d6b16663c4ed39a873f327b784"
+  },
+  "chord_rule": "Only recover UNKNOWN when every sample has valid depth, no face code, a single contiguous four-or-more-sample through-depth interval, and unresolved rays only in two terminal runs each no longer than min(floor(chord/4),12). Every terminal ray must depth-connect within 12 four-neighbor steps to its own same-row bank via native same-side bank/cap rules and tolerance. Preserve the old two-dimensional and cross-row background connectivity, positive terminal boundary, and later opening veto. Do not repair a missing boundary or a partially cut row.",
+  "qualification": "All historical guided_prefix_review exposures from all four archive reports, including non-permit frames. Recompute registered measured noise exactly and preserve every v3 known verdict. A recovered known verdict must equal the historical structural prefix at that capture tick. Confirm all synthetic negatives fail closed, plus one long supported shore positive, before any live case."
+}

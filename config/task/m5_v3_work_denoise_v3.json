@@ -1,0 +1,30 @@
+{
+  "id": "m5_v3_work_denoise_v3",
+  "scope": "Offline development gate only. No simulator, motion, margin change or clinical claims. Do not retune this version on replay outcomes.",
+  "sources": {
+    "config/task/m5_v3_work_denoise_v2.json": "34331b739ca9ff26abfe7d115153780ccdb3b433f613d23ea4c3d0a562f734a3",
+    "validation/task/m5_v3_work_denoise_v2/decision.json": "512ac297843d83b527b1e64cd7a054d9533360e935c6d68b02806f807c1e7008",
+    "validation/task/m5_v3_work_denoise_v2/registration.json": "d7b4b1aa422414e2ebcf54d6c223a3bdf3e8f46a154fd6aba223b1f28986d0a3",
+    "scripts/analysis/replay_m5_v3_work_denoise_v2.py": "bd6213d152fddda7584e37ca13a3b4afd0bda334b16dbd3dba9888a5ad79328d",
+    "scripts/analysis/replay_m5_v3_work_denoise_v1.py": "aa7d9ba67de970be54efef7046e7da3c04f8afeaeff856f27a228ebe650ef278",
+    "scripts/vision/m5_v3_perception_v6.py": "fb73ea8745f5210c8e14f0a9e197a6213a086b0589c1fb412f818446769339c3",
+    "scripts/vision/m5_v3_perception_v5.py": "9328141b10af1e11e0c589e410a2abfad83364b327489b5112c7b58193ca156f",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "validation/task/m5_v3_sensor_margin_calibration_v1/registration.json": "422d8572e8cf091de07941dacf38936a4723cb62ec705b038340b363157190e2",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae"
+  },
+  "reader": "Only change v6's rim support geometry to an ellipse centered on the witnessed half-pixel ray. Major radius 10.5 px along the frame's existing across axis (the bank-centroid difference); minor radius 2.35 px along its orthogonal. Use these scaled coordinates for the same six-term inverse-depth regression and the same noise correction.",
+  "direction": "Exactly v6, including all-station input, iterative chord/skew checks, mandatory stations, and refusal conditions.",
+  "sampling": "Reuse the exact 15 sealed 70-degree work frames and 360 draws, the original prefix and goal 10, and the unchanged ray marker fit on the same noisy depth. The reused seeds are a paired development screen, not independent confirmation. Rerun the four-frame legacy outer-bank gate, both goals and both unchanged narrow controls.",
+  "clean_abs_fixed_axis_limit_delta_mm_lt": 0.03,
+  "clean_front_closed_open_delta_mm_lt": 0.05,
+  "clean_axis_closed_open_delta_deg_lt": 0.5,
+  "late_pair_min_count": 69,
+  "late_noisy_axis_delta_deg_lt": 1.5,
+  "late_noisy_optimism_delta_mm_lt": 0.20,
+  "gate": "Use the same seven gates as v2, replacing only candidate v6 by v7. All 15 clean charts and marker fits must pair and have the same observed limit row as v4. Compare the two selected bank points' minimum longitudinal projection on the fixed clean v4 axis, not a projection of the candidate chart's already-projected limit. Retain the legacy outer gate and both stricter closed/open consistency gates. Require at least 69 of 72 same-exposure late pairs and both per-draw noise bounds. All seven must pass before any scoring-only reference collection. This does not replace the absolute same-exposure calibration."
+}

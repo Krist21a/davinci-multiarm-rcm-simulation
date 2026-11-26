@@ -1,0 +1,49 @@
+{
+  "passed": false,
+  "checks": {
+    "no_run_or_safety_error": true,
+    "guarded_three_closures": false,
+    "registered_second_cap": true,
+    "live_below_then_measured_target_10": false,
+    "independent_10_mm_and_no_growth": false,
+    "guarded_closed_ready": false
+  },
+  "predictions_sha256": "383f3b19afae01078711c7c8b5649fc136c8a93217ea3b403fa9342024ec6881",
+  "actual_m": 0.009000000000000001,
+  "terminal_structure": {
+    "prefix_rows": 9,
+    "farthest_row_end": 9
+  },
+  "final_state": "FAILED",
+  "reason": "guided closed review rejected: post-closure slit was not freshly reacquired",
+  "actual_closed": true,
+  "actual_ready": false,
+  "closure_ticks": [
+    29,
+    35,
+    45
+  ],
+  "second_advance": [
+    {
+      "event": "advance_reserve",
+      "tick": 34,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.005715993749180392,
+      "requested_m": 0.0025,
+      "commanded_m": 0.0025
+    }
+  ],
+  "readings": [
+    {
+      "event": "guided_v2_optical",
+      "tick": 40,
+      "verdict": "BELOW",
+      "prefix_mm": 6,
+      "sigma": 0.0,
+      "file": "040_certificate.npz",
+      "frame_sha256": "ce6cd31b1e0f93c95553b7153e96de857423930a17e3c6f7b980f4d5bbe73d1e"
+    }
+  ],
+  "withdrawal": [],
+  "disturbances_tested": false
+}

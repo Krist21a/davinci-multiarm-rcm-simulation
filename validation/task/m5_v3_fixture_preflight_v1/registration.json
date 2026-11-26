@@ -1,0 +1,117 @@
+{
+  "plan": {
+    "id": "m5_v3_fixture_preflight_v1",
+    "workspace_registration_sha256": "fb5e42aa27f482159327a4b994c6a4e998a425e8b1992993079ed58ef19e98a9",
+    "workspace_decision_sha256": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "scene": "scenes/davinci_si_articulated_verified.ttt",
+    "fixture": {
+      "seam_mode": "surface",
+      "guide_band_m": 0.0001
+    },
+    "view": [
+      3.0,
+      0.0,
+      0.08
+    ],
+    "waypoints_mm": [
+      -3,
+      -1,
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "pull_per_arm_m": 0.0002,
+    "minimum_headroom_deg": 1.5,
+    "scope": "Single fresh no-cut scene for the sealed two-axis candidate. No cutter grip command. Standard guarded full arm commands; stop on any refusal. At each waypoint require both native RGB-D sheet plane and three-ball tool pose, verified closed jaws, no mechanical faults, no tear or cut growth, and unchanged loaded grasps. Use a fixed designed coupon line, never any structural labels to guide motion. No new optics or controller acceptance."
+  },
+  "candidate": {
+    "delta_yaw_deg": 2.0,
+    "delta_pitch_deg": 1.5,
+    "translation_m": [
+      0.0025124740103603786,
+      -0.0008701607693153562,
+      -0.0034074982755947026
+    ],
+    "translation_mm": 4.32212331098648,
+    "by_view": {
+      "original": {
+        "samples": 315,
+        "min_q": [
+          -2.021118191110205,
+          -2.535273316045282,
+          0.014000543903662344,
+          -0.08489077721873477,
+          0.02053269329576551
+        ],
+        "max_q": [
+          -0.16756483878937262,
+          -1.276361973513076,
+          0.02684209929153636,
+          -0.005859161823852497,
+          0.04307010120260712
+        ],
+        "minimum_soft_headroom": [
+          2.478881808889795,
+          1.964726683954718,
+          0.013000543903662343,
+          1.2913692227812652,
+          1.333189898797393
+        ],
+        "passes": true
+      },
+      "plus3": {
+        "samples": 315,
+        "min_q": [
+          -2.2712525499838345,
+          -2.541832919049803,
+          0.014041279236718315,
+          -0.008835240795078494,
+          0.020334308121053052
+        ],
+        "max_q": [
+          -1.2259461130584113,
+          -1.3000678378257824,
+          0.026866809196662664,
+          0.014472759235257376,
+          0.04288626630564013
+        ],
+        "minimum_soft_headroom": [
+          2.2287474500161655,
+          1.9581670809501972,
+          0.013041279236718314,
+          1.3617872407647427,
+          1.3333737336943599
+        ],
+        "passes": true
+      }
+    },
+    "passes": true
+  },
+  "sources": {
+    "config/task/m5_v3_fixture_preflight_v1.json": "6abd28ff6824749f01b668b2c35f5a3bc6ad2827c51599a3b402349d9b2ee2cf",
+    "scripts/task/preflight_m5_v3_fixture_v1.py": "8db571442755d409e8175ac72bb85f9c8de0e6450ee34c13cc723597ea7955c7",
+    "validation/task/m5_v3_distal_workspace_v2/registration.json": "fb5e42aa27f482159327a4b994c6a4e998a425e8b1992993079ed58ef19e98a9",
+    "validation/task/m5_v3_distal_workspace_v2/decision.json": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/task/workspace.py": "e6dc9fd1c4549732f8d55a0ea7987183b299c86c971229ace6b269ec082ae079",
+    "scripts/task/tool_pose.py": "bd39e8533c66607f6d2c04c524d3f49e5174caca64fca4e684b564a6fc942f78",
+    "scripts/task/tool_pose_active_set.py": "cf072db4eeaa9bdcd2648362e12dbf3f990859f9ce37079a51e9455b0a545812",
+    "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+    "src/endoscope/rcm_controller.lua": "19caac5b63f0e5be062ca2acb85e9e6ef31c70a0cf0d2754ca8b03931f019ff2",
+    "src/instruments/articulation.lua": "da1c756d01fa9cf01ab73767c1b37dea5c48b7bec67f7913f5dc2927fa9e8e63",
+    "src/tissue/tissue.lua": "40211fe35bcca3978f9cacc2f6e206ccc0ea6faa8e0e68abb38ca0fca9e38070",
+    "src/tissue/surface_seam.lua": "2f1bb401530f3be69cd95e0362cee13f7d86716cf931dfd972314a9378be67eb",
+    "config/instruments/rcm_config.json": "5a3729261e7455ee8276035a5a50e9ceadf7cc0bd5b48fff3accf1c5e1c90ed5",
+    "config/endoscope/task.json": "9bcaa838651eaa5355821120a2b7b2521bd75699f554d0903d8ae9f779434868"
+  }
+}

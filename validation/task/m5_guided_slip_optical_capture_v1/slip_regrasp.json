@@ -1,0 +1,3772 @@
+{
+  "run_id": "eb1b63d1f0344007978c3010afa25777",
+  "case": "slip_regrasp",
+  "scenario": "slip_regrasp",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "events": {
+      "relax_m": 0.0005,
+      "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "vision": {
+      "fix_max_age_ticks": 6,
+      "basis": "config/task/m5b_protocol.json: a remembered front fix stays usable for this many world ticks after its last valid estimate."
+    },
+    "perception": {
+      "mode": "shadow",
+      "markers": true,
+      "depth_noise_m": 0.0,
+      "camera_pose_error": {
+        "trans_m": 0.0,
+        "rot_deg": 0.0,
+        "mode": "per_tick"
+      },
+      "seed": 0,
+      "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control unless cut.control_source is 'vision'. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run). camera_pose_error.mode: 'per_tick' draws a fresh error each tick (M5a semantics); 'fixed' draws the rotation axis and translation direction once per run (a calibration bias, config/task/m5b_protocol.json).",
+      "material_pattern": true,
+      "local_material_chart": true,
+      "front_recovery": true,
+      "predictive_view": true,
+      "exclude_tcp_marker": true,
+      "recovery_view_after_cut": true,
+      "ray_marker_fit": true
+    },
+    "cut": {
+      "length_m": 0.009,
+      "max_overcut_m": 0.001,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "vision_axis_tolerance_deg": 5.0,
+      "control_source": "vision",
+      "control_source_basis": "config/task/m5b_protocol.json: 'truth' (default, unchanged behaviour) or 'vision' \u2014 the cutter's front, alignment, advance, stop and visibility come from the cut_perception estimate; tension/grasped stay truth until M6, tear/overcut stay truth safety monitors.",
+      "clear_back_m": 0.003,
+      "clear_back_basis": "config/task/m5b_protocol.json CLEAR_VIEW attempt 1: cutter backs this far off along its jaw axis, jaws unchanged, to re-observe the front.",
+      "align_mode": "tool_pose",
+      "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
+      "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "clear_view_attempts": 3,
+      "clear_view_attempts_basis": "config/task/m5b_protocol.json: consecutive clear-and-look attempts before FAILED (back-off, withdrawal-if-closed, look-only).",
+      "total_ticks": 400
+    },
+    "sheet": {
+      "seam_mode": "surface",
+      "guide_band_m": 0.0001
+    }
+  },
+  "registration_sha256": "227f4e69d03ebc2978567e6316c88a79832c56c9c1ed42b55c4083608e94f4fa",
+  "observations": [
+    {
+      "tick": 1,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {},
+      "tension": 0.0,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.0,
+      "cut_progress_m": null,
+      "tissue_visible": false
+    },
+    {
+      "tick": 2,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2292052882606851,
+      "grasped": {},
+      "tension": 0.06949362518744762,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13579006025791096,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 3,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2292052882606851,
+      "grasped": {},
+      "tension": 0.06949362518744762,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13579006025791096,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 4,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2293782137103032,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 5,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2293782137103032,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 6,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2294305832660599,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.0703233754223791,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13557207785041014,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 7,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.22942956696078579,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.070335553328573,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.1355795560985542,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 8,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.22942348429746423,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07033097848561387,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.1355868708898713,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 9,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20745116773450115,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.0768851330944127,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13558571756145432,
+      "cut_progress_m": 0.0032954577805830885,
+      "tissue_visible": true
+    },
+    {
+      "tick": 10,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20843183214992783,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07689366038245993,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.1355860263247084,
+      "cut_progress_m": 0.0033431750319446746,
+      "tissue_visible": true
+    },
+    {
+      "tick": 11,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20921658369167312,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07689366038245993,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.1355860263247084,
+      "cut_progress_m": 0.003329370793797173,
+      "tissue_visible": true
+    },
+    {
+      "tick": 12,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20937306104100248,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07691595006174001,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13558833329088782,
+      "cut_progress_m": 0.003341631050832304,
+      "tissue_visible": true
+    },
+    {
+      "tick": 13,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20949876685536165,
+      "grasped": {
+        "psm3": 24
+      },
+      "tension": 0.07691703305194353,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13558851739529088,
+      "cut_progress_m": 0.0033357677616884665,
+      "tissue_visible": true
+    },
+    {
+      "tick": 14,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20955484165345978,
+      "grasped": {
+        "psm3": 24
+      },
+      "tension": 0.07691703305194353,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13558851739529088,
+      "cut_progress_m": 0.003335004670179368,
+      "tissue_visible": true
+    },
+    {
+      "tick": 15,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20959702184757442,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.07666756467901292,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13582026905931488,
+      "cut_progress_m": 0.0033419075729879738,
+      "tissue_visible": true
+    },
+    {
+      "tick": 16,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20964261302984516,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.07666756467901292,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13582026905931488,
+      "cut_progress_m": 0.0033459943067733534,
+      "tissue_visible": true
+    },
+    {
+      "tick": 17,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2096699675449308,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.07666756467901292,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13582026905931488,
+      "cut_progress_m": 0.003345994306773352,
+      "tissue_visible": true
+    },
+    {
+      "tick": 18,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.20968592341540043,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.0770509246968889,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13569145776573288,
+      "cut_progress_m": 0.0033463254451229466,
+      "tissue_visible": true
+    },
+    {
+      "tick": 19,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2096108544922823,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.07690932368268788,
+      "torn": 0,
+      "cut_length_m": 0.002,
+      "faults": [],
+      "max_strain": 0.13565646720933033,
+      "cut_progress_m": 0.0033469804641217712,
+      "tissue_visible": true
+    },
+    {
+      "tick": 20,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.1922087432114503,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10239368003326099,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13568133416118267,
+      "cut_progress_m": 0.006453957607223559,
+      "tissue_visible": true
+    },
+    {
+      "tick": 21,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.19213820081975103,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10301072748956297,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.135767998293707,
+      "cut_progress_m": 0.006454197593038728,
+      "tissue_visible": true
+    },
+    {
+      "tick": 22,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.19203800001746008,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10301072748956297,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.135767998293707,
+      "cut_progress_m": 0.006454660013190306,
+      "tissue_visible": true
+    },
+    {
+      "tick": 23,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.033170941128604525,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10295168436800728,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13572433832028152,
+      "cut_progress_m": 0.006402176052062291,
+      "tissue_visible": true
+    },
+    {
+      "tick": 24,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.033450383857300994,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10288870890213797,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13572320259732917,
+      "cut_progress_m": 0.006428055117345707,
+      "tissue_visible": true
+    },
+    {
+      "tick": 25,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.033415376550349644,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10286524170548639,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13571883595367273,
+      "cut_progress_m": 0.006391247098615913,
+      "tissue_visible": true
+    },
+    {
+      "tick": 26,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.03343981918234569,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10286524170548639,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13571883595367273,
+      "cut_progress_m": 0.006375029199708259,
+      "tissue_visible": true
+    },
+    {
+      "tick": 27,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.03343429299110265,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10286744283292648,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13571579973529868,
+      "cut_progress_m": 0.006429730187191815,
+      "tissue_visible": true
+    },
+    {
+      "tick": 28,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.03346322447212095,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10287170868817486,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13571615421100502,
+      "cut_progress_m": 0.006422955061232696,
+      "tissue_visible": true
+    },
+    {
+      "tick": 29,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.03321941197656291,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.10286161225114432,
+      "torn": 0,
+      "cut_length_m": 0.005,
+      "faults": [],
+      "max_strain": 0.13572698457431542,
+      "cut_progress_m": 0.006427768737622002,
+      "tissue_visible": true
+    },
+    {
+      "tick": 30,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.13579702516018877,
+      "torn": 0,
+      "cut_length_m": 0.008,
+      "faults": [],
+      "max_strain": 0.15482378321986112,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 31,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.13765650708910582,
+      "torn": 0,
+      "cut_length_m": 0.008,
+      "faults": [],
+      "max_strain": 0.17386032562595366,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 32,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.13559657236731804,
+      "torn": 0,
+      "cut_length_m": 0.008,
+      "faults": [],
+      "max_strain": 0.17076244642936178,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 33,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 19,
+        "psm3": 24
+      },
+      "tension": 0.13566914908870453,
+      "torn": 0,
+      "cut_length_m": 0.008,
+      "faults": [],
+      "max_strain": 0.17154623113035394,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    }
+  ],
+  "error": null,
+  "cleanup_error": null,
+  "final_state": "FAILED",
+  "final_label": "\u5931\u8d25\u505c\u6b62",
+  "reason": "slip optical capture complete; held closed without a permit",
+  "ticks": 22,
+  "visited": [
+    "ALIGN",
+    "CUT",
+    "EXPOSE",
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE",
+    "RELOCALIZE",
+    "RESUME"
+  ],
+  "transitions": [
+    "ALIGN->ALIGN",
+    "ALIGN->CUT",
+    "CUT->ALIGN",
+    "CUT->FAILED",
+    "CUT->RELOCALIZE",
+    "EXPOSE->ALIGN",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP",
+    "RELOCALIZE->RESUME",
+    "RESUME->EXPOSE"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "world_tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "\u89c6\u89c9\u5b9a\u4f4d",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": false
+      }
+    },
+    {
+      "tick": 2,
+      "world_tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "\u5efa\u7acb\u6293\u6301",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2292052882606851,
+        "grasped": {},
+        "tension": 0.0695,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 3,
+      "world_tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "\u7ec4\u7ec7\u66b4\u9732",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2292052882606851,
+        "grasped": {},
+        "tension": 0.0695,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 4,
+      "world_tick": 4,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "tissue exposed, strain 0.069",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2293782137103032,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0693,
+        "max_strain": 0.1354,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 6,
+      "world_tick": 6,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.07 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2294305832660599,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 8,
+      "world_tick": 10,
+      "frm": "CUT",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "fresh post-bite look; re-align before advancing",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20843183214992783,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0769,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00334,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 10,
+      "world_tick": 12,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.10 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20937306104100248,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0769,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00334,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 11,
+      "world_tick": 13,
+      "frm": "CUT",
+      "to": "RELOCALIZE",
+      "label": "\u91cd\u65b0\u5b9a\u4f4d",
+      "reason": "grasp lost by ['psm1']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20949876685536165,
+        "grasped": {
+          "psm3": 24
+        },
+        "tension": 0.0769,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00334,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 12,
+      "world_tick": 14,
+      "frm": "RELOCALIZE",
+      "to": "RESUME",
+      "label": "\u6062\u590d\u6267\u884c",
+      "reason": "regrasped, retractors ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20955484165345978,
+        "grasped": {
+          "psm3": 24
+        },
+        "tension": 0.0769,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00334,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 13,
+      "world_tick": 15,
+      "frm": "RESUME",
+      "to": "EXPOSE",
+      "label": "\u7ec4\u7ec7\u66b4\u9732",
+      "reason": "preconditions met, resuming",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20959702184757442,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.0767,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00334,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 14,
+      "world_tick": 16,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "tissue exposed, strain 0.077",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.20964261302984516,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.0767,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00335,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 15,
+      "world_tick": 17,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.14 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2096699675449308,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.0767,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.002,
+        "faults": [],
+        "cut_progress_m": 0.00335,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 17,
+      "world_tick": 21,
+      "frm": "CUT",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "fresh post-bite look; re-align before advancing",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.19213820081975103,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.103,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.005,
+        "faults": [],
+        "cut_progress_m": 0.00645,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 18,
+      "world_tick": 25,
+      "frm": "ALIGN",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "visual BELOW; closed near-cut return verified",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.033415376550349644,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.1029,
+        "max_strain": 0.1357,
+        "torn": 0,
+        "cut_length_m": 0.005,
+        "faults": [],
+        "cut_progress_m": 0.00639,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 20,
+      "world_tick": 27,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.15 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.03343429299110265,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.1029,
+        "max_strain": 0.1357,
+        "torn": 0,
+        "cut_length_m": 0.005,
+        "faults": [],
+        "cut_progress_m": 0.00643,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 22,
+      "world_tick": 33,
+      "frm": "CUT",
+      "to": "FAILED",
+      "label": "\u5931\u8d25\u505c\u6b62",
+      "reason": "slip optical capture complete; held closed without a permit",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 19,
+          "psm3": 24
+        },
+        "tension": 0.1357,
+        "max_strain": 0.1715,
+        "torn": 0,
+        "cut_length_m": 0.008,
+        "faults": [],
+        "tissue_visible": true
+      }
+    }
+  ],
+  "strict_truth": true,
+  "attempts_camera": 1,
+  "structure_file": "slip_regrasp_structure.npz",
+  "structure_sha256": "92da3f5509ee32aa70d6dcd7db76cb26b680ffb85917c6768630ec86dfe982a6",
+  "events": [
+    {
+      "event": "entry_bin_estimator_created",
+      "tick": 1
+    },
+    {
+      "tick": 5,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 16,
+          "at_front": 4
+        }
+      ]
+    },
+    {
+      "tick": 5,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 0.00013362452748325035,
+      "err_along_m": 0.0026214674205733805,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 7,
+      "budget_m": 0.009319704866481659
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 7,
+      "budget_m": 0.009319704866481659
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 7,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.009319704866481659,
+      "requested_m": 0.003,
+      "commanded_m": 0.003
+    },
+    {
+      "tick": 7,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.003,
+      "candidates": [
+        {
+          "distance_m": 0.003,
+          "clear": 20,
+          "at_front": 4
+        }
+      ]
+    },
+    {
+      "event": "entry_bin_advance",
+      "tick": 7,
+      "requested_m": 0.003,
+      "accepted": true
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 8,
+      "budget_m": 0.006339462751873809
+    },
+    {
+      "tick": 8,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.00025675465883680986,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.0,
+        0.0
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "tick": 9,
+      "event": "post_closure_reacquired",
+      "mode": "slit",
+      "progress_m": 0.0032954577805830885,
+      "progress_cell_m": [
+        0.003,
+        0.006
+      ]
+    },
+    {
+      "event": "routine_post_bite_backoff",
+      "tick": 9,
+      "accepted": true,
+      "commanded": true,
+      "residual_m": 2.7784709524564193e-06
+    },
+    {
+      "event": "local_endpoint_shadow",
+      "tick": 10,
+      "status": "BELOW",
+      "reason": "",
+      "banks": [
+        {
+          "pairs": 9,
+          "offset_m": 0.006100963127957227
+        },
+        {
+          "pairs": 8,
+          "offset_m": 0.005556958356915288
+        }
+      ],
+      "depths_m": [
+        0.1311731779256701,
+        0.13159667669491015
+      ]
+    },
+    {
+      "event": "retained_coded_exposure",
+      "tick": 10,
+      "phase": "post_bite",
+      "sim_time": 12.650000000000045,
+      "preceding_closure_tick": 8,
+      "file": "010_post_bite.npz",
+      "frame_sha256": "6c2785eed8b9ff0f5d4984ad272f85bae8e1a6cbe7925abb229934f38964e0dd"
+    },
+    {
+      "tick": 11,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 17,
+          "at_front": 4
+        }
+      ]
+    },
+    {
+      "tick": 11,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 0.0004295764386114414,
+      "err_along_m": 0.0030567155380670334,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "tick": 13,
+      "event": "slip",
+      "arm": "psm1"
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 18,
+      "budget_m": 0.006408770843160096
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 18,
+      "budget_m": 0.006408770843160096
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 18,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.006408770843160096,
+      "requested_m": 0.003,
+      "commanded_m": 0.003
+    },
+    {
+      "tick": 18,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.003,
+      "candidates": [
+        {
+          "distance_m": 0.003,
+          "clear": 20,
+          "at_front": 4
+        }
+      ]
+    },
+    {
+      "event": "entry_bin_advance",
+      "tick": 18,
+      "requested_m": 0.003,
+      "accepted": true
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 19,
+      "budget_m": 0.0034027780610709525
+    },
+    {
+      "tick": 19,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.000608220667382382,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.003,
+        0.006
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "tick": 20,
+      "event": "post_closure_reacquired",
+      "mode": "slit",
+      "progress_m": 0.006453957607223559,
+      "progress_cell_m": [
+        0.006,
+        0.009000000000000001
+      ]
+    },
+    {
+      "event": "routine_post_bite_backoff",
+      "tick": 20,
+      "accepted": true,
+      "commanded": true,
+      "residual_m": 1.8997037666114065e-06
+    },
+    {
+      "event": "local_endpoint_shadow",
+      "tick": 21,
+      "status": "BELOW",
+      "reason": "",
+      "banks": [
+        {
+          "pairs": 7,
+          "offset_m": 0.0022228610056688586
+        },
+        {
+          "pairs": 8,
+          "offset_m": 0.00207736924586354
+        }
+      ],
+      "depths_m": [
+        0.13498127285028538,
+        0.1349851645621364
+      ]
+    },
+    {
+      "event": "endpoint_review_armed",
+      "tick": 21,
+      "progress_m": 0.006454197593038728
+    },
+    {
+      "event": "retained_coded_exposure",
+      "tick": 21,
+      "phase": "post_bite",
+      "sim_time": 18.65000000000013,
+      "preceding_closure_tick": 19,
+      "file": "021_post_bite.npz",
+      "frame_sha256": "27950e0dad5234a59ab92ccdf613a5da270d20d5aec778867d6ed8a423eaba54"
+    },
+    {
+      "event": "guided_v2_camera",
+      "tick": 22,
+      "action": "move",
+      "attempts": 0
+    },
+    {
+      "event": "closed_active_look",
+      "tick": 22,
+      "target": [
+        0,
+        4.5,
+        0.088
+      ],
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_entry",
+      "tick": 23,
+      "accepted": true,
+      "retreat_m": 0.004520704685110206,
+      "residual_m": 4.648392063576367e-06
+    },
+    {
+      "event": "guided_prefix_review",
+      "tick": 24,
+      "physically_closed": true,
+      "noise_sigma_m": 0.0,
+      "file": "024_certificate.npz",
+      "frame_sha256": "8964ff217085b82cb7d752d499f163b2aaab211e8449c5ec6efd8680513188ed",
+      "decision": "UNKNOWN",
+      "prefix": null,
+      "local_mm": null,
+      "states": [
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ]
+      ],
+      "faces": [
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 31,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 25,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 4,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ]
+      ],
+      "corners": [
+        null,
+        {
+          "polygon": [
+            [
+              1138.3081245849717,
+              690.3116536645942
+            ],
+            [
+              1169.6794189523093,
+              690.3116536645942
+            ],
+            [
+              1169.6794189523093,
+              723.701294224808
+            ],
+            [
+              1138.3081245849717,
+              723.701294224808
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1078.4278139805963,
+              701.4299217426692
+            ],
+            [
+              1084.138814235005,
+              701.4299217426692
+            ],
+            [
+              1112.577968305955,
+              729.8690758136191
+            ],
+            [
+              1112.577968305955,
+              731.5986610327056
+            ],
+            [
+              1105.88976854037,
+              731.5986610327056
+            ],
+            [
+              1078.4278139805963,
+              704.136706472932
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1164.567635232475,
+              733.0599378413583
+            ],
+            [
+              1164.567635232475,
+              739.8212244376116
+            ],
+            [
+              1132.4339555846661,
+              720.5410166489264
+            ],
+            [
+              1132.4339555846661,
+              713.779730052673
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1073.5331007677382,
+              716.562665061142
+            ],
+            [
+              1075.9379421814972,
+              716.562665061142
+            ],
+            [
+              1105.4522520713613,
+              742.6047031992572
+            ],
+            [
+              1105.4522520713613,
+              746.4703526150884
+            ],
+            [
+              1100.8994778515637,
+              746.4703526150884
+            ],
+            [
+              1073.5331007677382,
+              722.3235493058304
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1067.6735808349206,
+              730.694265366834
+            ],
+            [
+              1068.3414196614408,
+              730.694265366834
+            ],
+            [
+              1099.3232417163358,
+              754.7912380761967
+            ],
+            [
+              1099.3232417163358,
+              760.3398090209565
+            ],
+            [
+              1097.13096169429,
+              760.3398090209565
+            ],
+            [
+              1067.6735808349206,
+              737.4285127970027
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1094.1961749484303,
+              764.5591358667297
+            ],
+            [
+              1094.1961749484303,
+              771.0762740713867
+            ],
+            [
+              1062.8074879283895,
+              752.2430618593622
+            ],
+            [
+              1062.8074879283895,
+              745.7259236547052
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1089.0674652588002,
+              773.3110284654721
+            ],
+            [
+              1089.0674652588002,
+              779.4610846134996
+            ],
+            [
+              1057.9334443371413,
+              766.1179327899315
+            ],
+            [
+              1057.9334443371413,
+              759.9678766419039
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1075.9705565474405,
+              804.9334634587508
+            ],
+            [
+              1075.9705565474405,
+              810.9880719719011
+            ],
+            [
+              1047.0209988047,
+              795.82401791618
+            ],
+            [
+              1047.0209988047,
+              789.7694094030296
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1101.0415714865733,
+              812.0431079266449
+            ],
+            [
+              1131.964146329774,
+              812.0431079266449
+            ],
+            [
+              1131.964146329774,
+              844.9624540767506
+            ],
+            [
+              1101.0415714865733,
+              844.9624540767506
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1074.8405335677492,
+              810.9381487711594
+            ],
+            [
+              1074.8405335677492,
+              817.3233625855304
+            ],
+            [
+              1045.1502555831548,
+              801.7713122126476
+            ],
+            [
+              1045.1502555831548,
+              795.3860983982765
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1128.8362498112447,
+              840.4588979635625
+            ],
+            [
+              1128.8362498112447,
+              846.7446018099312
+            ],
+            [
+              1100.1500583509069,
+              829.5328869337285
+            ],
+            [
+              1100.1500583509069,
+              823.2471830873599
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1062.7459511695206,
+              838.4179139309114
+            ],
+            [
+              1062.7459511695206,
+              844.6772274725133
+            ],
+            [
+              1034.2426653169355,
+              827.5752559609623
+            ],
+            [
+              1034.2426653169355,
+              821.3159424193602
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1117.7377457684893,
+              867.0076756232919
+            ],
+            [
+              1117.7377457684893,
+              873.2413913722683
+            ],
+            [
+              1087.258751452681,
+              857.2762038735116
+            ],
+            [
+              1087.258751452681,
+              851.0424881245352
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1026.3484590663872,
+              834.3712802830352
+            ],
+            [
+              1055.6407141753025,
+              834.3712802830352
+            ],
+            [
+              1055.6407141753025,
+              865.637803439428
+            ],
+            [
+              1026.3484590663872,
+              865.637803439428
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1110.6483424773296,
+              884.9177401261943
+            ],
+            [
+              1110.6483424773296,
+              891.2094105686598
+            ],
+            [
+              1080.3726608900859,
+              878.234118459841
+            ],
+            [
+              1080.3726608900859,
+              871.9424480173755
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1026.4851692065436,
+              839.4980357159843
+            ],
+            [
+              1057.5193003484665,
+              839.4980357159843
+            ],
+            [
+              1057.5193003484665,
+              869.511627386429
+            ],
+            [
+              1026.4851692065436,
+              869.511627386429
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1082.4846893681588,
+              868.4891616950815
+            ],
+            [
+              1112.5168487044448,
+              868.4891616950815
+            ],
+            [
+              1112.5168487044448,
+              899.5164144961038
+            ],
+            [
+              1082.4846893681588,
+              899.5164144961038
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1014.5492128952658,
+              865.5697161944191
+            ],
+            [
+              1042.4424148558267,
+              865.5697161944191
+            ],
+            [
+              1042.4424148558267,
+              894.4406084348917
+            ],
+            [
+              1014.5492128952658,
+              894.4406084348917
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1098.4499907141844,
+              914.5740423364003
+            ],
+            [
+              1098.4499907141844,
+              920.8116639900436
+            ],
+            [
+              1068.5515725768457,
+              907.9980562168984
+            ],
+            [
+              1068.5515725768457,
+              901.7604345632551
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        null,
+        {
+          "polygon": [
+            [
+              1036.2406606298998,
+              905.5901127849759
+            ],
+            [
+              1036.2406606298998,
+              911.5667697796812
+            ],
+            [
+              1007.7508219286144,
+              896.6435209361507
+            ],
+            [
+              1007.7508219286144,
+              890.6668639414454
+            ]
+          ],
+          "source": "end-edge"
+        },
+        {
+          "polygon": [
+            [
+              1090.2424471481777,
+              936.187842583299
+            ],
+            [
+              1090.2424471481777,
+              942.7030939945141
+            ],
+            [
+              1060.759887188249,
+              925.013558018557
+            ],
+            [
+              1060.759887188249,
+              918.4983066073419
+            ]
+          ],
+          "source": "end-edge"
+        }
+      ],
+      "reason": "no unique supported local front",
+      "verdict": "UNKNOWN"
+    },
+    {
+      "event": "guided_v2_optical",
+      "tick": 24,
+      "verdict": "BELOW",
+      "prefix_mm": 5,
+      "sigma": 0.0,
+      "file": "024_certificate.npz",
+      "frame_sha256": "8964ff217085b82cb7d752d499f163b2aaab211e8449c5ec6efd8680513188ed"
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 24,
+      "phase": "resume",
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_resume",
+      "tick": 25,
+      "visual_prefix_mm": 5,
+      "cap_m": 0.003999999999999999
+    },
+    {
+      "tick": 26,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "tick": 26,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 0.00018292850701080572,
+      "err_along_m": 0.0029567106704517154,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "event": "terminal_trace_estimate",
+      "tick": 28,
+      "file": "028_estimator_input.npz",
+      "sha256": "ea7e710a79b1220b542a68b0be23fde0c8ceffa864f6d8d4a72970ae83ba6728",
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.07636811541316128,
+            -0.9949031989450885,
+            0.6983325808724115
+          ],
+          "normal": [
+            -0.3068180289567391,
+            -0.4097041522856281,
+            -0.8590722930621244
+          ],
+          "e1": [
+            0.924077603608397,
+            0.08790617964008283,
+            -0.3719584467255023
+          ],
+          "e2": [
+            0.2279106834188879,
+            -0.907973023377347,
+            0.35162723046222605
+          ],
+          "n_points": 3559
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07501015869652466,
+            -0.9951963750202644,
+            0.6980076192168647
+          ],
+          "axis": [
+            -0.27942978344614067,
+            0.9021675850391129,
+            -0.3286527721287916
+          ],
+          "tip_uv": [
+            621.5762728138102,
+            461.81313323599704
+          ],
+          "distal_uv": [
+            600.0535714285714,
+            357.9761904761905
+          ],
+          "proximal_uv": [
+            609.1784702549575,
+            307.2917847025496
+          ],
+          "third_uv": [
+            587.1713554987213,
+            363.3299232736573
+          ],
+          "fit_rms_m": 1.1510372775047675e-05,
+          "original_rms_m": 5.777320738156821e-06,
+          "jaw_axis": [
+            -0.27942978344614494,
+            0.902167585039107,
+            -0.32865277212880334
+          ],
+          "opening_axis": [
+            -0.9064574991053757,
+            -0.13499038157410964,
+            0.40014047433133404
+          ]
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "direction": [
+            -0.23494794779537398,
+            0.9072765696902211,
+            -0.34878171958674703
+          ],
+          "start": [
+            -0.0740264769496334,
+            -0.9997303563934391,
+            0.6997984057658302
+          ],
+          "material_chart": {
+            "valid": true,
+            "boundary_pairs": [
+              [
+                34,
+                50
+              ],
+              [
+                48,
+                49
+              ],
+              [
+                45,
+                47
+              ],
+              [
+                43,
+                47
+              ],
+              [
+                42,
+                46
+              ]
+            ],
+            "reason": "",
+            "origin_m": -0.0054409829295183326,
+            "material_knots_m": [
+              0.0,
+              0.003,
+              0.006,
+              0.009000000000000001,
+              0.013000000000000001
+            ],
+            "complete": true,
+            "projected_knots_m": [
+              0.0,
+              0.002755514061682213,
+              0.0056036388925141765,
+              0.00841500925179505,
+              0.011496656728217435
+            ],
+            "guard_knots_m": [
+              -0.00046064875309126396,
+              0.002311338220261648,
+              0.004967396114941412,
+              0.008028297689479526,
+              0.01110496666669086
+            ]
+          },
+          "material_start": [
+            -0.0740264769496334,
+            -0.9997303563934391,
+            0.6997984057658302
+          ],
+          "front_valid": true,
+          "front": [
+            -0.07543616463640564,
+            -0.9942866969752977,
+            0.6977057154483097
+          ],
+          "front_uv": [
+            619.7144043672415,
+            463.93765225338177
+          ],
+          "cut_site_offset": 0.033463224472121314,
+          "mode": "slit",
+          "slit_opening_m": 0.0012226633539107624,
+          "slit_px": 133,
+          "progress_m": 0.006422955061232696,
+          "progress_cell_m": [
+            0.006,
+            0.009000000000000001
+          ]
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.01650863840146767,
+          "slit_opening_m": 0.0012226633539107624,
+          "strain_proxy": -0.006990696759773041
+        }
+      }
+    },
+    {
+      "event": "terminal_trace_fix",
+      "tick": 28,
+      "awaiting_before": false,
+      "awaiting_after": false
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 28,
+      "budget_m": 0.003278182246812161
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 28,
+      "budget_m": 0.003278182246812161
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 28,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.003278182246812161,
+      "requested_m": 0.003,
+      "commanded_m": 0.003
+    },
+    {
+      "tick": 28,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.003,
+      "candidates": [
+        {
+          "distance_m": 0.003,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "event": "guided_visual_cap",
+      "tick": 28,
+      "cap_m": 0.003999999999999999,
+      "limited_m": 0.003,
+      "accepted": true
+    },
+    {
+      "event": "entry_bin_advance",
+      "tick": 28,
+      "requested_m": 0.003,
+      "accepted": true
+    },
+    {
+      "event": "terminal_trace_estimate",
+      "tick": 29,
+      "file": "029_estimator_input.npz",
+      "sha256": "c023910ad77fa71c667f8d5f53d91ac0ccc535e660a950dc697208d266220327",
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.07634748099577887,
+            -0.9948245855220008,
+            0.6982878565845834
+          ],
+          "normal": [
+            -0.3067826837211465,
+            -0.4098068524983327,
+            -0.8590359297574585
+          ],
+          "e1": [
+            0.9248590032259266,
+            0.08478801833058328,
+            -0.37073820426214366
+          ],
+          "e2": [
+            0.22476701074845815,
+            -0.9082231749922389,
+            0.35300206130590844
+          ],
+          "n_points": 3468
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07593398082320485,
+            -0.9925163009154903,
+            0.6969722547118513
+          ],
+          "axis": [
+            -0.2817632130020431,
+            0.9008988857883179,
+            -0.330137379562104
+          ],
+          "tip_uv": [
+            618.3119158836712,
+            469.2072153948425
+          ],
+          "distal_uv": [
+            597.2397660818714,
+            369.1578947368421
+          ],
+          "proximal_uv": [
+            605.9033232628399,
+            321.33534743202415
+          ],
+          "third_uv": [
+            584.6666666666666,
+            375.31451612903226
+          ],
+          "fit_rms_m": 9.455862827361459e-06,
+          "original_rms_m": 4.639382652368926e-06,
+          "jaw_axis": [
+            -0.2817632130020475,
+            0.9008988857883125,
+            -0.33013737956211586
+          ],
+          "opening_axis": [
+            -0.9064334194727978,
+            -0.13710507131056493,
+            0.39947547544721285
+          ]
+        },
+        "cut": {
+          "valid": true,
+          "reason": "",
+          "direction": [
+            -0.24834755189676436,
+            0.9057575541578077,
+            -0.3434046396788355
+          ],
+          "start": [
+            -0.07392190562238489,
+            -0.9997099109853581,
+            0.6997521903631552
+          ],
+          "material_chart": {
+            "valid": true,
+            "boundary_pairs": [
+              [
+                31,
+                50
+              ],
+              [
+                32,
+                49
+              ],
+              [
+                46,
+                47
+              ],
+              [
+                42,
+                47
+              ],
+              [
+                41,
+                46
+              ]
+            ],
+            "reason": "",
+            "origin_m": -0.005530165162478826,
+            "material_knots_m": [
+              0.0,
+              0.003,
+              0.006,
+              0.009000000000000001,
+              0.013000000000000001
+            ],
+            "complete": true,
+            "projected_knots_m": [
+              0.0,
+              0.00270153327816418,
+              0.00560022002133711,
+              0.008403931070105859,
+              0.011476937981002515
+            ],
+            "guard_knots_m": [
+              -0.00044580917631623345,
+              0.0023133447669000094,
+              0.0050592365270706145,
+              0.008104467252410617,
+              0.011169062203448892
+            ]
+          },
+          "material_start": [
+            -0.07392190562238489,
+            -0.9997099109853581,
+            0.6997521903631552
+          ],
+          "front_valid": true,
+          "front": [
+            -0.07541199093376548,
+            -0.9942753656604113,
+            0.6976917625250821
+          ],
+          "front_uv": [
+            619.8868131094432,
+            464.0546822512494
+          ],
+          "cut_site_offset": 0.033219411976563744,
+          "mode": "slit",
+          "slit_opening_m": 0.0013187296517489107,
+          "slit_px": 111,
+          "progress_m": 0.006427768737622002,
+          "progress_cell_m": [
+            0.006,
+            0.009000000000000001
+          ]
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.01654422471692646,
+          "slit_opening_m": 0.0013187296517489107,
+          "strain_proxy": -0.004850148190032932
+        }
+      }
+    },
+    {
+      "event": "terminal_trace_fix",
+      "tick": 29,
+      "awaiting_before": false,
+      "awaiting_after": false
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 29,
+      "budget_m": 0.00035061257669952856
+    },
+    {
+      "tick": 29,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.0008075180897831375,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.006,
+        0.009000000000000001
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "event": "terminal_trace_estimate",
+      "tick": 30,
+      "file": "030_estimator_input.npz",
+      "sha256": "8362b8157b2976e346519259024d702670695149b6d475291aed742363206574",
+      "estimate": {
+        "tissue": {
+          "valid": true,
+          "reason": "",
+          "centroid": [
+            -0.07642842461956768,
+            -0.9948065920166496,
+            0.6983146158816287
+          ],
+          "normal": [
+            -0.3061361648747776,
+            -0.4097038545606134,
+            -0.8593156580174357
+          ],
+          "e1": [
+            0.9243050352311,
+            0.0881752536745054,
+            -0.37132913498118186
+          ],
+          "e2": [
+            0.22790535404461051,
+            -0.9079470668478491,
+            0.3516977017271916
+          ],
+          "n_points": 3433
+        },
+        "scissors": {
+          "valid": true,
+          "reason": "",
+          "tip": [
+            -0.07593398082320485,
+            -0.9925163009154903,
+            0.6969722547118513
+          ],
+          "axis": [
+            -0.2817632130020431,
+            0.9008988857883179,
+            -0.330137379562104
+          ],
+          "tip_uv": [
+            618.3119158836712,
+            469.2072153948425
+          ],
+          "distal_uv": [
+            597.2397660818714,
+            369.1578947368421
+          ],
+          "proximal_uv": [
+            605.9033232628399,
+            321.33534743202415
+          ],
+          "third_uv": [
+            584.6666666666666,
+            375.31451612903226
+          ],
+          "fit_rms_m": 9.455862827361459e-06,
+          "original_rms_m": 4.639382652368926e-06,
+          "jaw_axis": [
+            -0.2817632130020475,
+            0.9008988857883125,
+            -0.33013737956211586
+          ],
+          "opening_axis": [
+            -0.9064334194727978,
+            -0.13710507131056493,
+            0.39947547544721285
+          ]
+        },
+        "cut": {
+          "valid": true,
+          "reason": "slit seen but no front candidate provable ahead",
+          "direction": [
+            -0.22844690364961498,
+            0.9078952454411322,
+            -0.35148006418329103
+          ],
+          "start": [
+            -0.07385617475368352,
+            -0.9997669445405322,
+            0.6997632300531018
+          ],
+          "material_chart": {
+            "valid": true,
+            "boundary_pairs": [
+              [
+                33,
+                50
+              ],
+              [
+                39,
+                50
+              ],
+              [
+                40,
+                48
+              ],
+              [
+                47,
+                46
+              ],
+              [
+                46,
+                46
+              ]
+            ],
+            "reason": "",
+            "origin_m": -0.0056002619913855575,
+            "material_knots_m": [
+              0.0,
+              0.003,
+              0.006,
+              0.009000000000000001,
+              0.013000000000000001
+            ],
+            "complete": true,
+            "projected_knots_m": [
+              0.0,
+              0.0027043544593535213,
+              0.005531376983128689,
+              0.00851089547640735,
+              0.011577722509302144
+            ],
+            "guard_knots_m": [
+              -0.0004383301127252343,
+              0.0021964451688814422,
+              0.004947148586075529,
+              0.00806430842405614,
+              0.011142026103057902
+            ]
+          },
+          "material_start": [
+            -0.07385617475368352,
+            -0.9997669445405322,
+            0.6997632300531018
+          ],
+          "front_valid": false,
+          "mode": "slit",
+          "slit_px": 122
+        },
+        "tension_proxy": {
+          "valid": true,
+          "reason": "",
+          "width_m": 0.016766981350893398,
+          "slit_opening_m": 0.0,
+          "strain_proxy": 0.008548861740912184
+        }
+      }
+    },
+    {
+      "event": "terminal_trace_fix",
+      "tick": 30,
+      "awaiting_before": true,
+      "awaiting_after": true
+    },
+    {
+      "event": "slip_optical_checkpoint",
+      "tick": 30,
+      "waypoints": 4,
+      "first_reverse_m": 0.0029999965205248467,
+      "camera_attempts": 1
+    },
+    {
+      "event": "guided_prefix_review",
+      "tick": 30,
+      "physically_closed": true,
+      "noise_sigma_m": 0.0,
+      "file": "030_certificate.npz",
+      "frame_sha256": "1dde59d48554edd12e42b6415b479c5e7b2212d82df2a29c27bc5487ac183bb4",
+      "decision": "UNKNOWN",
+      "prefix": null,
+      "local_mm": null,
+      "states": [
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ]
+      ],
+      "faces": [
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ]
+      ],
+      "corners": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "polygon": [
+            [
+              1054.6457608861515,
+              849.9914148779109
+            ],
+            [
+              1054.6457608861515,
+              856.0660489075813
+            ],
+            [
+              1024.3694916105082,
+              840.2070507155777
+            ],
+            [
+              1024.3694916105082,
+              834.1324166859072
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1054.5328604025526,
+              857.5783872613999
+            ],
+            [
+              1054.5328604025526,
+              863.8846093507981
+            ],
+            [
+              1024.4696909966556,
+              848.1372349000901
+            ],
+            [
+              1024.4696909966556,
+              841.831012810692
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1014.5530092791926,
+              861.5656107521561
+            ],
+            [
+              1043.4435034044318,
+              861.5656107521561
+            ],
+            [
+              1043.4435034044318,
+              891.4449011362201
+            ],
+            [
+              1014.5530092791926,
+              891.4449011362201
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1101.4538651524188,
+              912.3603321531086
+            ],
+            [
+              1101.4538651524188,
+              918.6389551494254
+            ],
+            [
+              1070.5666046753981,
+              902.4599139471765
+            ],
+            [
+              1070.5666046753981,
+              896.1812909508598
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1015.6783352560202,
+              864.6888718714265
+            ],
+            [
+              1047.3261325619774,
+              864.6888718714265
+            ],
+            [
+              1047.3261325619774,
+              897.3168626943651
+            ],
+            [
+              1015.6783352560202,
+              897.3168626943651
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1071.6699448118006,
+              896.6817995592825
+            ],
+            [
+              1072.701005566897,
+              896.6817995592825
+            ],
+            [
+              1100.326364597928,
+              915.5833610015668
+            ],
+            [
+              1100.326364597928,
+              922.1790326587557
+            ],
+            [
+              1071.6699448118006,
+              902.5720085945633
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1036.2406606298998,
+              905.5901169636059
+            ],
+            [
+              1036.2406606298998,
+              911.5667656010511
+            ],
+            [
+              1007.7500641949215,
+              896.6431198493957
+            ],
+            [
+              1007.7500641949215,
+              890.6664712119506
+            ]
+          ],
+          "source": "end-edge"
+        },
+        {
+          "polygon": [
+            [
+              1090.2425851824637,
+              936.1879351951586
+            ],
+            [
+              1090.2425851824637,
+              942.7031670237978
+            ],
+            [
+              1060.7599561874865,
+              925.0135896268115
+            ],
+            [
+              1060.7599561874865,
+              918.4983577981723
+            ]
+          ],
+          "source": "end-edge"
+        }
+      ],
+      "reason": "no unique supported local front",
+      "verdict": "UNKNOWN"
+    },
+    {
+      "event": "slip_optical_pair",
+      "phase": "closed",
+      "tick": 30,
+      "sim_time": 23.5000000000002,
+      "wide": "030_wide.npz",
+      "wide_sha256": "9541b4ee32f61e0d66580939be347e2fda58420050077f2f8b1d59552f377cff",
+      "narrow": "030_certificate.npz",
+      "narrow_sha256": "1dde59d48554edd12e42b6415b479c5e7b2212d82df2a29c27bc5487ac183bb4",
+      "structure": "closed_structure.npz",
+      "structure_sha256": "92da3f5509ee32aa70d6dcd7db76cb26b680ffb85917c6768630ec86dfe982a6"
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 30,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 31,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 32,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    },
+    {
+      "event": "guided_prefix_review",
+      "tick": 33,
+      "physically_closed": true,
+      "noise_sigma_m": 0.0,
+      "file": "033_certificate.npz",
+      "frame_sha256": "cbac3dead9ecec62041a45cc8486eaeb58391a52e804aa9b5c9d713064f7008a",
+      "decision": "UNKNOWN",
+      "prefix": null,
+      "local_mm": null,
+      "states": [
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ]
+      ],
+      "faces": [
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 2,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 14,
+            "blocks": 0
+          }
+        ]
+      ],
+      "corners": [
+        null,
+        {
+          "polygon": [
+            [
+              1166.2642087690572,
+              700.2675729690715
+            ],
+            [
+              1197.7216811576689,
+              700.2675729690715
+            ],
+            [
+              1197.7216811576689,
+              732.7493112498057
+            ],
+            [
+              1166.2642087690572,
+              732.7493112498057
+            ]
+          ],
+          "source": "cap"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1190.6119980111878,
+              742.8879006148834
+            ],
+            [
+              1190.6119980111878,
+              749.637742005809
+            ],
+            [
+              1190.0793258190547,
+              749.637742005809
+            ],
+            [
+              1158.3925056011376,
+              727.957286067234
+            ],
+            [
+              1158.3925056011376,
+              720.8429847553753
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        null,
+        {
+          "polygon": [
+            [
+              1091.3446545208624,
+              745.6273750443692
+            ],
+            [
+              1091.3446545208624,
+              752.1862103806658
+            ],
+            [
+              1058.6679899807991,
+              732.5802116566279
+            ],
+            [
+              1058.6679899807991,
+              726.0213763203311
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1084.2196077407311,
+              761.5700837641501
+            ],
+            [
+              1084.2196077407311,
+              768.0934455247271
+            ],
+            [
+              1052.7776546602986,
+              749.2282736764676
+            ],
+            [
+              1052.7776546602986,
+              742.7049119158906
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1079.0897367853906,
+              771.7944380194821
+            ],
+            [
+              1079.0897367853906,
+              778.2519528985463
+            ],
+            [
+              1048.8933903659931,
+              762.4348190598142
+            ],
+            [
+              1048.8933903659931,
+              755.97730418075
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1036.0011918185664,
+              777.0167841393223
+            ],
+            [
+              1065.989143153844,
+              777.0167841393223
+            ],
+            [
+              1065.989143153844,
+              807.9964630278234
+            ],
+            [
+              1036.0011918185664,
+              807.9964630278234
+            ]
+          ],
+          "source": "cap"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1066.8617903845766,
+              800.8346835261782
+            ],
+            [
+              1066.8617903845766,
+              807.1897082320302
+            ],
+            [
+              1036.1451625592579,
+              794.0254391640365
+            ],
+            [
+              1036.1451625592579,
+              787.6704144581845
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1055.76004283471,
+              832.7920292094827
+            ],
+            [
+              1055.76004283471,
+              838.9089680459277
+            ],
+            [
+              1027.2230724372062,
+              823.9610311710447
+            ],
+            [
+              1027.2230724372062,
+              817.8440923345997
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1053.637426965744,
+              850.6820577058155
+            ],
+            [
+              1053.637426965744,
+              856.8904848297258
+            ],
+            [
+              1023.3772786789202,
+              841.0399309651991
+            ],
+            [
+              1023.3772786789202,
+              834.8315038412888
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1054.5366546675941,
+              856.5803696978742
+            ],
+            [
+              1054.5366546675941,
+              862.886601858653
+            ],
+            [
+              1024.4717613394055,
+              847.1383244010303
+            ],
+            [
+              1024.4717613394055,
+              840.8320922402515
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1082.4624050307905,
+              869.4669075000281
+            ],
+            [
+              1112.538511608086,
+              869.4669075000281
+            ],
+            [
+              1112.538511608086,
+              899.5457978607558
+            ],
+            [
+              1082.4624050307905,
+              899.5457978607558
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1015.5459799327074,
+              861.5652009499103
+            ],
+            [
+              1043.4437780457763,
+              861.5652009499103
+            ],
+            [
+              1043.4437780457763,
+              890.4469994299711
+            ],
+            [
+              1015.5459799327074,
+              890.4469994299711
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1101.4344087251693,
+              910.27407600941
+            ],
+            [
+              1101.4344087251693,
+              916.6603327157592
+            ],
+            [
+              1071.5650116809957,
+              901.7256341936724
+            ],
+            [
+              1071.5650116809957,
+              895.3393774873232
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1045.331333612106,
+              881.9668751476831
+            ],
+            [
+              1045.331333612106,
+              888.1742679484078
+            ],
+            [
+              1015.6745409520875,
+              875.464213951257
+            ],
+            [
+              1015.6745409520875,
+              869.2568211505322
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1071.6642875586333,
+              897.6809186700875
+            ],
+            [
+              1072.7004804124895,
+              897.6809186700875
+            ],
+            [
+              1100.327605604104,
+              916.5836885380344
+            ],
+            [
+              1100.327605604104,
+              923.1804033412659
+            ],
+            [
+              1071.6642875586333,
+              903.5686594154175
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1036.2407296158683,
+              905.5901479959313
+            ],
+            [
+              1036.2407296158683,
+              911.5668068397404
+            ],
+            [
+              1007.7496498111254,
+              896.6429078943988
+            ],
+            [
+              1007.7496498111254,
+              890.6662490505898
+            ]
+          ],
+          "source": "end-edge"
+        },
+        {
+          "polygon": [
+            [
+              1090.2425851824637,
+              936.187945258345
+            ],
+            [
+              1090.2425851824637,
+              942.7031569606114
+            ],
+            [
+              1060.7600271027939,
+              925.0136221128096
+            ],
+            [
+              1060.7600271027939,
+              918.4984104105431
+            ]
+          ],
+          "source": "end-edge"
+        }
+      ],
+      "reason": "no unique supported local front",
+      "verdict": "UNKNOWN"
+    },
+    {
+      "event": "slip_optical_pair",
+      "phase": "entrance",
+      "tick": 33,
+      "sim_time": 25.75000000000023,
+      "wide": "033_wide.npz",
+      "wide_sha256": "4aaf2b3b44296c46915e63a3fba943a105f4f157669bdda5877234f489d2edc0",
+      "narrow": "033_certificate.npz",
+      "narrow_sha256": "cbac3dead9ecec62041a45cc8486eaeb58391a52e804aa9b5c9d713064f7008a",
+      "structure": "entrance_structure.npz",
+      "structure_sha256": "92da3f5509ee32aa70d6dcd7db76cb26b680ffb85917c6768630ec86dfe982a6"
+    }
+  ],
+  "actual_closed": true,
+  "actual_ready": false,
+  "truth_purposes": {
+    "grasp_signal_and_safety_monitor": {
+      "tissue_stats": 33
+    },
+    "tension_until_m6": {
+      "cut_line_tension": 33,
+      "nodes": 32,
+      "cut_length": 32
+    },
+    "safety_monitor": {
+      "cut_length": 33
+    },
+    "scoring": {
+      "nodes": 99,
+      "cut_length": 99,
+      "cut_front": 35,
+      "cut_line_tension": 32,
+      "constraints": 3
+    },
+    "retractor_planning": {
+      "cut_front": 2,
+      "nodes": 4,
+      "cut_length": 2
+    }
+  },
+  "controller_sha256": "271f7fd7c643b7b915c9e839099d42240795f6558e2fecc606b080073a55f2e5"
+}

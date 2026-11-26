@@ -1,0 +1,18 @@
+{
+  "id": "m5_guided_10mm_exact_v1",
+  "scope": "One isolated exact-10-mm positive control candidate. The nominal 9 mm v2 controller and historical records are unchanged.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "nominal_v2_decision_sha256": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+  "nominal_v2_registration_sha256": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+  "prior_control_sha256": "2f6a659333a666bec4e0e64f7d0d9be84a89fcfc617e085a0bff78a33144a11a",
+  "target_m": [0.009, 0.010],
+  "exact_control_target_m": 0.010,
+  "exact_control_overcut_m": 0.0,
+  "absolute_limit_m": 0.010,
+  "max_recorded_waypoints": 8,
+  "maximum_closures": 3,
+  "ordinary_advance_cap_m": 0.003,
+  "procedure": "Run the original v2 approach without the smaller second-cap intervention. For this control alone set the requested optical target to 10 mm and its overcut allowance to zero. Verify that the native absolute envelope, guard chart and all movement/sweep limits and reserves are unchanged. This can increase requested travel after BELOW relative to 9 mm nominal but cannot increase the original safe sweep envelope. Keep the original post-closure fresh slit prerequisite; do not add camera moves, retries, or a fourth closure. A 9 mm TARGET is not this control's permit: hold closed and do not resume. Only TARGET(10) authorizes v2's single guarded ready-pose withdrawal.",
+  "gate": "Require three guarded closures and fresh reacquisition after each, a fresh measured BELOW before the third, and live TARGET(10) afterward matching offline replay. Independent structure prefix and farthest damage must be exactly 10 mm, with no growth after TARGET, no tear, fault, extra closure or overcut. Require closed, ready and DONE with a same-tick guarded release to ready pose and no runtime, sensing or cleanup error. Missing evidence or any other length does not permit disturbance evaluation."
+}

@@ -1,0 +1,60 @@
+{
+  "plan": {
+    "id": "m5_v3_readonly_v1",
+    "scope": "One fresh, uncut two-axis fixture. Only non-cutting guarded poses and passive images. Opening for the last two exposures is permitted; closing on the specimen is forbidden. Never command motion from structural measurements.",
+    "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "distal_registration_sha256": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+    "distal_decision_sha256": "d05df430bf1d06f447be202a425732f83e9c64d0f2d4ff1f4c7d9d159b16771e",
+    "corner_reader": "Use the sealed v4 endpoint reader only at 20 degrees, and a sparse paired-bank chart at 70 degrees. No terminal designation from passive intact data.",
+    "work_reader": "The last fresh optical review owns the material prefix. The current work frame places two consecutive forward bilateral stations, measures the goal and hard sweep rows directly, and either measures the boundary on both sides or extrapolates the observed pitch by one row for alignment only. A covered entrance, crossed slit mask or partial transition supplies no positive evidence and is not a negative when both required stations are independently visible.",
+    "fk": "Fit one static neutral twist from six sealed command/closure TCP pairs, reuse the sealed pitch intercept and the installed 420179 CAD geometry. Check against six separate pre-advance snapshots within 0.20 mm and 0.20 degree. During live evaluation use only the validated constants plus joint readback; never use a world TCP matrix or remote toolPoseFK for the readout or advance target.",
+    "views": {
+      "work_deg": 70,
+      "work_size": [
+        1280,
+        960
+      ],
+      "review_deg": 20,
+      "review_size": [
+        2560,
+        1920
+      ],
+      "ecm_work": [
+        3.0,
+        0.0,
+        0.08
+      ],
+      "ecm_review": [
+        0.0,
+        4.5,
+        0.088
+      ]
+    },
+    "guarded_waypoints_mm": {
+      "entry_clear": -3,
+      "align": -1,
+      "advanced": 2
+    },
+    "gate": "Keep guards, grips and spring topology unchanged. Compare closed alignment and open advance work charts: both require current marker fit, valid chart, forward sweep room, and agreement within 0.4 mm front and 5 degrees direction. At the registered review ECM view, closed -3 mm must show both numbered shores and both face codes of all 13 intervals with depth valid and row zero optically intact. Pass neither phase from truth, a different capture, or a rendered cut. This plan does not authorize any cutting benchmark on a failed gate."
+  },
+  "sources": {
+    "config/task/m5_v3_readonly_v1.json": "39cea0f3753f7d5814676e62ab78cfbd2435ee6eb32313020e73fc12f014b8e9",
+    "validation/task/m5_v3_fixture_preflight_v1/decision.json": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+    "validation/task/m5_v3_fixture_preflight_v1/registration.json": "d41cef1ea2df1db980c10353ee7e0d4f210bd232a395d1520471c4deb7a6a094",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "validation/task/m5_v3_distal_workspace_v2/decision.json": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "src/tissue/cell_certificate_print.lua": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d",
+    "scripts/task/capture_m5_v3_readonly_v4.py": "ec717b58b1f2bab256c56153f362e6bdc93418e620ae0b82ecba8610beea581c",
+    "scripts/task/m5_v3_controller_v2.py": "0971ba292c6fa09de361d994b6709927679f074abe05b4b3fcc54689246d906e",
+    "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42",
+    "scripts/task/preflight_m5_v3_fixture_v1.py": "8db571442755d409e8175ac72bb85f9c8de0e6450ee34c13cc723597ea7955c7",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/vision/m5_v3_corridor_v4.py": "5e9182c65ea4c33dd7f233dbf74a59ce9dba0f8145c3e6525b7504b417c85975",
+    "scripts/vision/m5_v3_perception_v2.py": "5888fd23df1c390a2d044d7d494da82c5c2f1bd9a25bc5d711cf1ed6a4162dd5",
+    "scripts/vision/m5_v3_perception.py": "b5da619677a7efd346664ee93a66980b8454bcec4249e6b7a317545f629eeb5e",
+    "scripts/learn/capture_m5_temporal_coded.py": "44c5a3af58c1a0c315824f16a065102276ed66ea1b8ff5bed82f0d2a2e2a1870",
+    "scripts/vision/cut_perception.py": "c9246433b35cc449d229ec017b1729ae1e69fa188b15a38dd35137cb4667417c"
+  }
+}

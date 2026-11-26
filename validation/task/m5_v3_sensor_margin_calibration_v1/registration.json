@@ -1,0 +1,815 @@
+{
+  "plan": {
+    "id": "m5_v3_sensor_margin_calibration_v1",
+    "scope": "Offline only. Use both work exposures of the uncut readonly_v4 acquisition and all 70-degree work exposures of positive_outer_v2 nominal. Exclude the previous fifth-bite trajectory and all final outcome labels from the calibration and seed choice.",
+    "sources": {
+      "validation/task/m5_v3_readonly_v4/decision.json": "629f0b0a7352de2371abf6e74336c16939171b23fd6391b461233fa06a625545",
+      "validation/task/m5_v3_positive_outer_v2/decision.json": "7be12dde4b1d4b88be09b6d13814ab2103d0344ca2ab02416157fc96183cc6d6",
+      "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672"
+    },
+    "depth_sigmas_m": [
+      0.0,
+      0.0005
+    ],
+    "development_seeds": [
+      6100,
+      6101,
+      6102,
+      6103,
+      6104,
+      6105,
+      6106,
+      6107,
+      6108,
+      6109,
+      6110,
+      6111
+    ],
+    "check_seeds": [
+      6120,
+      6121,
+      6122,
+      6123,
+      6124,
+      6125,
+      6126,
+      6127,
+      6128,
+      6129,
+      6130,
+      6131
+    ],
+    "noise": "Independent Gaussian optical-axis depth noise on the same full RGB-D array for both the outer-bank work reader and ray marker estimator. SeedSequence([seed, case_id, tick]); case_id 0 for readonly and 1 for outer_v2. No RGB, camera or q changes. Record refusals explicitly. Seed splits are not independent physical scenes.",
+    "reference": "A true longitudinal calibration needs an independently bounded, same-state 3D midpoint of loaded material row 10 (center seam columns 11/12, zero based), plus independent cutter reference. The joint FK translation with held-out errors is an independent tip comparison for diagnosis. Unloaded fixture coordinates, outer-bank extrapolation, beam travel inferred from an outcome, post-move narrow images, and a lone central cap are not registered 3D midpoint references. Audit cap support and face transitions for reference visibility without using them as truth.",
+    "metric": "One-sided distance optimism on each estimated axis d: e = dot((limit - tip_opt) - (row10_ref - tip_ref), d), adding the longitudinal reference uncertainty envelope. Score late frames only when the limit is row 10; early conservative row 8-or-earlier readings are reported separately and do not qualify for a smaller bound by comparison with row 10. As diagnostics only, compute tip optimism dot(tip_fk - tip_opt, d), the direct noise-induced clearance change relative to the raw estimate, and the change with the raw axis held fixed.",
+    "qualification": "For certified references only: clean intercept is the maximum positive development e including reference uncertainty, rounded upward to 0.01 mm; noisy coefficient is the maximum nonnegative excess over that intercept divided by 0.5 mm and rounded upward to 0.1. The check split must be contained by the frozen envelope, not used to refit it. These empirical results are bounded to the registered domain, not a universal bound on Gaussian noise. If there is no independently validated reference for both closed and open late exposures, or this procedure cannot qualify a smaller envelope, do not replace the existing 0.250 mm, create an executable positive protocol, or run cutting. Diagnostic deltas and refusal rates do not qualify a bound."
+  },
+  "sources": {
+    "validation/task/m5_v3_readonly_v4/decision.json": "629f0b0a7352de2371abf6e74336c16939171b23fd6391b461233fa06a625545",
+    "validation/task/m5_v3_positive_outer_v2/decision.json": "7be12dde4b1d4b88be09b6d13814ab2103d0344ca2ab02416157fc96183cc6d6",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "validation/task/m5_v3_readonly_v4/registration.json": "eff450ce0eed801b8618571870f2f00ef4977f6de7e50a9200c41582b61fd505",
+    "validation/task/m5_v3_positive_outer_v2/nominal/run.json": "6800eebb35930d17ff6a5070e9980c3af265f7ddb240a20b24deb7645611c607",
+    "validation/task/m5_v3_positive_outer_v2/nominal/registration.json": "fa7dc79fb47e7787972532c607cb4e7f99a2491a1865ba4f4f7f3805fcc622b4",
+    "validation/task/m5_v3_readonly_v4/work_closed.npz": "77ca367fa1359bfa367e695eeb198d657dff361b8b45f35187284da02dd635cc",
+    "validation/task/m5_v3_readonly_v4/work_open.npz": "7383fa6b6a2a76be0782a7ad2f2c23a9e69634f58406b6186ad89b1c7aa06745",
+    "validation/task/m5_v3_positive_outer_v2/nominal/001_work.npz": "aeac16290682ab603ed0d9ed573450cfed25a3f130a18ce8e4263d5c4d3a092a",
+    "validation/task/m5_v3_positive_outer_v2/nominal/003_work.npz": "49edd6f095770391376939ba1c0e3924077222c0aa69b2261d18b72e87f6cd8e",
+    "validation/task/m5_v3_positive_outer_v2/nominal/004_work.npz": "3965a9f1ab0d31812f8a4a48611c9e620ea4bfafb336c2c6062deb280b42e894",
+    "validation/task/m5_v3_positive_outer_v2/nominal/005_work.npz": "09120e65d699c18f49c7eb766a10049d6eb290fc59a8b9d89daa1ff8d9d4a199",
+    "validation/task/m5_v3_positive_outer_v2/nominal/007_work.npz": "1eddf1d67d92b452346b02f870575212a12454416bd9b9cebcc77787547866fc",
+    "validation/task/m5_v3_positive_outer_v2/nominal/008_work.npz": "c5b9f38899e5f97d93840cc5c17d739f3a471c7e36527cee398a95ed4bafd4ee",
+    "validation/task/m5_v3_positive_outer_v2/nominal/009_work.npz": "b75e051c56ac1269fc6ca140f339cec360848eb205c00db067ea5cc0639e6da9",
+    "validation/task/m5_v3_positive_outer_v2/nominal/011_work.npz": "0bc7b0cef811fee765e15f5333504199b3cd7bd811855dc102f8ff6ba1dd1ead",
+    "validation/task/m5_v3_positive_outer_v2/nominal/012_work.npz": "4ea4f3f146b93bdbf182df8249e23b97605b3d0fbb8dd5874c2913dab6a71dc8",
+    "validation/task/m5_v3_positive_outer_v2/nominal/013_work.npz": "400d3e7ccdc61cb3370a3a45509bf60dc470fc21765254a7960c05b322266a5e",
+    "validation/task/m5_v3_positive_outer_v2/nominal/015_work.npz": "172c96e4f6e5e9a2cc32f6c2c5705acd1d00ab5cb0d3eed8bf9b7cbd9aae8675",
+    "validation/task/m5_v3_positive_outer_v2/nominal/016_work.npz": "7900c98cde6bbc414ec1c28295cc0268bc2914f37d58e833986b305472d8a00a",
+    "validation/task/m5_v3_positive_outer_v2/nominal/017_work.npz": "9fe0f9c33b8713986bcb469b31f7459dbd2d5383479db7885f35c4677e162916",
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "scripts/analysis/calibrate_m5_v3_sensor_margin_v1.py": "fa25a9dd933ed6312a01a8c02aa5b1be4e2874da9f467644a76e5a9e5b901d77",
+    "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42",
+    "scripts/task/capture_m5_v3_readonly_v4.py": "ec717b58b1f2bab256c56153f362e6bdc93418e620ae0b82ecba8610beea581c",
+    "scripts/vision/cell_certificate_v1.py": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+    "scripts/vision/cut_perception.py": "c9246433b35cc449d229ec017b1729ae1e69fa188b15a38dd35137cb4667417c",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "scripts/vision/ruler_readout.py": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168"
+  },
+  "frames": [
+    {
+      "path": "validation/task/m5_v3_readonly_v4/work_closed.npz",
+      "case_id": 0,
+      "prefix_mm": 0,
+      "tick": 1,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012750825632019349,
+          0.012849497905236897,
+          0.12618331684218723
+        ],
+        "axis": [
+          0.09302876368877905,
+          -0.26534753573683706,
+          0.9596542785841813
+        ],
+        "tip_uv": [
+          732.3611985046643,
+          386.92406429505064
+        ],
+        "distal_uv": [
+          725.3333333333334,
+          272.25396825396825
+        ],
+        "proximal_uv": [
+          739.8389261744967,
+          221.14429530201343
+        ],
+        "third_uv": [
+          716.9976851851852,
+          284.69444444444446
+        ],
+        "fit_rms_m": 1.6032261552156935e-05,
+        "original_rms_m": 1.3538053575953095e-05,
+        "jaw_axis": [
+          0.09302876368877902,
+          -0.2653475357368371,
+          0.9596542785841813
+        ],
+        "opening_axis": [
+          0.8930698644138545,
+          0.4483609246653018,
+          0.037399177920043825
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_readonly_v4/work_open.npz",
+      "case_id": 0,
+      "prefix_mm": 0,
+      "tick": 4,
+      "closed": false,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012471656374201653,
+          0.012114148264037925,
+          0.12908903223726576
+        ],
+        "axis": [
+          0.0932661115745732,
+          -0.2641794804849253,
+          0.959953454352071
+        ],
+        "tip_uv": [
+          728.3055466839729,
+          394.22578902354917
+        ],
+        "distal_uv": [
+          719.8888888888889,
+          285.2638888888889
+        ],
+        "proximal_uv": [
+          734.226618705036,
+          236.8273381294964
+        ],
+        "third_uv": [
+          712.2543209876543,
+          297.63456790123456
+        ],
+        "fit_rms_m": 1.5915726627758396e-05,
+        "original_rms_m": 1.4899152390437201e-05,
+        "jaw_axis": [
+          0.09326611157457318,
+          -0.2641794804849254,
+          0.9599534543520712
+        ],
+        "opening_axis": [
+          0.8951717497125754,
+          0.44432092700445214,
+          0.035305131955999824
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/001_work.npz",
+      "case_id": 1,
+      "prefix_mm": 0,
+      "tick": 1,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.010674004984714927,
+          0.016818962118704334,
+          0.12647869841764792
+        ],
+        "axis": [
+          0.09610318838399506,
+          -0.26428828907443447,
+          0.9596436200176284
+        ],
+        "tip_uv": [
+          717.1370819394781,
+          358.4555880435422
+        ],
+        "distal_uv": [
+          708.7802197802198,
+          243.45054945054946
+        ],
+        "proximal_uv": [
+          722.2679425837321,
+          183.3133971291866
+        ],
+        "third_uv": [
+          698.1694117647058,
+          249.08235294117648
+        ],
+        "fit_rms_m": 1.1271725147923128e-05,
+        "original_rms_m": 8.990015602285315e-06,
+        "jaw_axis": [
+          0.09610318838399505,
+          -0.2642882890744346,
+          0.9596436200176285
+        ],
+        "opening_axis": [
+          0.8985505973483077,
+          0.43780276698807613,
+          0.03058694529671036
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/003_work.npz",
+      "case_id": 1,
+      "prefix_mm": 0,
+      "tick": 3,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.013106134811958627,
+          0.013288010247928885,
+          0.12426148928944133
+        ],
+        "axis": [
+          0.11367246949954268,
+          -0.2359686821028392,
+          0.9650892967723375
+        ],
+        "tip_uv": [
+          736.4031597036787,
+          382.2590418567677
+        ],
+        "distal_uv": [
+          732.8055555555555,
+          269.22222222222223
+        ],
+        "proximal_uv": [
+          751.7860696517413,
+          221.14427860696517
+        ],
+        "third_uv": [
+          728.4889380530974,
+          284.1128318584071
+        ],
+        "fit_rms_m": 1.419323889888174e-05,
+        "original_rms_m": 1.718456553191931e-05,
+        "jaw_axis": [
+          0.11367246949954266,
+          -0.23596868210283928,
+          0.9650892967723375
+        ],
+        "opening_axis": [
+          0.8911069576976951,
+          0.4537538467897383,
+          0.005986356677738173
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/004_work.npz",
+      "case_id": 1,
+      "prefix_mm": 0,
+      "tick": 4,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012608721111914136,
+          0.012344355882258047,
+          0.12812554713505891
+        ],
+        "axis": [
+          0.11165536000330219,
+          -0.23235147234192066,
+          0.9662017770026479
+        ],
+        "tip_uv": [
+          729.9473759040586,
+          391.93853770103885
+        ],
+        "distal_uv": [
+          724.5473684210526,
+          287.12631578947367
+        ],
+        "proximal_uv": [
+          742.0430622009569,
+          242.4306220095694
+        ],
+        "third_uv": [
+          719.6781326781327,
+          300.64127764127767
+        ],
+        "fit_rms_m": 1.382212276831544e-05,
+        "original_rms_m": 1.241750818296622e-05,
+        "jaw_axis": [
+          0.11165536000330217,
+          -0.23235147234192077,
+          0.966201777002648
+        ],
+        "opening_axis": [
+          0.8908803488394874,
+          0.45419472706959957,
+          0.00627327297391345
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/005_work.npz",
+      "case_id": 1,
+      "prefix_mm": 0,
+      "tick": 5,
+      "closed": false,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012270825429439082,
+          0.011588705747887154,
+          0.13100127761270627
+        ],
+        "axis": [
+          0.11430950482681088,
+          -0.2341038037882308,
+          0.9654681487020328
+        ],
+        "tip_uv": [
+          725.6153109831795,
+          399.14393598024867
+        ],
+        "distal_uv": [
+          719.39,
+          298.75
+        ],
+        "proximal_uv": [
+          736.4468085106383,
+          256.3351063829787
+        ],
+        "third_uv": [
+          715.4293059125964,
+          313.4910025706941
+        ],
+        "fit_rms_m": 2.5520038003308548e-05,
+        "original_rms_m": 1.9167105344296144e-05,
+        "jaw_axis": [
+          0.11430950482681088,
+          -0.23410380378823095,
+          0.965468148702033
+        ],
+        "opening_axis": [
+          0.892892971959962,
+          0.45025567158867763,
+          0.00345988825477234
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/007_work.npz",
+      "case_id": 1,
+      "prefix_mm": 3,
+      "tick": 7,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.01310592705407667,
+          0.013287194087433042,
+          0.12426124959628301
+        ],
+        "axis": [
+          0.11366393435104935,
+          -0.2359659298531737,
+          0.9650909749740529
+        ],
+        "tip_uv": [
+          736.4018174784402,
+          382.26485666125416
+        ],
+        "distal_uv": [
+          732.8055555555555,
+          269.22222222222223
+        ],
+        "proximal_uv": [
+          751.7860696517413,
+          221.14427860696517
+        ],
+        "third_uv": [
+          728.5112612612612,
+          282.14639639639637
+        ],
+        "fit_rms_m": 1.4176739683802915e-05,
+        "original_rms_m": 1.7149770152277355e-05,
+        "jaw_axis": [
+          0.1136639343510493,
+          -0.23596592985317372,
+          0.9650909749740527
+        ],
+        "opening_axis": [
+          0.8910420617743452,
+          0.4538806716862641,
+          0.006031585077713623
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/008_work.npz",
+      "case_id": 1,
+      "prefix_mm": 3,
+      "tick": 8,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012463683579544553,
+          0.011781097840431527,
+          0.13055277966930576
+        ],
+        "axis": [
+          0.12712817904988785,
+          -0.28188182355046587,
+          0.9509895181563901
+        ],
+        "tip_uv": [
+          727.2596534502176,
+          397.519206239611
+        ],
+        "distal_uv": [
+          725.0588235294117,
+          285.5
+        ],
+        "proximal_uv": [
+          740.9333333333333,
+          237.08333333333334
+        ],
+        "third_uv": [
+          720.6822916666666,
+          296.5520833333333
+        ],
+        "fit_rms_m": 2.281848537252502e-05,
+        "original_rms_m": 1.9208110748016077e-05,
+        "jaw_axis": [
+          0.12712817904988788,
+          -0.28188182355046604,
+          0.9509895181563904
+        ],
+        "opening_axis": [
+          0.8989063652207891,
+          0.43803402668786096,
+          0.009671506044447224
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/009_work.npz",
+      "case_id": 1,
+      "prefix_mm": 3,
+      "tick": 9,
+      "closed": false,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.012197007459538126,
+          0.011303481290371122,
+          0.1325043286820494
+        ],
+        "axis": [
+          0.12856416271448728,
+          -0.2814142497164048,
+          0.9509349484176485
+        ],
+        "tip_uv": [
+          724.1349450352518,
+          402.028597569753
+        ],
+        "distal_uv": [
+          720.6486486486486,
+          293.4594594594595
+        ],
+        "proximal_uv": [
+          736.957627118644,
+          246.85593220338984
+        ],
+        "third_uv": [
+          717.4866310160428,
+          304.7245989304813
+        ],
+        "fit_rms_m": 2.0274195279382728e-05,
+        "original_rms_m": 1.82762094980381e-05,
+        "jaw_axis": [
+          0.12856416271448726,
+          -0.28141424971640483,
+          0.9509349484176485
+        ],
+        "opening_axis": [
+          0.9005020279332936,
+          0.43479665975443527,
+          0.006925485861057293
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/011_work.npz",
+      "case_id": 1,
+      "prefix_mm": 5,
+      "tick": 11,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.013105814363508333,
+          0.013287207024785329,
+          0.1242612302399238
+        ],
+        "axis": [
+          0.11366823843596603,
+          -0.23596425563749668,
+          0.9650908773956502
+        ],
+        "tip_uv": [
+          736.4010035894231,
+          382.26474627503796
+        ],
+        "distal_uv": [
+          732.8055555555555,
+          269.22222222222223
+        ],
+        "proximal_uv": [
+          751.7860696517413,
+          221.14427860696517
+        ],
+        "third_uv": [
+          728.5112612612612,
+          282.14639639639637
+        ],
+        "fit_rms_m": 1.4212206669453265e-05,
+        "original_rms_m": 1.7154446959154192e-05,
+        "jaw_axis": [
+          0.11366823843596603,
+          -0.23596425563749682,
+          0.9650908773956505
+        ],
+        "opening_axis": [
+          0.891039204834003,
+          0.4538863207109229,
+          0.006028542136291286
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/012_work.npz",
+      "case_id": 1,
+      "prefix_mm": 5,
+      "tick": 12,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.01217142109382315,
+          0.011398998658117023,
+          0.13232111798389617
+        ],
+        "axis": [
+          0.11340909404666302,
+          -0.27127755175752616,
+          0.9557964570450962
+        ],
+        "tip_uv": [
+          724.0746984691128,
+          401.2608480436709
+        ],
+        "distal_uv": [
+          717.9827586206897,
+          295.1896551724138
+        ],
+        "proximal_uv": [
+          733.2486486486487,
+          249.29189189189188
+        ],
+        "third_uv": [
+          712.9514824797843,
+          306.5148247978437
+        ],
+        "fit_rms_m": 1.3773952760221605e-05,
+        "original_rms_m": 1.5685191296640817e-05,
+        "jaw_axis": [
+          0.11340909404666297,
+          -0.27127755175752616,
+          0.955796457045096
+        ],
+        "opening_axis": [
+          0.9003807522257834,
+          0.4347872662522266,
+          0.016569071375544423
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/013_work.npz",
+      "case_id": 1,
+      "prefix_mm": 5,
+      "tick": 13,
+      "closed": false,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.011979160326343276,
+          0.01087290837236089,
+          0.134231948730108
+        ],
+        "axis": [
+          0.11442140068767533,
+          -0.270489980949248,
+          0.9558990078824993
+        ],
+        "tip_uv": [
+          721.5687250821488,
+          405.9639866478664
+        ],
+        "distal_uv": [
+          714.3692307692307,
+          303.24615384615385
+        ],
+        "proximal_uv": [
+          729.7966101694915,
+          259.1242937853107
+        ],
+        "third_uv": [
+          710.09243697479,
+          314.82633053221286
+        ],
+        "fit_rms_m": 1.249801335715212e-05,
+        "original_rms_m": 1.8335611714002518e-05,
+        "jaw_axis": [
+          0.11442140068767527,
+          -0.270489980949248,
+          0.955899007882499
+        ],
+        "opening_axis": [
+          0.9021780193590131,
+          0.4311364233976489,
+          0.014007348261953493
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/015_work.npz",
+      "case_id": 1,
+      "prefix_mm": 7,
+      "tick": 15,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.013105767849746368,
+          0.013287155980210925,
+          0.12426124137220827
+        ],
+        "axis": [
+          0.11366866526724828,
+          -0.23596762370581995,
+          0.9650900036260821
+        ],
+        "tip_uv": [
+          736.4006528169197,
+          382.2651304938718
+        ],
+        "distal_uv": [
+          732.8055555555555,
+          269.22222222222223
+        ],
+        "proximal_uv": [
+          751.7860696517413,
+          221.14427860696517
+        ],
+        "third_uv": [
+          728.5112612612612,
+          282.14639639639637
+        ],
+        "fit_rms_m": 1.416699743009102e-05,
+        "original_rms_m": 1.7135913168543207e-05,
+        "jaw_axis": [
+          0.11366866526724823,
+          -0.23596762370581997,
+          0.9650900036260819
+        ],
+        "opening_axis": [
+          0.8910429537778501,
+          0.4538789748027797,
+          0.006027499881539392
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/016_work.npz",
+      "case_id": 1,
+      "prefix_mm": 7,
+      "tick": 16,
+      "closed": true,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.01201950483283682,
+          0.010755969888995142,
+          0.1340863159130213
+        ],
+        "axis": [
+          0.08233831951750635,
+          -0.2645807061955801,
+          0.9608420531221986
+        ],
+        "tip_uv": [
+          721.9323308376521,
+          406.6806997724731
+        ],
+        "distal_uv": [
+          709.5370370370371,
+          307.89814814814815
+        ],
+        "proximal_uv": [
+          722.2320261437909,
+          262.77450980392155
+        ],
+        "third_uv": [
+          701.2366197183098,
+          317.5718309859155
+        ],
+        "fit_rms_m": 1.6635082889482312e-05,
+        "original_rms_m": 1.1905135655552592e-05,
+        "jaw_axis": [
+          0.08233831951750628,
+          -0.26458070619558005,
+          0.9608420531221982
+        ],
+        "opening_axis": [
+          0.9029375643021994,
+          0.4278646970236197,
+          0.04044200802257337
+        ]
+      }
+    },
+    {
+      "path": "validation/task/m5_v3_positive_outer_v2/nominal/017_work.npz",
+      "case_id": 1,
+      "prefix_mm": 7,
+      "tick": 17,
+      "closed": false,
+      "marker": {
+        "valid": true,
+        "reason": "",
+        "tip": [
+          -0.011831807008206756,
+          0.010217563244172952,
+          0.13600889076733336
+        ],
+        "axis": [
+          0.08523816465973834,
+          -0.2659242698115568,
+          0.9602180679463544
+        ],
+        "tip_uv": [
+          719.5127859637779,
+          411.3353472768974
+        ],
+        "distal_uv": [
+          706.9557522123894,
+          315.1946902654867
+        ],
+        "proximal_uv": [
+          719.6574394463668,
+          271.9896193771626
+        ],
+        "third_uv": [
+          699.5416666666666,
+          325.3958333333333
+        ],
+        "fit_rms_m": 1.320733309826782e-05,
+        "original_rms_m": 1.18794286475136e-05,
+        "jaw_axis": [
+          0.08523816465973831,
+          -0.26592426981155687,
+          0.9602180679463544
+        ],
+        "opening_axis": [
+          0.9072583749473558,
+          0.4190709783683777,
+          0.035521207429562725
+        ]
+      }
+    }
+  ]
+}

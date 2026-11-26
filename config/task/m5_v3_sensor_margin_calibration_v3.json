@@ -1,0 +1,18 @@
+{
+  "id": "m5_v3_sensor_margin_calibration_v3",
+  "scope": "Offline re-evaluation of the single sealed v2 capture; no simulator. Replace only the independent FK-TCP cross-check, not the optical results, gates, seeds or frozen fit.",
+  "sources": {
+    "config/task/m5_v3_sensor_margin_calibration_v2.json": "6536be7a08e36be1507f0ce91526829ea0a9c333f748c0b37af374473e17c73b",
+    "validation/task/m5_v3_sensor_margin_calibration_v2/registration.json": "215f69dae55a46a494338c4c4bda2df8d1fa465f812d59d18462b3f36c311ca8",
+    "validation/task/m5_v3_sensor_margin_calibration_v2/run.json": "ca79892bd731d27add7a6b3ab5eccf22de1fa0c1893d9b5da2964d8538732b5e",
+    "validation/task/m5_v3_sensor_margin_calibration_v2/decision.json": "81d9f8dc7ecd20c648042e224f3d1dbe57409002a4fcdf86f3fc38573a7010b8",
+    "validation/task/m5_v3_rigid_fk_v2.json": "9d2817b90461ac8d8009be5526955b39840163729d5e1f0ea3c05520e8bdb8f3",
+    "scripts/task/m5_v3_rigid_fk_v2.py": "0cf47db89401afc41cd520dd95b0aa99da1dd79bfa90648f4d0eec22b897b718"
+  },
+  "fk_tcp_max_error_mm": 0.010,
+  "absolute_global_axis_deg_lt": 5.0,
+  "late_pair_min_fraction_each_split": 0.95,
+  "legacy_margin_mm": 0.250,
+  "frozen_fit": {"c0_m": 0.0, "k": 0.2},
+  "qualification": "Keep all seven v2 gates exactly. Rebind every 70-degree RGB-D SHA, tick, jaw state and joint readback to its v2 scoring sidecar; predict TCP using only that joint vector and the already sealed legacy-only FK v2 model. Use the same 0.010 mm norm threshold across all 15 frames. Verify the untouched clean, development, fit and check artifact hashes and carry their six sealed gate results verbatim. Issue the existing c0=0, k=0.2 fit only if all seven gates pass. No refit and no authorization by structural truth."
+}

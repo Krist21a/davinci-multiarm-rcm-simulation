@@ -1,0 +1,14 @@
+{
+  "id": "m5_guided_10mm_control_v1",
+  "scope": "One isolated actual-10-mm candidate on the same scene and guided sheet, not a change to the benchmark or to its nominal path.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "nominal_v2_decision_sha256": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+  "nominal_v2_registration_sha256": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+  "target_m": [0.009, 0.010],
+  "max_recorded_waypoints": 8,
+  "second_advance_cap_m": 0.0025,
+  "maximum_closures": 3,
+  "procedure": "Reduce only the preterminal second advance from the registered 3.0 mm cap to at most 2.5 mm, which changes the approach history before the first review. This is a candidate, not a 10 mm prediction. Preserve all v2 camera, visual remainder, native sweep, reserve and motion rules, including the 9 mm requested target and 10 mm absolute ceiling. Freeze the resulting run; never retry. At the third closure no further resume or opening is allowed; UNKNOWN or BELOW cannot authorize withdrawal. The unchanged live TARGET(9) path may safely finish but does not qualify this control.",
+  "qualification": "Require a fresh live BELOW before the third closure and live TARGET(10) from measured RGB-D after it, matching the frozen offline replay. Independent scoring must show a true 10 mm prefix and no damage farther than 10 mm. Require three guarded closures/reacquisitions, same-tick single guarded withdrawal, physically closed and verified ready at DONE, and unchanged structural length after the TARGET with no fault, tear, overcut, or runtime, perception, or cleanup error. 9 mm, refusal or missing evidence leaves the expanded benchmark blocked."
+}

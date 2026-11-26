@@ -1,0 +1,291 @@
+{
+  "qualified": true,
+  "authorizes_motion": false,
+  "plan": {
+    "id": "m5_v3_rigid_fk_v2",
+    "scope": "Offline only. Fit passive shaft twist on the six legacy distal calibration poses, before evaluating the original six held-out validation poses. No sensor-margin exposure, TCP sidecar, later fixture data or terminal outcome is an input to this fit.",
+    "sources": {
+      "validation/task/m5_v3_distal_workspace_v1/registration.json": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+      "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+      "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42"
+    },
+    "fit": "Keep v1 rigid links, pivot insertion intercept, RCM and shaft basis unchanged. Undo calibrated tip frame, commanded wrist yaw and pitch, and commanded shaft roll from each calibrated TCP orientation. Extract the remaining pure shaft-axis twist with atan2(R[2,1],R[1,1]) on the branch nearest the v1 neutral angle. Fit radians on [1, q[0], q[1]] by full-rank ordinary least squares; q[0:2] are command degrees. No other fit parameters.",
+    "validation": "With coefficients frozen, evaluate the six original validation commands against their sealed TCP matrices. Each must satisfy the 0.010 mm TCP consistency gate and the existing 0.20 degree orientation gate. Report the original constant-twist validation alongside the new validation for comparison. This fit does not authorize motion.",
+    "position_max_mm": 0.01,
+    "orientation_max_deg": 0.2
+  },
+  "sources": {
+    "validation/task/m5_v3_distal_workspace_v1/registration.json": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42",
+    "config/task/m5_v3_distal_workspace_v1.json": "adec0976d9815f22510fda5204d7b931af317ff045a26408c6d3d3e33d446ccc",
+    "scripts/analysis/screen_m5_v3_distal_workspace_v1.py": "df9efded8ab2bd5decb7002ee5727a6612123321b0f80c17c8c46ab0d675a9d7",
+    "validation/task/m5_v3_yaw_screen_v1/decision.json": "e8ece6c7cb6caafc0d6833f40a5dbac8f773d010ddf9bc2364f243942d348cb4",
+    "validation/task/m5_v3_yaw_screen_v1/registration.json": "745fc16f383caf96054d43201079523fa4df7e6961b3a17cc39be637073ae293",
+    "scripts/build/instruments.py": "8bf1da77bb21bdb40646734d6201f37459d1185415017d4bc4a2186d541ff453",
+    "scripts/build/articulation.py": "208aec7e0bae0e94b3907671b04859494a0c723b75cd79fc4d1ab9ac72e5f9da",
+    "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+    "config/instruments/420179.json": "67a50c9ef8657c8452435bbe8f1262c000b2b3cd1eb7a070e6b5f2ad63aa954d",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/wrist_pitch/wrist_pitch_0091.urdf.xacro": "1251eb7274ce583e8a08ae2c24945f222dbdfe66a6950a4206c3666425f5fbd8",
+    "models/meshes/instrument/dvrk/meshes/instruments/wrist_pitch/0091/wrist_pitch_0091.obj": "a0fbe4dffaa3561b42f1b50019b9fcecab9308298a5592df917bea38b5ac8390",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/wrist_yaw/wrist_yaw_0091.urdf.xacro": "ec297ba7807366eb4e1766591d0b72b05f0757878d204aaf15ef7780de095cb9",
+    "models/meshes/instrument/dvrk/meshes/instruments/wrist_yaw/0091/wrist_yaw_0091.obj": "9a6b64b0ce58833b0bbfa8be57e577dcece4425781bb0962ce242f8f3105bf8f",
+    "models/meshes/instrument/dvrk/urdf/common/instruments/tip/tip_179.urdf.xacro": "f6304059cdb9e00e6c97c2430aae85354e372f9479faa4e7db7b162a6776ad90",
+    "models/meshes/instrument/dvrk/meshes/instruments/tip/179/tip_179_1.obj": "26806f6cd70515e7a9619ef8367c2aef987c4b59a5d04ce374c0dac8c7fc76fc",
+    "models/meshes/instrument/dvrk/meshes/instruments/tip/179/tip_179_2.obj": "3590e1dba0651bd835ef15e6c620872ef9749fdf78edb4a02c7cf963417c72d2",
+    "config/task/m5_v3_readonly_v1.json": "39cea0f3753f7d5814676e62ab78cfbd2435ee6eb32313020e73fc12f014b8e9",
+    "validation/task/m5_v3_distal_workspace_v1/decision.json": "d05df430bf1d06f447be202a425732f83e9c64d0f2d4ff1f4c7d9d159b16771e",
+    "scripts/analysis/calibrate_m5_v3_rigid_fk.py": "f01f5dbcaabb9dcecd132ec739121ba7c595d792cd7ed9929462b456448f3a0c",
+    "config/task/m5_v3_rigid_fk_v2.json": "b7e1f0a3e05816844579ddc36391e01f8501497cd812f24515fbac297a93959e",
+    "scripts/analysis/calibrate_m5_v3_rigid_fk_v2.py": "71fe985e2f4d07cd855e3fc5cbb9cdcd55ddfdf7bd28eb5fc6f278224ac1d066",
+    "scripts/task/m5_v3_rigid_fk_v2.py": "0cf47db89401afc41cd520dd95b0aa99da1dd79bfa90648f4d0eec22b897b718"
+  },
+  "calibration": {
+    "rcm": [
+      -0.048448429529702866,
+      -1.0851640378533396,
+      0.7313999960021021
+    ],
+    "basis": [
+      [
+        -0.24659852723078676,
+        0.8797495902408088,
+        -0.4064847166115064
+      ],
+      [
+        0.930520231961339,
+        0.0977483007530264,
+        -0.35295519207189996
+      ],
+      [
+        -0.2707789952677697,
+        -0.4652804833334683,
+        -0.8427293797837787
+      ]
+    ],
+    "insertion_intercept": 0.0547311464494816,
+    "pitch_to_yaw": [
+      [
+        6.123233995736766e-17,
+        1.0,
+        -6.123233995736766e-17,
+        0.0091
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        -6.123233995736766e-17,
+        3.749399456654644e-33,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "tip_R": [
+      [
+        3.749399456654644e-33,
+        -1.0,
+        6.123233995736766e-17
+      ],
+      [
+        6.123233995736766e-17,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        -1.0,
+        0.0,
+        6.123233995736766e-17
+      ]
+    ],
+    "tip_Y": [
+      4.150883956825097e-05,
+      0.013052241044864986,
+      0.0015854031336883353
+    ],
+    "hinge_Y": [
+      0.0,
+      0.00245,
+      0.0
+    ],
+    "twist_rad": [
+      0.13683243004513607,
+      -0.00272916891540172,
+      -0.002188742125818276
+    ]
+  },
+  "fit_rank": 3,
+  "development": [
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 8,
+      "command_tick": 7,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/008_closure1.npz",
+      "sha256": "dd938f0219358c129bd782aef857c871da222722cb53bb86e9c146106434954b",
+      "observed_twist_rad": 0.15630843111204876,
+      "fit_twist_rad": 0.15631154351738474
+    },
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 14,
+      "command_tick": 13,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/014_closure2.npz",
+      "sha256": "04175d48d04bb1dc9094f6230cea9abc671f63e83a6b09f6cddb06c5728ac609",
+      "observed_twist_rad": 0.15517720575777216,
+      "fit_twist_rad": 0.15518033023564037
+    },
+    {
+      "phase": "calibration",
+      "view": "original",
+      "tick": 24,
+      "command_tick": 23,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/024_closure3.npz",
+      "sha256": "532367c7841f8a1e09b2d009460ab0665a2ec46386270b142a0720d2d330f02d",
+      "observed_twist_rad": 0.15305250704985596,
+      "fit_twist_rad": 0.1530442931895712
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 8,
+      "command_tick": 7,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/008_closure1.npz",
+      "sha256": "af265426ce6890ae725093236abfda2f4f90d7cfb9b3cbaefd6f9f9dda7814f2",
+      "observed_twist_rad": 0.1570563221598598,
+      "fit_twist_rad": 0.1570412821430406
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 14,
+      "command_tick": 13,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/014_closure2.npz",
+      "sha256": "0a603891294737dc96a061fdcd8830bf367f9f54cfc48d3c7c288275a3af75fb",
+      "observed_twist_rad": 0.15567225883384153,
+      "fit_twist_rad": 0.1556838243549203
+    },
+    {
+      "phase": "calibration",
+      "view": "plus3",
+      "tick": 24,
+      "command_tick": 23,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/024_closure3.npz",
+      "sha256": "67dd44946ba43efc1ef317657a5aed821fa6b878ec164f9324e804888300ebea",
+      "observed_twist_rad": 0.15537659893271002,
+      "fit_twist_rad": 0.1553820504055308
+    }
+  ],
+  "validation": [
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 7,
+      "command_tick": 5,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/007_advance1.npz",
+      "sha256": "0806fe158941135f80ed8904652c36e478e0bf94530fb71f181de3e565a7fcae",
+      "position_mm": 0.00010367930617547908,
+      "orientation_deg": 0.0005665798798476257
+    },
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 13,
+      "command_tick": 11,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/013_advance2.npz",
+      "sha256": "383d42997019d76b18b46973009293e3a994ea7c63ba0f2098085fc2b0fba0bf",
+      "position_mm": 6.58202765719706e-05,
+      "orientation_deg": 0.0005472056187984483
+    },
+    {
+      "phase": "validation",
+      "view": "original",
+      "tick": 23,
+      "command_tick": 21,
+      "frame": "m5_guided_alignment_capture_v2_5/original/nominal/023_advance3.npz",
+      "sha256": "20c843ee52a03afa1da0e53ab5bb3d51ecd89463796167363effe9e5c0f02744",
+      "position_mm": 7.173408521475515e-05,
+      "orientation_deg": 0.0008205254904449635
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 7,
+      "command_tick": 5,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/007_advance1.npz",
+      "sha256": "19fdefcfea92dc0d6d01b45553876ce5bc56d9ef50c62af4b06f458117b21084",
+      "position_mm": 3.90448341180264e-05,
+      "orientation_deg": 0.0009188425631265811
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 13,
+      "command_tick": 11,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/013_advance2.npz",
+      "sha256": "97f9896a812accb0ce2634e8720f10b2cc7597b90bc9fdbf000e950813547083",
+      "position_mm": 0.0001108175178148564,
+      "orientation_deg": 0.000688551097533115
+    },
+    {
+      "phase": "validation",
+      "view": "plus3",
+      "tick": 23,
+      "command_tick": 21,
+      "frame": "m5_guided_alignment_capture_v2_5/plus3/nominal/023_advance3.npz",
+      "sha256": "48476208353f4d8712b4f8c06c717ecaf5840133bb9349475620b0ba736269df",
+      "position_mm": 7.296586663729049e-05,
+      "orientation_deg": 0.00032778640764145563
+    }
+  ],
+  "constant_twist_validation": [
+    {
+      "view": "original",
+      "tick": 7,
+      "position_mm": 0.002190747793401642,
+      "orientation_deg": 0.05680260280652102
+    },
+    {
+      "view": "original",
+      "tick": 13,
+      "position_mm": 0.0004580214893813136,
+      "orientation_deg": 0.0099993789234365
+    },
+    {
+      "view": "original",
+      "tick": 23,
+      "position_mm": 0.0020443299767084135,
+      "orientation_deg": 0.1501661020822674
+    },
+    {
+      "view": "plus3",
+      "tick": 7,
+      "position_mm": 0.0051584319375349305,
+      "orientation_deg": 0.10823834466582531
+    },
+    {
+      "view": "plus3",
+      "tick": 13,
+      "position_mm": 0.0010308068335958237,
+      "orientation_deg": 0.024911467235549243
+    },
+    {
+      "view": "plus3",
+      "tick": 23,
+      "position_mm": 5.046769802200909e-05,
+      "orientation_deg": 0.0008163055662484325
+    }
+  ],
+  "max_position_mm": 0.0001108175178148564,
+  "max_orientation_deg": 0.0009188425631265811
+}

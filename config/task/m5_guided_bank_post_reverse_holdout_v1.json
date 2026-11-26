@@ -1,0 +1,17 @@
+{
+  "id": "m5_guided_bank_post_reverse_holdout_v1",
+  "scope": "Optics-only temporal holdout on the guided sheet. Reuses the deterministic mechanical approach and reverse; not an independent mechanics test, nominal acceptance, or motion permit.",
+  "pins": {
+    "config/task/m5_guided_bank_holdout_v1.json": "acb66e90708b0deba61079958288dd3dfb7e517814ffcd917836cd1d67395a1d",
+    "validation/task/m5_guided_bank_holdout_v1/decision.json": "e50c654ba3f2fa065e5c0b9d469b1c5850220abcca5e94251f744844e92a27ce",
+    "scripts/task/capture_m5_guided_reverse_v1.py": "7ba708ce880c77f9bd5d5580f9b13d2741b569714a23711bca01297fbf78e00b",
+    "config/task/m5_guided_reverse_capture_v1.json": "991030bfa5c3277179b32af4655c602d868f3f715e32d96888be1f38c7f42597",
+    "validation/task/m5_guided_reverse_capture_v1/predictions.json": "c36dbdb63e0a785251d5622006b8c146304c446ff37b0d1dcc18d61c9965b40d",
+    "validation/task/m5_guided_reverse_capture_v1/decision.json": "066183bd54470db1beede2956f814fb2ce3f80425ca3c0e19922ebe4ade28246",
+    "validation/task/m5_guided_bank_corridor_v3/registration.json": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668"
+  },
+  "cases": {"short": 0.001, "mid": 0.002},
+  "hold_batches_steps": [4, 4],
+  "acquisition": "One fresh scene load per case. Reuse the frozen 7 mm pair, guarded third bite and original closed reverse. Require the pre- and immediate post-reverse exposures to match their development references array-for-array before any added simulation steps. At the cleared pose hold closed for two batches of four simulation steps, with no commands and fresh mechanical, closed-jaw, cutter pose and ECM readbacks after each batch. Then capture one new narrow exposure with the same camera pose and optics. Original solver, vision and safety limits remain intact. No retries or 10 mm attempt.",
+  "optical_gate": "Seal raw/0.5 mm-noisy frozen v3 readings without consulting the new structural labels. Require the late RGB-D to be array-distinct from every development image and from the other case; NPZ container differences do not count. Require actual 8 and 9 mm with identical pre-reverse, immediate and late structure (pre-reverse to late array equality; no observed safety-state changes), UNKNOWN in the obstructed pair, and exact BELOW(8)/TARGET(9) in the late pair both variants. Count this only as a temporal optical holdout, not a robustness guarantee or a controller decision."
+}

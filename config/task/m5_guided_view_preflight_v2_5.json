@@ -1,0 +1,13 @@
+{
+  "id": "m5_guided_view_preflight_v2_5",
+  "scope": "Development-only positive runs on the non-anatomical sheet before freezing v2.5. Never use development results as formal case results.",
+  "views": {
+    "original": [4.5, 0.0, 0.08],
+    "plus3": [3.0, 0.0, 0.08],
+    "review": [0.0, 4.5, 0.088]
+  },
+  "cases": ["nominal", "exact_10mm"],
+  "first_closure_lateral_limit_m": 0.00025,
+  "selection": "First candidate in listed order with both positives passing independent optical and structural gates, first closure lateral error strictly below 0.25 mm, and final closure using a valid current chart. If none qualify, stop before freezing or consuming formal scenes. Report actual post-advance evidence even when closure is refused; no inference for an unreached segment.",
+  "protocol": "Fresh scenes, one run per case and pose. Set candidate ECM pose at guarded homing and let the actual loaded work observation drive alignment. Preserve the registered sweep, reserve, mechanical safety checks, camera budget and post-advance current-chart closure rule."
+}

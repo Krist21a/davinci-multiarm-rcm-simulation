@@ -1,0 +1,13 @@
+{
+  "id": "m5_v3_rigid_fk_v2",
+  "scope": "Offline only. Fit passive shaft twist on the six legacy distal calibration poses, before evaluating the original six held-out validation poses. No sensor-margin exposure, TCP sidecar, later fixture data or terminal outcome is an input to this fit.",
+  "sources": {
+    "validation/task/m5_v3_distal_workspace_v1/registration.json": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "scripts/task/m5_v3_rigid_fk.py": "5fe4157d26cff74242e109dbf617f9af7b3dde7719ca865e48647c2a9316ef42"
+  },
+  "fit": "Keep v1 rigid links, pivot insertion intercept, RCM and shaft basis unchanged. Undo calibrated tip frame, commanded wrist yaw and pitch, and commanded shaft roll from each calibrated TCP orientation. Extract the remaining pure shaft-axis twist with atan2(R[2,1],R[1,1]) on the branch nearest the v1 neutral angle. Fit radians on [1, q[0], q[1]] by full-rank ordinary least squares; q[0:2] are command degrees. No other fit parameters.",
+  "validation": "With coefficients frozen, evaluate the six original validation commands against their sealed TCP matrices. Each must satisfy the 0.010 mm TCP consistency gate and the existing 0.20 degree orientation gate. Report the original constant-twist validation alongside the new validation for comparison. This fit does not authorize motion.",
+  "position_max_mm": 0.010,
+  "orientation_max_deg": 0.20
+}
