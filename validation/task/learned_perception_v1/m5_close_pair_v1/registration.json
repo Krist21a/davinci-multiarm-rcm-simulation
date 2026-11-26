@@ -1,0 +1,35 @@
+{
+  "protocol": {
+    "scope": "Offline development of a post-closure terminal-evidence reader for the unchanged non-anatomical 9-10 mm M5 task. Not a motion, closure or withdrawal permit. No change to the controller, guards, Phase B or H1.",
+    "source": {
+      "phase_a_slit_cache": "phase_a_slit_masks_v1_02",
+      "phase_a_slit_manifest_sha256": "f7f769b7f999ec69fe0f9cb77859ddda004b813e38d7a8ea9dbcf66f24bc0c8d",
+      "frozen_slit_checkpoint": "visible_slit_weak_v1_run01/slit_epoch06.pt",
+      "frozen_slit_checkpoint_sha256": "42dbf438b3615c5ae7bd4cc9db5fed3cf35859e60276065c08bf194ea0b6d9ab",
+      "split": "Original Phase A 270 train/30 validation episodes only for fitting/calibration. Replay the existing separate 24-episode matched development cohort only after both models and thresholds are written. Not an untouched holdout.",
+      "pair": "Last observation before an accepted CUT closure and first observation after it, exactly adjacent ticks. Phase A uses the contiguous audited grip-transition proxy from its pinned index; matched cohort requires explicit accepted commands with frame counts and grip agreement. No replacing a first frame with a later frame. Retain failed episodes. Both optical arms abstain if paired camera rotation entries or translation norm differ by more than 1e-6 or if either image is unusable. No truth landmark crops."
+    },
+    "model": {
+      "target": "BELOW is structural row 0-8, IN is 9 or 10, ABOVE is 11-13. Training pairs require the sheet to be present. Ground truth and closure metadata never enter a learned model. Emit only a terminal candidate or abstain; a BELOW argmax is not permission to close.",
+      "features": "Fixed 384x384 native HD crop from the slit study. Shared frozen slit U-Net, yielding stride-8 average-pooled raw and encoder maps and max-pooled slit logits. Stack current, previous, current-minus-previous. Single-frame control gets exactly the current feature maps and zeros in the other slots. Fit identical three-output convolutional heads with no history beyond this pair.",
+      "recipe": "Seed 20261127, eight epochs, last only, weighted per-example CE (inverse training class frequency, batch mean), AdamW lr 0.0003 and weight decay 0.01, batch 16, retain short batch, deterministic CUDA BF16 and FP32 loss. Each training pair appears clean and with one deterministic 0.5 mm Gaussian depth draw per exposure (different exposures have different draws); frozen features and matching draws shared between arms. No RGB augmentation."
+    },
+    "decision": {
+      "threshold": "For each arm separately choose the largest IN softmax score on any eligible non-IN Phase A validation pair over both depth variants. Require negative and first-IN support in both variants. Emit terminal candidate only for IN argmax and strictly greater score; use one threshold per arm across depths. Do not tune on the matched cohort.",
+      "report": "Keep all first 9/10 observations on the full episode trace in the denominator, even if missing a pair. Also report exact-row first 9 and first 10, counts across all closure pairs incl. false endpoints on 8 and overcut, per-episode retention and non-default-advance first recall. Compare metadata-only exact closure-count/advance lookup with smaller-row ties and registered fallbacks, fit on Phase A training pairs only. Metadata does not authorize anything.",
+      "progression": "Do not propose controller integration unless the paired arm on the existing matched cohort has zero false endpoint decisions and >=50% first-IN recall separately on both depth variants and strictly better first-IN recall than the matched single-frame arm in both. If first-IN support at 9 or 10 is absent, report that row separately as unexercised; this development diagnostic never signs M5 or authorizes a live learned stop."
+    }
+  },
+  "index_sha256": "3b96b814322868b3ea1e2027f9e048b87a73a4ddf58cbed8079f5d0808fdf3b5",
+  "matched_protocol_sha256": "e4ee22e0deede9817956e5026305a0d21d9d2960ae49ae8fe45a085ceb1875f4",
+  "source_sha256": {
+    "m5_close_pair_data.py": "d259c191fd42184636945b7c6fe54af5545ad5c500ad626afc915f3d312b0368",
+    "train_m5_close_pair.py": "bd6bbeffd460c20034db5499ef79d11ee66de632a8ae0349675e971bc61c9903",
+    "train_visible_slit.py": "20e6aee6600b6682f9383d62c36757c7565a57e2350806e887ab1d906e4fa5f6",
+    "build_visible_slit_labels.py": "3af66f55edbf2e26a93559ec2a789278d7796d8d142658cd2991662a56ce7a4f",
+    "tip_data.py": "04a6957459a08cf6cd88f7b6696c642bbf52e258a206c83092ca1026a42d9e4c"
+  },
+  "torch": "2.9.1+cu126",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "seed": 20261127
+}

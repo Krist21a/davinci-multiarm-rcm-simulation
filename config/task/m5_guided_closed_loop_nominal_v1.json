@@ -1,0 +1,18 @@
+{
+  "id": "m5_guided_closed_loop_nominal_v1",
+  "scope": "One opt-in nominal qualification of the non-anatomical guided-sheet benchmark. No perturbation, retry, signed-gate change, or changes to the old controller entry.",
+  "pins": {
+    "validation/task/m5_guided_bank_post_reverse_holdout_v1/decision.json": "c51be9ebc5f30cadd435656e7e763a31a700474030e0e80bb3e5853a00798c09",
+    "validation/task/m5_guided_bank_post_reverse_holdout_v1/registration.json": "73786131886ca382165412360c546e43cafc9fa0abfdab53e4cdf415f54d09ef",
+    "validation/task/m5_guided_bank_corridor_v3/registration.json": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+    "scripts/vision/m5_guided_bank_corridor_v3.py": "fec9756eb147dc81c0107f814efbec02100db20b09b7b5ac492c7595ef36a972",
+    "scripts/task/run_m5_guided_benchmark_v1.py": "0a00bac174d415d635440027662b6eb3796658cac29c8338fe5b695c1cf94a73",
+    "scripts/task/capture_m5_guided_reverse_v1.py": "7ba708ce880c77f9bd5d5580f9b13d2741b569714a23711bca01297fbf78e00b",
+    "scripts/task/capture_m5_guided_terminal_controls_v1.py": "6177758e4ca732719a758062d38b97f4953938625df5b90d16bbb15af27dcaa7"
+  },
+  "target_m": [0.009, 0.01],
+  "third_advance_cap_m": 0.002,
+  "continue": "Preserve the existing 6 mm review trigger, camera budget and original closed clearance to approximately 2.5 mm behind the visually observed entrance. Fresh held narrow v3 BELOW, plus restored fresh wide front and tool visibility/centering, is required before returning to original ALIGN. No historical pixel identity is a live interlock. The 2 mm limit only caps the registered third advance; native 0.15 mm reserve and sweep bound still apply. At most three closures and one third advance. No extra closure or fallback on abstention.",
+  "stop": "After the third closure, require the original fresh slit reacquisition and mechanically supervised closed reverse along the actual guarded forward waypoints; keep ECM at the registered review pose with no extra motion charge. Require a fresh narrow v3 TARGET 9 or 10, physically closed jaws and the original mechanical checks. Only that exact tick can issue one original guarded jaw-preserving ready command. Verify closed jaws, measured ready pose, fresh terminal observation and the original safety/qualification checks. Optical status is never inferred from the planned cap, historical image, structural length, or motion state.",
+  "qualification": "Seal the raw run and exact online certificate images, re-read both with frozen v3, then join independent structural labels. Require live BELOW(7) before the third closure; live TARGET(9..10) at the actual structural prefix; three fresh guarded closures with ordered reacquisitions; verified motion sequence, closed and ready after withdrawal, no further closure/tear/fault/overcut, no growth after visual TARGET, no perception or cleanup error, and strict truth read purposes. Report an honest protective refusal and no visual qualification on any miss."
+}

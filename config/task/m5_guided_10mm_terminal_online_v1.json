@@ -1,0 +1,23 @@
+{
+  "id": "m5_guided_10mm_terminal_online_v1",
+  "scope": "One opt-in terminal-only positive control after the acquisition-only 10 mm optical gate. Not a change to the default or generic nominal controller.",
+  "nominal_v1_decision_sha256": "5738f379ed1a4a87f989f7cbdd93e7d4c3a3e76e0a0b1c5834d7f4964001a3f9",
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "nominal_v2_decision_sha256": "3b6894d688a9ef0dca80c6eb65cc3986c46cf6853b6a39e7dd5097c3ca30f72a",
+  "nominal_v2_registration_sha256": "c19a487c2013193fc50a245c67468cf1890f7c61cad99d1247ad3ae7e3a95e57",
+  "prior_control_sha256": "2f6a659333a666bec4e0e64f7d0d9be84a89fcfc617e085a0bff78a33144a11a",
+  "reverse_gate_sha256": "54d956daca96cbca30946850eac02334e19103ad3dfda4580d1687690611eb00",
+  "reverse_registration_sha256": "fe750f57eeb79622ceb73fbfaa3a0ebedea06574b7d68d240e10dbb97043c482",
+  "optics_decision_sha256": "45c97374d177de1696ceddde101efff76988e0b37b7a7f6752e4aaeb36c894ed",
+  "optics_registration_sha256": "9e334b39c75946be39afb6416cb8b6f42363a543bcaada92f995be8527273031",
+  "target_m": [0.009, 0.010],
+  "exact_control_target_m": 0.010,
+  "exact_control_overcut_m": 0.0,
+  "absolute_limit_m": 0.010,
+  "max_recorded_waypoints": 8,
+  "maximum_closures": 3,
+  "ordinary_advance_cap_m": 0.003,
+  "recovery_max_backoff_m": 0.003,
+  "procedure": "Keep the same exact 10 mm request with zero overcut allowance and the same 10 mm native absolute limit. Before the third closure use the original v2 working gates and live BELOW. Then run the established three-position acquisition and reverse with closed jaws, unchanged ECM and native motion/mechanical guards. The terminal-only mode can use this fixed recorded reverse for endpoint evidence without requiring a new wide slit under the closed tool; it cannot reopen, resume, or advance. At the entry anchor, evaluate only the newly captured narrow measured RGB-D and its registered sigma. Exact integer TARGET(10), current same-tick identity, closed jaws and the original mechanical checks authorize the single guarded jaw-preserving return to ready pose. Any other reading or interlock loss refuses. No comparisons to historical pixels, structural inputs to optical decisions, extra closures, camera moves or retries.",
+  "gate": "Seal optical replays first. Require live BELOW(7), three fresh-guarded closures, matched approach and three accepted recorded reversals, exact same-frame live TARGET(10) using the entrance view, and actual exact 10 mm prefix and farthest damage with identical constraints across the three capture poses and after withdrawal. Require exactly one same-tick guarded withdrawal, physical closed jaws and measured ready pose at DONE, no fault, tear, overcut, missing evidence, or cleanup error. Treat this as its own positive control, not proof of disturbance robustness."
+}

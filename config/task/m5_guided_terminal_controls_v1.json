@@ -1,0 +1,22 @@
+{
+  "id": "m5_guided_terminal_controls_v1",
+  "scope": "Acquisition only. Three independent fresh nominal trajectories on the same 0.1 mm guided surface seam, each with one fixed guarded final-bite request cap. Not benchmark acceptance, not a noise live run, and never an optical withdrawal authorization.",
+  "pins": {
+    "config/task/m5_guided_benchmark_v1.json": "8835b51df3d71062aa8ab596e4dd9628d3f02f9298ffd32ff3061f146acd9b86",
+    "scripts/task/run_m5_guided_benchmark_v1.py": "0a00bac174d415d635440027662b6eb3796658cac29c8338fe5b695c1cf94a73",
+    "validation/task/m5_guided_entry_clearance_v1/nominal.json": "2f4135d7cf4413906283994d11ea5338134f43442fbe51f004e78ce976b8c582",
+    "validation/task/m5_guided_bank_corridor_v2/decision.json": "111e7772ed9598ce444795376d223e26a3f6752780655a17ed5663a9eeb509c1",
+    "scripts/vision/m5_guided_bank_corridor_v2.py": "ae7e92c28329a4b40e56e4f394798dce6af6c27f04e02310aadf78db98c67170"
+  },
+  "reference_frames": {
+    "039_certificate.npz": "f5fc994b1dfb0842b989c660a5e230400c2451e5086e0931402191d23d9f8ca6",
+    "040_certificate.npz": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d"
+  },
+  "cases": {
+    "short": 0.001,
+    "mid": 0.002,
+    "full": 0.003
+  },
+  "acquisition": "Use the native guided visual approach, guarded reviews and closed entry-clearance recipe. Require both sealed 7 mm review exposures to match array-for-array before arming the registered diagnostic bite. The fixed cap can only reduce the requested advance. Keep the 9 mm working target, absolute 10 mm limit, 0.15 mm reserve, fresh visual sweep/alignment, and existing movement budgets. One attempted final advance and at most one additional actual closure. After it, perform the normal 3 mm micro-backoff, fresh visual entry estimate, same guarded closed entry-clearance, and identical review optics. Hold closed after acquisition or fail closed. No structural length or offline reader output selects a target, permits a bite or branches the capture path; original mechanical vetoes still apply. No repeat when coverage is missing.",
+  "offline_gate": "Replay the final cleared exposure of every case with v2 (raw and archived deterministic 0.5 mm depth noise) before opening the structure labels. Require all joints/guards/closed acquisition valid, unchanged structure between the two final exposures, and actual prefixes covering 8,9,10 on distinct trajectories with exact BELOW(8), TARGET(9), TARGET(10) in both variants. Misses and out-of-set structural outcomes do not count. No authority or Level 0 implied by a pass."
+}

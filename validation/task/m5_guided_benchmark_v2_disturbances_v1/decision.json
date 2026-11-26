@@ -1,0 +1,210 @@
+{
+  "passed": false,
+  "predictions_sha256": "637e43c3986ddfa57533b6303db000604047130baa59610ff1434027c91d3986",
+  "tested": 4,
+  "qualified": 1,
+  "cases": [
+    {
+      "case": "depth_noise_0p5",
+      "tested": true,
+      "passed": false,
+      "checks": {
+        "disturbance_exercised": true,
+        "fault_tear_overcut_error_free": true,
+        "strict_truth": true,
+        "all_closures_current_and_reacquired": false,
+        "live_measured_optics_correct": false,
+        "independent_endpoint_no_growth": false,
+        "one_closed_ready_withdrawal": false,
+        "original_camera_budget": true
+      },
+      "injections": [],
+      "final_state": "FAILED",
+      "reason": "alignment not reached (None)",
+      "structure": {
+        "prefix_rows": 6,
+        "farthest_row_end": 6
+      },
+      "final_m": 0.006,
+      "actual_closed": false,
+      "actual_ready": false,
+      "closures": [
+        18,
+        24
+      ],
+      "reacquired": [
+        19,
+        26
+      ],
+      "camera_attempts": 2,
+      "optics": [
+        {
+          "tick": 29,
+          "file": "029_certificate.npz",
+          "sha256": "6f52e718e9bdd58e89e716604a7427c69a64087912b56a694ff09b6534e1776b",
+          "sigma": 0.0005,
+          "verdict": "BELOW",
+          "prefix_mm": 6,
+          "reason": "",
+          "same_as_live": true
+        }
+      ],
+      "withdrawal": []
+    },
+    {
+      "case": "occlusion_transient",
+      "tested": true,
+      "passed": true,
+      "checks": {
+        "disturbance_exercised": true,
+        "fault_tear_overcut_error_free": true,
+        "strict_truth": true,
+        "all_closures_current_and_reacquired": true,
+        "live_measured_optics_correct": true,
+        "independent_endpoint_no_growth": true,
+        "one_closed_ready_withdrawal": true,
+        "original_camera_budget": true
+      },
+      "injections": [
+        {
+          "tick": 6,
+          "event": "occlude",
+          "persistent": false
+        }
+      ],
+      "final_state": "DONE",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "structure": {
+        "prefix_rows": 9,
+        "farthest_row_end": 9
+      },
+      "final_m": 0.009000000000000001,
+      "actual_closed": true,
+      "actual_ready": true,
+      "closures": [
+        29,
+        35,
+        45
+      ],
+      "reacquired": [
+        31,
+        36,
+        46
+      ],
+      "camera_attempts": 3,
+      "optics": [
+        {
+          "tick": 40,
+          "file": "040_certificate.npz",
+          "sha256": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d",
+          "sigma": 0.0,
+          "verdict": "BELOW",
+          "prefix_mm": 7,
+          "reason": "",
+          "same_as_live": true
+        },
+        {
+          "tick": 50,
+          "file": "050_certificate.npz",
+          "sha256": "fcdd793140b62d5e32ea4607681c0fcba153ecb96daaef7da45839578cdc6841",
+          "sigma": 0.0,
+          "verdict": "TARGET",
+          "prefix_mm": 9,
+          "reason": "",
+          "same_as_live": true
+        }
+      ],
+      "withdrawal": [
+        {
+          "event": "guided_v2_withdrawal",
+          "tick": 50,
+          "accepted": true,
+          "ready_before": false,
+          "ready_after": true,
+          "closed_after": true
+        }
+      ]
+    },
+    {
+      "case": "slip_regrasp",
+      "tested": true,
+      "passed": false,
+      "checks": {
+        "disturbance_exercised": true,
+        "fault_tear_overcut_error_free": true,
+        "strict_truth": true,
+        "all_closures_current_and_reacquired": false,
+        "live_measured_optics_correct": false,
+        "independent_endpoint_no_growth": false,
+        "one_closed_ready_withdrawal": false,
+        "original_camera_budget": true
+      },
+      "injections": [
+        {
+          "tick": 13,
+          "event": "slip",
+          "arm": "psm1"
+        }
+      ],
+      "final_state": "FAILED",
+      "reason": "clear-and-look action refused",
+      "structure": {
+        "prefix_rows": 0,
+        "farthest_row_end": 0
+      },
+      "final_m": 0.0,
+      "actual_closed": false,
+      "actual_ready": false,
+      "closures": [],
+      "reacquired": [],
+      "camera_attempts": 1,
+      "optics": [],
+      "withdrawal": []
+    },
+    {
+      "case": "relax",
+      "tested": true,
+      "passed": false,
+      "checks": {
+        "disturbance_exercised": true,
+        "fault_tear_overcut_error_free": true,
+        "strict_truth": true,
+        "all_closures_current_and_reacquired": false,
+        "live_measured_optics_correct": false,
+        "independent_endpoint_no_growth": false,
+        "one_closed_ready_withdrawal": false,
+        "original_camera_budget": false
+      },
+      "injections": [
+        {
+          "tick": 11,
+          "event": "relax",
+          "arm": "psm1",
+          "relax_m": 0.0005,
+          "accepted": true
+        },
+        {
+          "tick": 11,
+          "event": "relax",
+          "arm": "psm3",
+          "relax_m": 0.0005,
+          "accepted": true
+        }
+      ],
+      "final_state": "FAILED",
+      "reason": "camera adjustment exhausted",
+      "structure": {
+        "prefix_rows": 0,
+        "farthest_row_end": 0
+      },
+      "final_m": 0.0,
+      "actual_closed": true,
+      "actual_ready": true,
+      "closures": [],
+      "reacquired": [],
+      "camera_attempts": 4,
+      "optics": [],
+      "withdrawal": []
+    }
+  ]
+}

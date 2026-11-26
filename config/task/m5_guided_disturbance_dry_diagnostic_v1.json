@@ -1,0 +1,11 @@
+{
+  "id": "m5_guided_disturbance_dry_diagnostic_v1",
+  "scope": "One matched diagnostic replay of each original failed noise and slip scenario. No new actuation, no benchmark replacement.",
+  "trace_registration_sha256": "32ca0dca8b760104d6c4d7f9c78ee774738e147e410387298ba26d92dd1e7046",
+  "trace_diagnosis_sha256": "40cdfa969a88581e9399ee93f1c906513fc92d1c1cadfab1b45dfbaf56e259d4",
+  "dry_ticks": {"depth_noise_0p5": 34, "slip_regrasp": 32},
+  "optical_ticks": [29, 30, 31, 32],
+  "contrasts": ["yaw_seed_inward_1deg", "orientation_weight_half"],
+  "dry_rule": "Test each original target at the single named checkpoint. Keep native FK, original limit array and margins, 30 iterations and original convergence tolerances. Contrast 1 shifts only initial shaft yaw 1 deg toward zero without crossing it. Contrast 2 starts from original seed and halves only the axis terms' optimisation weight; acceptance thresholds are unchanged. Do not execute, advance, close, or feed any candidate into control. Verify state and simulation time unchanged; verify original replay control events, constraints and frame hashes before interpreting. Success is an IK/FK candidate, not acceptance of interpolation, wrist collision or a reachable live motion.",
+  "optical_rule": "Only on slip, snapshot exact estimator inputs and mutable prior state at ticks 29 to 32. Match RGB-D to archived fault frames and original validity, reason, progress, and slit support. Then count original ahead-window seen, foreground, sheet and occupied-gap checks in offline replay; distinguish direct pre-cut candidate from auxiliary scans by call site. No positive label or action may be inferred from a rejected pixel/bin."
+}

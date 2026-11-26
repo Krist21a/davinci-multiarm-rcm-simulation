@@ -1,0 +1,42 @@
+{
+  "protocol": {
+    "id": "m5_temporal_coded_capture_v1",
+    "scope": "One optical acquisition on the conventional non-anatomical sheet in the current scene. No visual stop, holdout, controller change or Level 0 credit.",
+    "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "base_config_sha256": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "native_controller_sha256": "d403b81dd20b1d0cba44300c2f6a52163d63bd3c06a4f8e8a2ac51a143469ca2",
+    "execution": "Original nominal full truth-feedback comparison, unchanged parameters, one run. Read only the instrument camera during acquisition. The passive left/right row, face and cap inks are attached to existing triangles only during each frozen exposure. Restore the original RGB-D, angle and resolution before any motion. Never run the surface-seam Lua or alter topology, jaw, camera pose, guards or timing.",
+    "capture": "Zero seed at the first loaded ALIGN observation with both grippers holding. Every actual close_scissors attempt retains its preceding exposure; every accepted closure is paired to the first following observation, exactly adjacent. Keep refused, failed and missing pairs; never reconstruct or stitch them from another run.",
+    "optics": {
+      "wide": {
+        "size": [
+          1280,
+          960
+        ],
+        "hfov_deg": 70
+      },
+      "narrow": {
+        "size": [
+          2560,
+          1920
+        ],
+        "hfov_deg": 20
+      }
+    },
+    "replay": "Use only RGB-D and original camera/instrument calibration for per-face evidence. Cam_R/cam_t, readback timing and the explicit closure log are only for binding exposures, not material or length features. Report registered material face identities and direct face transitions even on abstentions. Only the original wide lane contributes to TemporalEvidence, with its unchanged zero seed, tip gate and positive before/after rules. Report narrow separately; it cannot be substituted, borrowed or counted as a stop.",
+    "integrity": "Freeze the source and input hashes before prediction. Independently check the original truth reference's complete (tick, cut_length_m, nodes_sha256) trace after sealing predictions. The structure log is not an optical reader input. A broken seed or missing evidence invalidates the chain, not just one row; no threshold or sample replacements."
+  },
+  "capture_sha256": "84ed85bed9532627fecdf0755c7f0205832ab75bec5b22669ded0fda4082e4b0",
+  "acquisition_registration_sha256": "6c1a63a89c951b880823a291301b71924f125424f5baf0df2a6e0d731e027dbc",
+  "reference_sha256": "6cb2195bc37fb8e67f9289392c63ad9fdbd3328b659a519d63337a0c9e3b56d5",
+  "sources": {
+    "scripts/learn/replay_m5_temporal_coded.py": "3a5f8c84a5f28c0fcb997089f2bdf48c54611d22495d821046fbba2997c0ea22",
+    "scripts/learn/m5_temporal_coded.py": "84f165c3cd75d4c3038648a005f6887c1ae5f974856567d126a779f751a00087",
+    "scripts/learn/tip_marker_gate_dev.py": "8dcdad5a07cf4e785160ffdf5864a751656b57e6994b7a4280cefd31402b4ee7",
+    "scripts/vision/cell_certificate.py": "6734842127c114428c956f9ede32caf5d5e5725453757829bfaf348cde3d8d67",
+    "scripts/vision/cell_certificate_v2.py": "782ecad492b8e44e5407405cc42c786c5698cfb7cb49fc6cd48b4c21a0c9437e",
+    "scripts/vision/cell_certificate_v1.py": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+    "scripts/vision/ruler_readout.py": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168",
+    "scripts/vision/cut_perception.py": "c9246433b35cc449d229ec017b1729ae1e69fa188b15a38dd35137cb4667417c"
+  }
+}

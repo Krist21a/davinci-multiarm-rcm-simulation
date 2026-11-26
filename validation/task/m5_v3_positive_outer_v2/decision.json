@@ -1,0 +1,573 @@
+{
+  "plan_sha256": "0d28468e8940846292be7664b605c456cf7c5a7f4bc81e39dbbcada7f82feec3",
+  "scorer_sha256": "12cc07a30fc55a8d46dac94da1564df185690eadb197b2ecf4059929ae1cf6bb",
+  "parent_scorer_sha256": "ac447fe421fbea77a90ee1e3d045b5a8be10d89a20be30fbc5e76e7e808fefa1",
+  "cases": {
+    "nominal": {
+      "case": "nominal",
+      "goal_mm": 9,
+      "initial_passed": true,
+      "receipts": [
+        {
+          "tick": 6,
+          "closure": 1,
+          "frame": "006_review",
+          "verdict": "BELOW",
+          "prefix_mm": 3,
+          "positive": true,
+          "sha256": "c1fe235aefa237baf317fa26a0a271c1416d934065a2cc953dbc2c3bdd285912"
+        },
+        {
+          "tick": 10,
+          "closure": 2,
+          "frame": "010_review",
+          "verdict": "BELOW",
+          "prefix_mm": 5,
+          "positive": true,
+          "sha256": "92f1dd8f36162d9d0e3131ec1838b8a4d5b6019af10f9a9fd36f0eadec4119db"
+        },
+        {
+          "tick": 14,
+          "closure": 3,
+          "frame": "014_review",
+          "verdict": "BELOW",
+          "prefix_mm": 7,
+          "positive": true,
+          "sha256": "553a91474bb2a56173e881e6496ff1b4b0b6885138362717ee097a4426160bfa"
+        },
+        {
+          "tick": 18,
+          "closure": 4,
+          "frame": "018_review",
+          "verdict": "UNKNOWN",
+          "prefix_mm": null,
+          "positive": false,
+          "sha256": "c91381e2b4f867867551c4b450e800e0b863e5d18fa85c09d6345f70c5134cfb"
+        }
+      ],
+      "run_sha256": "6800eebb35930d17ff6a5070e9980c3af265f7ddb240a20b24deb7645611c607",
+      "registration_sha256": "fa7dc79fb47e7787972532c607cb4e7f99a2491a1865ba4f4f7f3805fcc622b4",
+      "passed": false,
+      "state": "FAILED",
+      "reason": "no fresh growing optical boundary",
+      "closures": 4,
+      "prefix_rows": 9,
+      "farthest_row_end": 9,
+      "closed": true,
+      "ready_verified": false,
+      "no_faults": true,
+      "visibility": {
+        "late_work": [
+          {
+            "tick": 15,
+            "frame": "015_work.npz",
+            "closed": true,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.86024610220197
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.898789309191265
+              }
+            }
+          },
+          {
+            "tick": 16,
+            "frame": "016_work.npz",
+            "closed": true,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.860256130730754
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.898792040862293
+              }
+            }
+          },
+          {
+            "tick": 17,
+            "frame": "017_work.npz",
+            "closed": false,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.860239818916497
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.89877883804321
+              }
+            }
+          }
+        ],
+        "narrow": [
+          {
+            "tick": 2,
+            "frame": "002_review.npz",
+            "closures": 0,
+            "verdict": "UNKNOWN",
+            "prefix_mm": null,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 6,
+            "frame": "006_review.npz",
+            "closures": 1,
+            "verdict": "BELOW",
+            "prefix_mm": 3,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 10,
+            "frame": "010_review.npz",
+            "closures": 2,
+            "verdict": "BELOW",
+            "prefix_mm": 5,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 14,
+            "frame": "014_review.npz",
+            "closures": 3,
+            "verdict": "BELOW",
+            "prefix_mm": 7,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 18,
+            "frame": "018_review.npz",
+            "closures": 4,
+            "verdict": "UNKNOWN",
+            "prefix_mm": null,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              },
+              {
+                "row": 11,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "exact_10mm": {
+      "case": "exact_10mm",
+      "goal_mm": 10,
+      "initial_passed": true,
+      "receipts": [
+        {
+          "tick": 6,
+          "closure": 1,
+          "frame": "006_review",
+          "verdict": "BELOW",
+          "prefix_mm": 3,
+          "positive": true,
+          "sha256": "c1fe235aefa237baf317fa26a0a271c1416d934065a2cc953dbc2c3bdd285912"
+        },
+        {
+          "tick": 10,
+          "closure": 2,
+          "frame": "010_review",
+          "verdict": "BELOW",
+          "prefix_mm": 5,
+          "positive": true,
+          "sha256": "92f1dd8f36162d9d0e3131ec1838b8a4d5b6019af10f9a9fd36f0eadec4119db"
+        },
+        {
+          "tick": 14,
+          "closure": 3,
+          "frame": "014_review",
+          "verdict": "BELOW",
+          "prefix_mm": 7,
+          "positive": true,
+          "sha256": "553a91474bb2a56173e881e6496ff1b4b0b6885138362717ee097a4426160bfa"
+        },
+        {
+          "tick": 18,
+          "closure": 4,
+          "frame": "018_review",
+          "verdict": "UNKNOWN",
+          "prefix_mm": null,
+          "positive": false,
+          "sha256": "c91381e2b4f867867551c4b450e800e0b863e5d18fa85c09d6345f70c5134cfb"
+        }
+      ],
+      "run_sha256": "9afe56c0fe79062d9e70425b9523428a44f1e289463c63bdd40f0ad4922db8fc",
+      "registration_sha256": "cd60898f877f807ac227ee9580d6c01fecbb44c2459d544cbbd209e242bf6a73",
+      "passed": false,
+      "state": "FAILED",
+      "reason": "no fresh growing optical boundary",
+      "closures": 4,
+      "prefix_rows": 9,
+      "farthest_row_end": 9,
+      "closed": true,
+      "ready_verified": false,
+      "no_faults": true,
+      "visibility": {
+        "late_work": [
+          {
+            "tick": 15,
+            "frame": "015_work.npz",
+            "closed": true,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.86024610220197
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.898789309191265
+              }
+            }
+          },
+          {
+            "tick": 16,
+            "frame": "016_work.npz",
+            "closed": true,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.860256130730754
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.898792040862293
+              }
+            }
+          },
+          {
+            "tick": 17,
+            "frame": "017_work.npz",
+            "closed": false,
+            "prefix_mm": 7,
+            "chart_valid": true,
+            "stations": {
+              "9": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.860239818916497
+              },
+              "10": {
+                "left": true,
+                "right": true,
+                "chord_mm": 8.89877883804321
+              }
+            }
+          }
+        ],
+        "narrow": [
+          {
+            "tick": 2,
+            "frame": "002_review.npz",
+            "closures": 0,
+            "verdict": "UNKNOWN",
+            "prefix_mm": null,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 6,
+            "frame": "006_review.npz",
+            "closures": 1,
+            "verdict": "BELOW",
+            "prefix_mm": 3,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 10,
+            "frame": "010_review.npz",
+            "closures": 2,
+            "verdict": "BELOW",
+            "prefix_mm": 5,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "UNKNOWN",
+                "reason": "unexplained samples inside row strip",
+                "unexplained_pixels": 1,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 14,
+            "frame": "014_review.npz",
+            "closures": 3,
+            "verdict": "BELOW",
+            "prefix_mm": 7,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              },
+              {
+                "row": 11,
+                "status": "UNKNOWN",
+                "reason": "no positive local certificate",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  false,
+                  false
+                ],
+                "bridge": false
+              }
+            ]
+          },
+          {
+            "tick": 18,
+            "frame": "018_review.npz",
+            "closures": 4,
+            "verdict": "UNKNOWN",
+            "prefix_mm": null,
+            "statuses": [
+              {
+                "row": 9,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              },
+              {
+                "row": 11,
+                "status": "INTACT",
+                "reason": "",
+                "unexplained_pixels": 0,
+                "through_pixels": 0,
+                "face_patches": [
+                  true,
+                  true
+                ],
+                "bridge": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "passed": false,
+  "authorizes_disturbances": false
+}

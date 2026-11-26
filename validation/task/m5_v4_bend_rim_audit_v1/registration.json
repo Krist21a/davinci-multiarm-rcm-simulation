@@ -1,0 +1,93 @@
+{
+  "plan": {
+    "id": "m5_v4_bend_rim_audit_v1",
+    "scope": "Offline diagnosis only. All six distinct native late work exposures of the hinge terminal control. No simulator, motion, fitting of new parameters, controller change or new margin. Report left and right, not only the winning bank.",
+    "decision_sha256": "32779f90e9261ecba8d5cbed39bd6d8bf84eae65c5c6d347caeb2ec0f1c4e029",
+    "attribution_sha256": "e1f5a679ce75f40b1095f405a15b85c42e21f21a101c238d7dad3ced9865b678",
+    "trace": "Freeze the v8 rim fits, depth-connected support, minimum-distance tied pairs between rows 9/10, harmonic pair midpoint and component-wise median from v4, v11 main-path selection and original axis. Match the original solutions before using any structural data. Retain every contributing integer pixel, measured color, signed intercept weight, fitted midpoint and pair multiplicity.",
+    "reference": "Unproject the original pixel-center convention. Intersect rays with the nearest live triangle from the same exposure nodes in camera coordinates. Bind edge liveness to the last review at the same closure count; check it is bracketed by no new closure. Account for the two triangles per cell and print extents, without inventing scene occluder geometry. Report misses, depth discrepancies and RGB/face-code disagreements; do not silently discard those rays. A sheet hit alone is a prediction, not a measured material label.",
+    "decomposition": "At fixed rays, weights, tied pairs, median and optical axis: true row-10 rim vertex -> nearest sheet at combined pair rays -> aggregate of two exact edge-center depths -> frozen fit using exact support-ray depths -> actual measured fit. Report signed axial telescoping contributions, relative to rim and to actual seam midpoint, true vertex projection error in pixels, overall and per-row pixel first-hit identities and native depth residuals. Require actual station and previous optimism sum agreement (<1e-8 mm). Report any unresolved ray geometry; no gate or constant is derived from this audit."
+  },
+  "records": [
+    {
+      "case": "full",
+      "name": "015_work",
+      "h": "8938c392e6d57819214ce4632ce112e7a2cb366ef4ae303bd195b961232221c4",
+      "review": "014_review",
+      "prefix": 7,
+      "files": [
+        "8938c392e6d57819214ce4632ce112e7a2cb366ef4ae303bd195b961232221c4",
+        "ff09e8dbe32cef7bc32bc6c673b4ebfcb2923da6a9f94bcca04576167df8257b",
+        "87e87817377df5de1c7723703a8c73285f411b25269a21f696df24c74ffbe7ff"
+      ]
+    },
+    {
+      "case": "full",
+      "name": "016_work",
+      "h": "4476307fcb36833c932e057226a8c448123eacb565346f0bb6cc4ce8907487fe",
+      "review": "014_review",
+      "prefix": 7,
+      "files": [
+        "4476307fcb36833c932e057226a8c448123eacb565346f0bb6cc4ce8907487fe",
+        "40804b85266805ec2541d7e10ebb2a7f9febff3b07e929fe7d1ad402f3cb2297",
+        "87e87817377df5de1c7723703a8c73285f411b25269a21f696df24c74ffbe7ff"
+      ]
+    },
+    {
+      "case": "full",
+      "name": "017_work",
+      "h": "5931a8a207e817930a6341474e6ccbcc63bb38189c2e91acb27acb8ce9758359",
+      "review": "014_review",
+      "prefix": 7,
+      "files": [
+        "5931a8a207e817930a6341474e6ccbcc63bb38189c2e91acb27acb8ce9758359",
+        "7e216c5d7d1706123a28f7411869546c68e793ccc65b8c61bd5b3d61709bc023",
+        "87e87817377df5de1c7723703a8c73285f411b25269a21f696df24c74ffbe7ff"
+      ]
+    },
+    {
+      "case": "full",
+      "name": "019_work",
+      "h": "36776a0574fdb72d12c682c1142661615a937b13c15383b95e3bc0ed8e12f74f",
+      "review": "018_review",
+      "prefix": 9,
+      "files": [
+        "36776a0574fdb72d12c682c1142661615a937b13c15383b95e3bc0ed8e12f74f",
+        "0cabe94c55f32d378b67eb60c9714f9044b626fae279e64e9dd9c2ae79992a90",
+        "10eebf31a4583d1a2d7cb8085876c50a3b02ddec36b707847e81f49f2467956a"
+      ]
+    },
+    {
+      "case": "short",
+      "name": "017_work",
+      "h": "072638994091a27451b17cc508c83be15e17812a60dd6212684fa3c47b274ac2",
+      "review": "014_review",
+      "prefix": 7,
+      "files": [
+        "072638994091a27451b17cc508c83be15e17812a60dd6212684fa3c47b274ac2",
+        "17d0d3da5b8da752028d2f1d53892e0f957d9f816cdd60f4b90ab1908c3cded8",
+        "87e87817377df5de1c7723703a8c73285f411b25269a21f696df24c74ffbe7ff"
+      ]
+    },
+    {
+      "case": "short",
+      "name": "019_work",
+      "h": "65636c36119b4c158b584d77817ea657fd904c5ecfc0ba82cdbe4a768e1c2f32",
+      "review": "018_review",
+      "prefix": 8,
+      "files": [
+        "65636c36119b4c158b584d77817ea657fd904c5ecfc0ba82cdbe4a768e1c2f32",
+        "8611c5a12bbbf8539463c939466823a8d87880824ac549721cef0bb35c0f5031",
+        "1dc06805f5a5f0bfed0139e9779b9ebad77cd9fe4716318d02c99608b9435a13"
+      ]
+    }
+  ],
+  "sources": {
+    "config/task/m5_v4_bend_rim_audit_v1.json": "8c08f1066096ad80a5ff07203afc6d128cfef41998a9b50cea138f153bae0ca5",
+    "scripts/analysis/audit_m5_v4_bend_rim_v1.py": "576f82e0c8de422ad2174bacd4556dd30c1c6f02cd577b0c69660b94cb6ea6ea",
+    "scripts/tests/test_m5_v4_bend_rim_audit_v1.py": "81362fe823e7d76866b107595ed684f8e26fe2e7405b4037ab328834e7295081",
+    "scripts/learn/capture_m5_temporal_coded.py": "44c5a3af58c1a0c315824f16a065102276ed66ea1b8ff5bed82f0d2a2e2a1870",
+    "src/tissue/tissue.lua": "40211fe35bcca3978f9cacc2f6e206ccc0ea6faa8e0e68abb38ca0fca9e38070",
+    "src/tissue/cell_certificate_print.lua": "3223bd774e7267ccf33cd8ea0f5273264e1035cd0f68c8b2f2339b5ee1e5786d"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "m5_level0_v1",
+  "scope": "One nominal truth-feedback simulation reference. No vision or signed M5 acceptance.",
+  "endpoint_m": [
+    0.009,
+    0.01
+  ],
+  "numeric_tolerance_m": 1e-12,
+  "criteria": [
+    "Original full nominal runner reaches DONE without fault, tear or cleanup failure.",
+    "Trace starts at zero, is consecutive and nondecreasing, and never exceeds 10 mm.",
+    "At least one accepted cutting closure; all cutting closures accepted and before first IN.",
+    "No cutter setGrip call at or after the first IN observation, including during withdrawal.",
+    "Exactly one accepted withdrawal starts at first IN, off ready, with physical jaws closed, and ends at the original ready pose with physical jaws still closed.",
+    "Final structural length equals the first IN length; CUT transitions directly to DONE."
+  ],
+  "runner_arguments": [
+    "--mode",
+    "full",
+    "--scenario",
+    "nominal",
+    "--control-source",
+    "truth",
+    "--align-mode",
+    "tool_pose",
+    "--trace",
+    "--scene",
+    "D:\\仿真环境\\github_upload\\davinci-multiarm-rcm-simulation\\scenes\\davinci_si_articulated_verified.ttt",
+    "--name",
+    "nominal",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "24731",
+    "--stage-dir",
+    "C:\\Users\\Kuo\\AppData\\Local\\Temp\\davinci_m5_level0_v1_stage",
+    "--timeout",
+    "180.0"
+  ],
+  "sha256": {
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "config/task/cut_task.json": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+    "scripts/task/run_m5_level0.py": "253e64adaa193ec236495f786029edaf46d060171d0d7b0831d47fe76ef79a12",
+    "scripts/task/run_cut_task.py": "8d1d4cf8485689533ed5b34352e6933b126b49978ac89baab94ef3e0b1f52d9d",
+    "scripts/task/cut_fsm.py": "f21c3549fdea53a6f9da5b08278ca16fa73229aa563c98cb420b3abf8b8b7d63",
+    "scripts/task/sim_world.py": "988df5c5b89bcdd679419e32273ca193c295b01fa9177595fceedec82d867309",
+    "scripts/task/ground_truth.py": "1be4edc3499e2ff64a0fb180caf701f712b18e4ec9bcbf5b471b894a6879de57",
+    "src/tissue/tissue.lua": "40211fe35bcca3978f9cacc2f6e206ccc0ea6faa8e0e68abb38ca0fca9e38070",
+    "src/endoscope/rcm_controller.lua": "19caac5b63f0e5be062ca2acb85e9e6ef31c70a0cf0d2754ca8b03931f019ff2"
+  }
+}

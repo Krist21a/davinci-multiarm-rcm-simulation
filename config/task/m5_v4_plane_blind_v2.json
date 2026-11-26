@@ -1,0 +1,19 @@
+{
+  "id": "m5_v4_plane_blind_v2",
+  "scope": "Single stopped-scene blind acquisition, no train set, no fitting, no retries, no motion. Reuse the v1 rigid target, clone, optical chain, exposure and sidecar conventions. All poses are new. Rotation pairs reverse the projected gradient; 45 degree rolls test nearly equal image slopes, not just one dominant component.",
+  "prior_decision": "7655e727ecbee09b2dd9427183eb8d81cd1fa2d716ab18d497ef2488723e5868",
+  "prior_hypothesis": "1b74611993a597ec3ff1523da0c176633461e2d0d7863992cd5f389fe6f5c754",
+  "pose_columns": ["z_mm","center_col","center_row","rot_x_deg","rot_y_deg","roll_deg"],
+  "blind": [
+    [104,555.31,474.28,0,0,31],[173,806.29,521.35,0,0,-8],
+    [127,603.39,440.16,58,0,45],[127,603.39,440.16,-58,0,45],
+    [154,728.62,509.32,0,56,45],[154,728.62,509.32,0,-56,45],
+    [115,479.64,557.11,61,0,0],[115,479.64,557.11,-61,0,0],
+    [143,797.28,412.67,0,59,0],[143,797.28,412.67,0,-59,0],
+    [161,577.46,398.83,46,27,9],[161,577.46,398.83,-46,-27,9]
+  ],
+  "depth": "Measured z prediction = 1/(u_geom - 0.5*max(abs(du/dr),abs(du/dc))). No RGB or depth shift, gain, intercept or fitted parameter. Reuse v1 stride, interiors, coverage >=64 and p95 abs <=0.010 mm on EVERY pose; no pooling. Record native and predicted residuals.",
+  "rgb": "Independently use unshifted native pixel centers and per-color measured checker mesh. For every interior four-neighbor segment (same half-square silhouette inset as v1), compare BOTH observed endpoint colors against parity of projected cells, using the same 0.02 px edge tolerance. Allow either adjacent cell only at that tolerance. Keep finite cells, never choose an infinite line by proximity. All observed changes and predicted changes enter the union; undecoded endpoints count as errors. Minimum 40 observed transitions; >=98% correct on the union and >=98% on observed transitions for EVERY pose; also >=98% coverage/accuracy over all eligible endpoint pairs. Report near-junction (midpoint <=1.5 px from an internal grid crossing) vs other transitions, legacy closest-line results and mismatches; neither stratum is excluded. Legacy v1 is not retrospectively regraded as a pass.",
+  "transfer": "Only after both blind gates pass: on ALL 1102 pinned hinge support pixels, test the exact same forward law on the true ray-hit triangle normal, scorer only. Require per-frame/per-bank >=95% residual within 0.010 mm to call metric transfer supported; no trimming. Independently replay the six unique late frames and all previous 12+12 noise seeds at 0.5 mm. Diagnostic optical inverse: hold original v11 chart, measured axis and marker; for EACH row-10 outer station use a connected same-side/pink 7x7 neighborhood centered at the rounded projected station, with existing depth adjacency tol=1mm+3sigma, >=8 pixels and rank-3 local affine inverse depth fit. Add half the max observed reciprocal-depth slope to the station's reciprocal depth, preserving its ray. Re-select the nearer corrected bank; no structural data in predictions. Reproduce original uncorrected axis/displacement and abstentions; score sealed optical increments against exact same-instant truth only offline. Require clean <=0 mm, noisy <=0.1000 mm, clean full coverage, >=95% each noise split with all original jaw/prefix strata. Neither this nor a successful forward model qualifies a controller or a new fixture.",
+  "exit": "If either rigid gate fails do not run tissue transfer. If a tissue check fails do not change constants or retry. Shift the next engineering decision to direct central-material observation. Keep the absolute 10 mm wall and all existing protocols. No motion authority."
+}

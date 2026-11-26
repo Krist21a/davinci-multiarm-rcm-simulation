@@ -1,0 +1,11 @@
+{
+  "id": "m5_v3_distal_workspace_v1",
+  "scope": "Offline distal workspace model only. No controller calls, proximal IK, physical interval readbacks, collision tests, scene changes or motion authorization.",
+  "ray_decision_sha256": "e8ece6c7cb6caafc0d6833f40a5dbac8f773d010ddf9bc2364f243942d348cb4",
+  "ray_registration_sha256": "745fc16f383caf96054d43201079523fa4df7e6961b3a17cc39be637073ae293",
+  "tool": "420179",
+  "calibration": "All six closure TCP rotations/positions and their immediately previous accepted cut-advance commands. Fit only one scalar: the median pitch-pivot distance from RCM minus insertion, using the installed dVRK wrist transforms and recorded wrist yaw.",
+  "validation": "All six distinct pre-advance readbacks in the same two archives, paired to the latest earlier confirmed closed ALIGN tool command. Require every reconstruction within 0.01 degrees shaft yaw/pitch, 0.01 mm insertion and 0.001 radians wrist pitch/yaw. These are within-archive model checks, not independent scene validation.",
+  "screen": "Use predecessor's frozen row center and approach/backoff samples, both original views, the three corresponding closed-blade TCP rotations per view, and the same 0/3/4/5 mm positive transverse_x translations and independent +/-0.5 mm perturbations. Hold each TCP rotation fixed exactly; solve the distal shaft line and wrist angles from the closed-tip geometry. Require modeled shaft, insertion and wrist limits with native margins, plus yaw in [-2.5,+1.0] degrees. Do not infer scene reachability from this screen.",
+  "checks": {"shaft_deg": 0.01, "insertion_m": 0.00001, "wrist_rad": 0.001}
+}

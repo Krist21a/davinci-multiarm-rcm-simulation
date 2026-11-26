@@ -1,0 +1,158 @@
+{
+  "spec": {
+    "id": "m5_v4_plane_calibration_v1",
+    "scope": "Rigid-target, stopped-scene metrology only. One passive copy of the scene EndoscopeCamera in an empty region, same renderer, 70 degrees horizontal, 1280x960, clipping and vertical flip as the work reader. One exposure per pose, no joint/arm commands, tissue, actuator, retry, or scene save. Record RGB and getVisionSensorDepth(mode=1) from the same render.",
+    "audit_sha256": "061d24b7b7ce143a85db5df9cbaf016ef35d73ed421a1b2c5bf6f8457e19ecc9",
+    "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "grid": "One 8x6 coplanar checkerboard, square pitch 0.004 m, alternating emissive cyan/magenta. Recover board-to-camera affine map from actual shape mesh vertices/matrices; max vertex departure from requested grid and fitted rigid grid < 0.002 mm. Keep raw reference vertices with each exposure.",
+    "pose_columns": [
+      "z_mm",
+      "center_col",
+      "center_row",
+      "rot_x_deg",
+      "rot_y_deg",
+      "roll_deg"
+    ],
+    "development": [
+      [
+        100,
+        493.27,
+        375.36,
+        0,
+        0,
+        7
+      ],
+      [
+        140,
+        701.63,
+        416.19,
+        0,
+        0,
+        -11
+      ],
+      [
+        185,
+        823.41,
+        605.72,
+        0,
+        0,
+        16
+      ],
+      [
+        140,
+        639.23,
+        479.71,
+        60,
+        0,
+        0
+      ],
+      [
+        140,
+        639.67,
+        479.28,
+        -60,
+        0,
+        0
+      ],
+      [
+        140,
+        639.37,
+        479.59,
+        0,
+        60,
+        0
+      ],
+      [
+        140,
+        639.74,
+        479.11,
+        0,
+        -60,
+        0
+      ],
+      [
+        110,
+        745.83,
+        391.26,
+        39,
+        -28,
+        17
+      ],
+      [
+        176,
+        526.48,
+        558.84,
+        -37,
+        33,
+        -19
+      ]
+    ],
+    "holdout": [
+      [
+        121,
+        586.39,
+        549.74,
+        0,
+        0,
+        23
+      ],
+      [
+        160,
+        793.64,
+        384.27,
+        0,
+        0,
+        -26
+      ],
+      [
+        132,
+        709.32,
+        465.83,
+        52,
+        -24,
+        10
+      ],
+      [
+        152,
+        570.81,
+        509.43,
+        -53,
+        19,
+        -13
+      ],
+      [
+        135,
+        679.28,
+        402.61,
+        14,
+        62,
+        -7
+      ],
+      [
+        166,
+        608.73,
+        531.24,
+        -17,
+        -59,
+        12
+      ]
+    ],
+    "depth": "Deterministic row/column stride 5 on target interiors at least 3 px from a color transition or silhouette. Require >=64 samples per pose. One scalar per sampled ray; fit unweighted per pose (equal total pose weights). Forward model measured_z_mm=(1+gain)*plane_z_mm(row+dr,col+dc)+b. Models in fixed complexity order: native, ray shift, affine depth, joint. Fit only permitted terms, dev only. Bounds shifts +/-2 px, gain +/-0.02, b +/-5 mm. Qualifies only if p95 absolute residual <=0.010 mm on EVERY pose and no fitted parameter hits a bound. Select first qualifying model on development; if none passes, report all diagnostics without issuing a model. Seal dev output before opening held-out exposures.",
+    "rgb": "Independently estimate checkerboard RGB sampling offset from material-color transitions, not from depth. Use four-neighbor transitions of different decoded target colors well inside the silhouette (both pixel centers nominally >=1.5 cell-edge pixel widths from outer board border, conservatively use 0.5 square inset). Use nearest ideal projected internal grid line separating each pair. Intersect its line with the two pixel centers displaced by a common (dr,dc). Minimize squared distances outside the bracketing interval on dev, with negligible minimum-norm tie-break, shifts bounded +/-2 px. Report per-pose fraction correctly bracketed (allow 0.02 px raster tolerance); require >=98% in each dev and held pose, >=40 edge pairs per pose. Compare with the inferred DEPTH shift only if both held-out tests pass. No assumption that a depth shift proves an RGB shift.",
+    "transfer": "After dev seal and holdout evaluation, if the chosen model and RGB gates pass, predict native depth on all 1102 previously archived support observations using SAME frozen parameters and same live topology reconstruction. Report per-bank signed and absolute residuals vs native model without refit. This is transfer diagnosis, not movement permission. The independent outer-node vs seam geometry error is not removed by this experiment."
+  },
+  "sources": {
+    "config/task/m5_v4_plane_calibration_v1.json": "63f56d1dc68bfd18ea0265a4ff83e9d74a2d5a1c1d33ca01da58361ada5bf21e",
+    "scripts/task/capture_m5_v4_plane_v1.py": "600cbe8c31dae12c4cfc5d6a26901858ebf110a2062d06506066c37f4ce272c7",
+    "scripts/analysis/score_m5_v4_plane_v1.py": "2731f6cf56d7a8275a03140a401a2e622c8f3ded8425785d6399f43b2a83ee24",
+    "scripts/tests/test_m5_v4_plane_v1.py": "dba4d65d973965dc4ece77f2b5b080ae841d2f3b10ab1b16ae62986a41da3fe4",
+    "scripts/build/simtools.py": "32fcc41f55659c1d35909b280f2827958e44b0c079e68dadfa75c5694626283f",
+    "scripts/task/run_m5_v3_outer_positive_v5.py": "e8eab5b9a2eaeaae3071a915804437ce0785289e674eaed01401286bbeff4d09",
+    "scripts/analysis/audit_m5_v4_bend_rim_v1.py": "576f82e0c8de422ad2174bacd4556dd30c1c6f02cd577b0c69660b94cb6ea6ea",
+    "validation/safety/regressions_m5_v4_plane_calibration_v1.json": "b5d1754cf8d23434af7cae42a3167a05c73f289c289be0aed71879dbdc3929ad",
+    "scenes/davinci_si_articulated_verified.ttt": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+    "validation/task/m5_v4_bend_rim_audit_v1/decision.json": "061d24b7b7ce143a85db5df9cbaf016ef35d73ed421a1b2c5bf6f8457e19ecc9",
+    "validation/task/m5_v4_bend_rim_audit_v1/support.json": "d8ab0a87c325136c24c18d7c65dbf02d52874cfaeef4a2f3aac557e9ddaa21d2",
+    "validation/task/m5_v4_bend_rim_audit_v1/registration.json": "a79d6146aac0267f9c7009fe04b967a9eb4115fb4c1487cf48bb4497a9deb294"
+  }
+}

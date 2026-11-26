@@ -1,0 +1,82 @@
+{
+  "passed": true,
+  "checks": {
+    "no_runtime_fault_tear_or_overcut": true,
+    "three_guarded_closures_matched_to_capture": true,
+    "fixed_camera_and_guarded_closed_reverse": true,
+    "live_below_and_only_entrance_target_10": true,
+    "independent_10_same_structure_through_ready": true,
+    "unique_current_guarded_closed_withdrawal": true
+  },
+  "live_replay_sha256": "cfc25d5be242bf99ab300156d88519bd5bfd47000cd75313ace1975d65365c42",
+  "paired_predictions_sha256": "29962fd0a53954f5f731cc074e84ae9958920c181e981b5454bc93d7d4c101b8",
+  "matched_capture_approach": true,
+  "constraints_unchanged_through_ready": true,
+  "states": [
+    {
+      "prefix_rows": 10,
+      "farthest_row_end": 10
+    },
+    {
+      "prefix_rows": 10,
+      "farthest_row_end": 10
+    },
+    {
+      "prefix_rows": 10,
+      "farthest_row_end": 10
+    },
+    {
+      "prefix_rows": 10,
+      "farthest_row_end": 10
+    }
+  ],
+  "closures": [
+    29,
+    35,
+    45
+  ],
+  "actual_closed": true,
+  "actual_ready": true,
+  "final_m": 0.01,
+  "final_state": "DONE",
+  "withdrawal": [
+    {
+      "event": "guided_v2_withdrawal",
+      "tick": 49,
+      "accepted": true,
+      "ready_before": false,
+      "ready_after": true,
+      "closed_after": true
+    }
+  ],
+  "online_optics": [
+    {
+      "event": "guided_v2_optical",
+      "tick": 40,
+      "verdict": "BELOW",
+      "prefix_mm": 7,
+      "sigma": 0.0,
+      "file": "040_certificate.npz",
+      "frame_sha256": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d"
+    },
+    {
+      "event": "guided_v2_optical",
+      "tick": 49,
+      "verdict": "TARGET",
+      "prefix_mm": 10,
+      "sigma": 0.0,
+      "file": "049_certificate.npz",
+      "frame_sha256": "823a5eb50e73e89006848de5094215ae7e23b2d61f26f8cbf44a9f6f70fdfa62"
+    }
+  ],
+  "wide_entrance_state": {
+    "direct": null,
+    "mode": "slit",
+    "front_valid": false,
+    "chart_valid": false,
+    "cut_visible": false,
+    "scissors_visible": true,
+    "awaiting_new_slit": true
+  },
+  "disturbances_tested": false
+}

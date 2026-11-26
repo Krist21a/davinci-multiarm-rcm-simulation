@@ -1,0 +1,11 @@
+{
+  "id": "m5_v3_outer_bank_v1",
+  "scope": "Development replay on the four sealed uncut same-fixture RGB-D exposures. Freeze fixture, ECM poses, FOV, samples, hard limits, collision policy, jaw and sweep margins. No scans.",
+  "capture_registration_sha256": "eff450ce0eed801b8618571870f2f00ef4977f6de7e50a9200c41582b61fd505",
+  "capture_decision_sha256": "629f0b0a7352de2371abf6e74336c16939171b23fd6391b461233fa06a625545",
+  "work": "Use the two registered symmetric outer bank edges. Each accepted edge sample must share a four-neighbour border with an outboard, raw pink (219,107,122), depth-continuous sample. At an internal row use nearest outboard border samples of both adjacent codes, within sqrt(5) raster pixels and 1 mm plus 3 sigma depth. Require 6.5 to 11.5 mm observed chords, the existing 0.75 mm projected longitudinal skew guard, and 0.25 to 1.5 mm between the two ahead midpoints.",
+  "bound": "When the narrow-confirmed prefix is no more than 5 mm, use the farthest accepted current bilateral station between prefix+2 and row 8, with the nearer endpoint as both aim and stricter sweep bound. This is not the goal or new progress. From prefix 6 onward require directly observed stations at goal and row ten. The original blade, motion and fresh-alignment reserves remain applied.",
+  "narrow": "The uncut check requires at least 8 valid depth pixels per bank code across all 26 codes and rows 0 through 8 continuously INTACT at the registered entrance-clear pose. It does not require distal pristine faces to be visible. No change to the v4 corridor certificate or TARGET/BELOW semantics after any closure. Before-backoff is a negative diagnostic, not the pass pose.",
+  "replay_gate": "At both requested goals (9 and 10), both work frames must have valid charts and same-frame archived marker fit, measured sweep room at least 0.20 mm, front disagreement strictly below 0.40 mm and axis disagreement strictly below 5 degrees. The narrow entrance-clear frame must pass. Do not send a command from replay or from simulator world TCP.",
+  "meaning": "A pass only gates the two development positives, not Level 0 acceptance or disturbances. Keep original scoring, and verify stepping, row growth and final closed return in an independent fresh scene for each positive."
+}

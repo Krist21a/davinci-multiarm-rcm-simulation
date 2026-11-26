@@ -1,0 +1,17 @@
+{
+  "id": "m5_guided_bank_holdout_v1",
+  "scope": "A fresh matched temporal-variation holdout on the same guided sheet, not a controller trial, an acceptance run, or general robustness evidence. No 10 mm attempt.",
+  "pins": {
+    "config/task/m5_guided_bank_corridor_v3.json": "60d1592be0b8d20bcc5b90536818d8e3b7f40cbff02f36e5218404c05578ff6d",
+    "scripts/vision/m5_guided_bank_corridor_v3.py": "fec9756eb147dc81c0107f814efbec02100db20b09b7b5ac492c7595ef36a972",
+    "validation/task/m5_guided_bank_corridor_v3/registration.json": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+    "validation/task/m5_guided_bank_corridor_v3/decision.json": "1345776ba194a1e5954f0862e65f3adad41ec5b5c89cfe1a5d0dc3139e862b14",
+    "scripts/task/capture_m5_guided_reverse_v1.py": "7ba708ce880c77f9bd5d5580f9b13d2741b569714a23711bca01297fbf78e00b",
+    "config/task/m5_guided_reverse_capture_v1.json": "991030bfa5c3277179b32af4655c602d868f3f715e32d96888be1f38c7f42597",
+    "validation/task/m5_guided_reverse_capture_v1/decision.json": "066183bd54470db1beede2956f814fb2ce3f80425ca3c0e19922ebe4ade28246"
+  },
+  "cases": {"short": 0.001, "mid": 0.002},
+  "hold_batches_steps": [4, 4],
+  "acquisition": "Require the byte-pinned 039/040 development checkpoints to reproduce, then add the fixed stationary closed-jaw dwell before the final approach. No commands during the dwell. After each batch require the original mechanical checks, a fresh direct wide view, closed jaws, finite unchanged cutter command and ECM target and the registered TCP pose tolerance. Each independent scene load then uses the same bounded diagnostic third bite and original closed reverse capture. Never retry, seek a different cap, or route optical output to motion.",
+  "optical_gate": "With the frozen v3 implementation, predict all captured pre/post-reverse frames using raw and deterministic 0.5 mm depth variants before reading structural labels. The cleared RGB-D of both cases must be array-distinct from every pinned development RGB-D and from each other. Both paired camera transforms and optics must match exactly. Require UNKNOWN before reverse; afterward require BELOW(8) for short and TARGET(9) for mid in both depth variants, with independently verified exact structural lengths and no change in constraints during reverse. Reject incomplete acquisition, faults, or a fourth closure. An exact rerender does not count. Report misses; do not tune against this pair."
+}

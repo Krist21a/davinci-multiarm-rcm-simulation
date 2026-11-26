@@ -1,0 +1,9 @@
+{
+  "id": "m5_sweep_reserve_v3",
+  "parent": "config/task/m5_guarded_post_bite_v2.json",
+  "scope": "One opt-in nominal strict-vision attempt and one offline optical diagnostic on already sealed development exposures. No acceptance, default config, signed gate or historical artefact changes.",
+  "advance_reserve_m": 0.00015,
+  "advance": "Using the unchanged native endpoint_advance_budget, command at most min(requested, budget - 0.15 mm - configured depth noise sigma). Refuse an invalid budget or request, and keep the pre-existing 0.2 mm minimum. Never change the post-advance closure interlock, sweep model, 9–10 mm structural interval, back-off, RCM, collision limits or budgets. Log actual original pre/post sweep limits and reserve decisions; one nominal attempt, no retries.",
+  "geometry": "Offline/shadow only. Widen v2 local depth patch to 2.5 mm in the longitudinal and signed lateral directions, use the whole pink sheet mask, leave row-9 color identity, bilateral evidence, 0.35 mm coincidence threshold and local-vs-global consistency gates unchanged. Use the actual recorded camera depth noise sigma for a maximum residual rule of 0.5 mm + 3*sigma (zero for raw). The separate distal plane diagnostic uses only measured pixels with the two distal material inks and reports same edge midpoints in global-plane and optical local-plane coordinates for rows 6, 9 and 13; cannot widen the controller sweep limit, infer a severed hidden edge or be a terminal authority.",
+  "sealed_geometry_gate": "Re-use the same sealed two nominal 9 mm raw and two same-view 8 mm 0.5 mm-noise exposures and existing structural join as v2. Two ROW9_MATCH on the positives and two BELOW on the negatives are required. Keep the result regardless; never substitute a different positive/negative, tune bounds or treat UNKNOWN as BELOW. No matched 10 mm claim."
+}

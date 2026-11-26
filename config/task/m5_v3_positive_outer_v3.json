@@ -1,0 +1,12 @@
+{
+  "id": "m5_v3_positive_outer_v3",
+  "scope": "Two development positives on the same non-anatomical two-axis coupon. One fresh registered scene per goal, no retry, view sweep, disturbance or signed acceptance.",
+  "outer_replay_sha256": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+  "corridor_v5_decision_sha256": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+  "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+  "cases": {"nominal": 9, "exact_10mm": 10},
+  "views": {"work_deg": 70, "work_size": [1280, 960], "review_deg": 20, "review_size": [2560, 1920], "ecm_work": [3.0, 0.0, 0.08], "ecm_review": [0.0, 4.5, 0.088]},
+  "startup": "Identical to outer v2: dual-arm load, settle for 30 PBD steps, optical front minus 5 mm closed entrance waypoint and unchanged uncut optics gate. Continue to use the same optical work reader.",
+  "change": "Use the v5 corridor for post-closure certificates only, after the frozen 25-control, 32-archive, 10-recent development replay passes. No change to any motion, branch, closure, sweep, IK, limit or safety threshold. No structural truth authorization.",
+  "success": "Nominal: four guarded closures and growing optical BELOW(3), BELOW(5), BELOW(7), TARGET(9); exact_10mm: same first four closures, then one additional guarded closure after TARGET(9) and exact optical TARGET(10). Each needs closed withdrawal to actual initial ready joints, independent optical re-read, exact contiguous final structural length without more distal damage, and no faults."
+}

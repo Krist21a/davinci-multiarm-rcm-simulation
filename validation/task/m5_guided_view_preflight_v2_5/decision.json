@@ -1,0 +1,2798 @@
+{
+  "plan_sha256": "9455faf882e186aea29b2107f8371503bdad4da1374b50c0afcbc0fa805a322c",
+  "development_only": true,
+  "selected_view": null,
+  "views": {
+    "original": {
+      "pose": [
+        4.5,
+        0.0,
+        0.08
+      ],
+      "cases": {
+        "nominal": {
+          "case": "nominal",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 7,
+            "farthest_row_end": 8
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "guided closed review rejected: optical verdict UNKNOWN(None) is not a fresh, growing permit",
+          "closed": true,
+          "ready": false,
+          "closures": [
+            8,
+            14,
+            24
+          ],
+          "camera_attempts": 1,
+          "reviews": [
+            {
+              "event": "guided_v21_optical",
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "previous_prefix_mm": null,
+              "action": "resume",
+              "sigma": 0,
+              "file": "019_certificate.npz",
+              "frame_sha256": "5818ede328dc473763c697f5911a132388f0659c24381c874200de1a280792a4"
+            },
+            {
+              "event": "guided_v21_optical",
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "previous_prefix_mm": 5,
+              "action": "stop",
+              "sigma": 0,
+              "file": "029_certificate.npz",
+              "frame_sha256": "a368abc5e5fb8d81dbd18759495a3e7fc6d55441cedb3201b7e56e42b8570c5e"
+            }
+          ],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [
+            {
+              "event": "guided_v22_precision",
+              "tick": 6,
+              "cross_m": 4.703093380683865e-05,
+              "gap_m": 0.001013784760036068
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 12,
+              "cross_m": 0.0003278269144445122,
+              "gap_m": 0.0009643862614528066
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 22,
+              "cross_m": 2.7770226279523514e-05,
+              "gap_m": 0.0010275721020549552
+            }
+          ],
+          "orientation_solves": [],
+          "predicted_alignment": [
+            {
+              "tick": 5,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 17,
+                  "at_front": 4
+                }
+              ]
+            },
+            {
+              "tick": 11,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 19,
+                  "at_front": 4
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 18,
+                  "at_front": 3
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [
+            {
+              "tick": 8,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.00024107832836497793,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.0,
+                0.0
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 14,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0005592031416836495,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.003,
+                0.006
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 24,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0007374064165462393,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.006,
+                0.009000000000000001
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            }
+          ],
+          "post_advance_probes": [
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 8,
+              "advance_tick": 7,
+              "before_progress_m": 0.0,
+              "after_progress_m": 0.0,
+              "scissors_valid": true,
+              "mode": "pre_cut",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 14,
+              "advance_tick": 13,
+              "before_progress_m": 0.003313022032467408,
+              "after_progress_m": 0.0033503580459925365,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 24,
+              "advance_tick": 23,
+              "before_progress_m": 0.0063075526787773626,
+              "after_progress_m": 0.006286126521096451,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            }
+          ],
+          "optical_replay": [
+            {
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "reason": "",
+              "same_as_live": true,
+              "frame_sha256": "5818ede328dc473763c697f5911a132388f0659c24381c874200de1a280792a4"
+            },
+            {
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "reason": "missing positive terminal boundary",
+              "same_as_live": true,
+              "frame_sha256": "a368abc5e5fb8d81dbd18759495a3e7fc6d55441cedb3201b7e56e42b8570c5e"
+            }
+          ],
+          "first_closure_lateral_m": 0.00024107832836497793,
+          "final_closure_first_frame_current": true,
+          "qualifies": false,
+          "report_sha256": "6a4449b26ed70613ff6b33e2e06e188742ec6a963cf19551d1a8d7da99d24b77"
+        },
+        "exact_10mm": {
+          "case": "exact_10mm",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 7,
+            "farthest_row_end": 8
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "guided closed review rejected: optical verdict UNKNOWN(None) is not a fresh, growing permit",
+          "closed": true,
+          "ready": false,
+          "closures": [
+            8,
+            14,
+            24
+          ],
+          "camera_attempts": 1,
+          "reviews": [
+            {
+              "event": "guided_v21_optical",
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "previous_prefix_mm": null,
+              "action": "resume",
+              "sigma": 0,
+              "file": "019_certificate.npz",
+              "frame_sha256": "5818ede328dc473763c697f5911a132388f0659c24381c874200de1a280792a4"
+            },
+            {
+              "event": "guided_v21_optical",
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "previous_prefix_mm": 5,
+              "action": "stop",
+              "sigma": 0,
+              "file": "029_certificate.npz",
+              "frame_sha256": "a368abc5e5fb8d81dbd18759495a3e7fc6d55441cedb3201b7e56e42b8570c5e"
+            }
+          ],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [
+            {
+              "event": "guided_v22_precision",
+              "tick": 6,
+              "cross_m": 4.703093380683865e-05,
+              "gap_m": 0.001013784760036068
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 12,
+              "cross_m": 0.0003278269144445122,
+              "gap_m": 0.0009643862614528066
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 22,
+              "cross_m": 2.7770226279523514e-05,
+              "gap_m": 0.0010275721020549552
+            }
+          ],
+          "orientation_solves": [],
+          "predicted_alignment": [
+            {
+              "tick": 5,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 17,
+                  "at_front": 4
+                }
+              ]
+            },
+            {
+              "tick": 11,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 19,
+                  "at_front": 4
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 18,
+                  "at_front": 3
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [
+            {
+              "tick": 8,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.00024107832836497793,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.0,
+                0.0
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 14,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0005592031416836495,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.003,
+                0.006
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 24,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0007374064165462393,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.006,
+                0.009000000000000001
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            }
+          ],
+          "post_advance_probes": [
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 8,
+              "advance_tick": 7,
+              "before_progress_m": 0.0,
+              "after_progress_m": 0.0,
+              "scissors_valid": true,
+              "mode": "pre_cut",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 14,
+              "advance_tick": 13,
+              "before_progress_m": 0.003313022032467408,
+              "after_progress_m": 0.0033503580459925365,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 24,
+              "advance_tick": 23,
+              "before_progress_m": 0.0063075526787773626,
+              "after_progress_m": 0.006286126521096451,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            }
+          ],
+          "optical_replay": [
+            {
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "reason": "",
+              "same_as_live": true,
+              "frame_sha256": "5818ede328dc473763c697f5911a132388f0659c24381c874200de1a280792a4"
+            },
+            {
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "reason": "missing positive terminal boundary",
+              "same_as_live": true,
+              "frame_sha256": "a368abc5e5fb8d81dbd18759495a3e7fc6d55441cedb3201b7e56e42b8570c5e"
+            }
+          ],
+          "first_closure_lateral_m": 0.00024107832836497793,
+          "final_closure_first_frame_current": true,
+          "qualifies": false,
+          "report_sha256": "19430bbcfa2f40074d738075b013e71b5d77b31bc46ec84e6008d04da6cb664a"
+        }
+      },
+      "predictions_sha256": "c48eb4649e1105d465d59ee9afa829a1b25922330f63c774155c7ce69c0e475d",
+      "qualifies": false
+    },
+    "plus3": {
+      "pose": [
+        3.0,
+        0.0,
+        0.08
+      ],
+      "cases": {
+        "nominal": {
+          "case": "nominal",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 7,
+            "farthest_row_end": 8
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "guided closed review rejected: optical verdict UNKNOWN(None) is not a fresh, growing permit",
+          "closed": true,
+          "ready": false,
+          "closures": [
+            8,
+            14,
+            24
+          ],
+          "camera_attempts": 1,
+          "reviews": [
+            {
+              "event": "guided_v21_optical",
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "previous_prefix_mm": null,
+              "action": "resume",
+              "sigma": 0,
+              "file": "019_certificate.npz",
+              "frame_sha256": "03f7d2464fb5ee9762168fd973f19f9138758b224d05d18bd30a0e5409a7411d"
+            },
+            {
+              "event": "guided_v21_optical",
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "previous_prefix_mm": 5,
+              "action": "stop",
+              "sigma": 0,
+              "file": "029_certificate.npz",
+              "frame_sha256": "034d45268e4412ed293e01e91abe1626cccbf4e6d8833e1bbdcb3b63688e5e70"
+            }
+          ],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [
+            {
+              "event": "guided_v22_precision",
+              "tick": 6,
+              "cross_m": 7.95203801085283e-05,
+              "gap_m": 0.001036688860855268
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 12,
+              "cross_m": 8.91360692972117e-05,
+              "gap_m": 0.0010035090498588697
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 22,
+              "cross_m": 0.00017309472980922333,
+              "gap_m": 0.000995590811207296
+            }
+          ],
+          "orientation_solves": [],
+          "predicted_alignment": [
+            {
+              "tick": 5,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 17,
+                  "at_front": 3
+                }
+              ]
+            },
+            {
+              "tick": 11,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 19,
+                  "at_front": 3
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 18,
+                  "at_front": 4
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [
+            {
+              "tick": 8,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.00019822015088578088,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.0,
+                0.0
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 14,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0006854697778773961,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.003,
+                0.006
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 24,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0006646014815823177,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.006,
+                0.009000000000000001
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            }
+          ],
+          "post_advance_probes": [
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 8,
+              "advance_tick": 7,
+              "before_progress_m": 0.0,
+              "after_progress_m": 0.0,
+              "scissors_valid": true,
+              "mode": "pre_cut",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 14,
+              "advance_tick": 13,
+              "before_progress_m": 0.0033307928594059947,
+              "after_progress_m": 0.0033605000939633868,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 24,
+              "advance_tick": 23,
+              "before_progress_m": 0.006356005631089729,
+              "after_progress_m": 0.006340138920372009,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            }
+          ],
+          "optical_replay": [
+            {
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "reason": "",
+              "same_as_live": true,
+              "frame_sha256": "03f7d2464fb5ee9762168fd973f19f9138758b224d05d18bd30a0e5409a7411d"
+            },
+            {
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "reason": "missing positive terminal boundary",
+              "same_as_live": true,
+              "frame_sha256": "034d45268e4412ed293e01e91abe1626cccbf4e6d8833e1bbdcb3b63688e5e70"
+            }
+          ],
+          "first_closure_lateral_m": 0.00019822015088578088,
+          "final_closure_first_frame_current": true,
+          "qualifies": false,
+          "report_sha256": "566cdd0e9dbab2af135ca14b4908e8d9f4583031e40e5bbdf97ef4a77409d542"
+        },
+        "exact_10mm": {
+          "case": "exact_10mm",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 7,
+            "farthest_row_end": 8
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "guided closed review rejected: optical verdict UNKNOWN(None) is not a fresh, growing permit",
+          "closed": true,
+          "ready": false,
+          "closures": [
+            8,
+            14,
+            24
+          ],
+          "camera_attempts": 1,
+          "reviews": [
+            {
+              "event": "guided_v21_optical",
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "previous_prefix_mm": null,
+              "action": "resume",
+              "sigma": 0,
+              "file": "019_certificate.npz",
+              "frame_sha256": "03f7d2464fb5ee9762168fd973f19f9138758b224d05d18bd30a0e5409a7411d"
+            },
+            {
+              "event": "guided_v21_optical",
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "previous_prefix_mm": 5,
+              "action": "stop",
+              "sigma": 0,
+              "file": "029_certificate.npz",
+              "frame_sha256": "034d45268e4412ed293e01e91abe1626cccbf4e6d8833e1bbdcb3b63688e5e70"
+            }
+          ],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [
+            {
+              "event": "guided_v22_precision",
+              "tick": 6,
+              "cross_m": 7.95203801085283e-05,
+              "gap_m": 0.001036688860855268
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 12,
+              "cross_m": 8.91360692972117e-05,
+              "gap_m": 0.0010035090498588697
+            },
+            {
+              "event": "guided_v22_precision",
+              "tick": 22,
+              "cross_m": 0.00017309472980922333,
+              "gap_m": 0.000995590811207296
+            }
+          ],
+          "orientation_solves": [],
+          "predicted_alignment": [
+            {
+              "tick": 5,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 17,
+                  "at_front": 3
+                }
+              ]
+            },
+            {
+              "tick": 11,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 19,
+                  "at_front": 3
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": 0.001,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": 18,
+                  "at_front": 4
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [
+            {
+              "tick": 8,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.00019822015088578088,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.0,
+                0.0
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 14,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0006854697778773961,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.003,
+                0.006
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            },
+            {
+              "tick": 24,
+              "event": "closure",
+              "fix_age": 0,
+              "scissors_valid": true,
+              "lateral_truth_m": 0.0006646014815823177,
+              "verified_rows_m": [
+                0.0,
+                0.003,
+                0.006,
+                0.009000000000000001,
+                0.013000000000000001
+              ],
+              "progress_cell_m": [
+                0.006,
+                0.009000000000000001
+              ],
+              "direct_front": true,
+              "material_source": "current"
+            }
+          ],
+          "post_advance_probes": [
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 8,
+              "advance_tick": 7,
+              "before_progress_m": 0.0,
+              "after_progress_m": 0.0,
+              "scissors_valid": true,
+              "mode": "pre_cut",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 14,
+              "advance_tick": 13,
+              "before_progress_m": 0.0033307928594059947,
+              "after_progress_m": 0.0033605000939633868,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            },
+            {
+              "event": "v25_dev_first_post_advance",
+              "tick": 24,
+              "advance_tick": 23,
+              "before_progress_m": 0.006356005631089729,
+              "after_progress_m": 0.006340138920372009,
+              "scissors_valid": true,
+              "mode": "slit",
+              "chart_valid": true,
+              "fix_age": 0,
+              "fix_valid": true
+            }
+          ],
+          "optical_replay": [
+            {
+              "tick": 19,
+              "verdict": "BELOW",
+              "prefix_mm": 5,
+              "reason": "",
+              "same_as_live": true,
+              "frame_sha256": "03f7d2464fb5ee9762168fd973f19f9138758b224d05d18bd30a0e5409a7411d"
+            },
+            {
+              "tick": 29,
+              "verdict": "UNKNOWN",
+              "prefix_mm": null,
+              "reason": "missing positive terminal boundary",
+              "same_as_live": true,
+              "frame_sha256": "034d45268e4412ed293e01e91abe1626cccbf4e6d8833e1bbdcb3b63688e5e70"
+            }
+          ],
+          "first_closure_lateral_m": 0.00019822015088578088,
+          "final_closure_first_frame_current": true,
+          "qualifies": false,
+          "report_sha256": "220e33e98e0e83c0690408309a92969c64890845c9c64b1f20e1d91686ce8a87"
+        }
+      },
+      "predictions_sha256": "68fbbd9d6101b1eb0cbdb0944bed470ea4519473765d2181024f7e287682835a",
+      "qualifies": false
+    },
+    "review": {
+      "pose": [
+        0.0,
+        4.5,
+        0.088
+      ],
+      "cases": {
+        "nominal": {
+          "case": "nominal",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 0,
+            "farthest_row_end": 0
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "precision alignment not reached",
+          "closed": true,
+          "ready": true,
+          "closures": [],
+          "camera_attempts": 1,
+          "reviews": [],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [],
+          "orientation_solves": [
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896086904616,
+                0.016649784840595146,
+                -0.13923997002667313,
+                0.03454407026784521,
+                0.00021217751503249137
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406478171685,
+              "axis_error_rad": 0.027016681150455003,
+              "hinge_error_rad": 0.02701364170304087,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294701916964,
+                0.0161484196988222,
+                -0.13923421997211072,
+                0.033555073789536344,
+                0.00019649989927196727
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.00025345795061415603,
+              "axis_error_rad": 0.028005803636146024,
+              "hinge_error_rad": 0.028002656235076535,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.77429915364772,
+                0.015647076132066316,
+                -0.13922848889169917,
+                0.032566066293867754,
+                0.00018086263216902053
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727463647433,
+              "axis_error_rad": 0.028994936483374586,
+              "hinge_error_rad": 0.028991681503763366,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289611454999,
+                0.016649784853526136,
+                -0.1392399699681095,
+                0.034544070315821254,
+                0.00021217718730984748
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064872882973,
+              "axis_error_rad": 0.02701668110776549,
+              "hinge_error_rad": 0.027013641652824594,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742945298463653,
+                0.01614841969769654,
+                -0.13923423341146837,
+                0.033555073666831754,
+                0.00019651870374093547
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579527341294,
+              "axis_error_rad": 0.028005803447700088,
+              "hinge_error_rad": 0.02800265623142853,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742991415374925,
+                0.01564707610575487,
+                -0.13922848989162537,
+                0.03256606619050483,
+                0.00018086377014648683
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274443728376,
+              "axis_error_rad": 0.028994936567617258,
+              "hinge_error_rad": 0.028991681590807554,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289637568802,
+                0.01664978485136086,
+                -0.13923997032447902,
+                0.034544070328003516,
+                0.00021217506425525863
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064860945945,
+              "axis_error_rad": 0.02701668113001648,
+              "hinge_error_rad": 0.027013641647255057,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294653965222,
+                0.016148419695461335,
+                -0.13923421984945375,
+                0.03355507373821696,
+                0.00019650386215010746
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579502911954,
+              "axis_error_rad": 0.02800580362310983,
+              "hinge_error_rad": 0.02800265627487153,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774299117316739,
+                0.015647076120444234,
+                -0.1392284894064984,
+                0.032566066225187325,
+                0.00018086564805822253
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274557224226,
+              "axis_error_rad": 0.028994936502621957,
+              "hinge_error_rad": 0.028991681551615262,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742895329369603,
+                0.016649784844826848,
+                -0.13923997758609613,
+                0.03454407024409186,
+                0.000212186548195607
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406496856321,
+              "axis_error_rad": 0.027016681024170163,
+              "hinge_error_rad": 0.027013641660782253,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294480035701,
+                0.01614841969652095,
+                -0.13923423746468494,
+                0.03355507362776995,
+                0.00019652434864728246
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579533863039,
+              "axis_error_rad": 0.028005803393196273,
+              "hinge_error_rad": 0.028002656228950266,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990269920815,
+                0.015647076117089497,
+                -0.13922849922026675,
+                0.03256606614237567,
+                0.00018087653902377584
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727466980305,
+              "axis_error_rad": 0.028994936404393733,
+              "hinge_error_rad": 0.028991681549673458,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896093226403,
+                0.016649784844541937,
+                -0.13923996974674377,
+                0.03454407028281545,
+                0.00021217742108435304
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064797896466,
+              "axis_error_rad": 0.027016681137217023,
+              "hinge_error_rad": 0.027013641691807255,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742944924552115,
+                0.016148419693336344,
+                -0.13923423532204404,
+                0.033555073625847594,
+                0.00019652256260332268
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.00025345795279458553,
+              "axis_error_rad": 0.02800580342510481,
+              "hinge_error_rad": 0.0280026562492879,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774298937708698,
+                0.015647076119699323,
+                -0.13922850840921935,
+                0.03256606609613758,
+                0.00018088723397957927
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727485137152,
+              "axis_error_rad": 0.028994936273112573,
+              "hinge_error_rad": 0.02899168151721046,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896280442833,
+                0.016649784837885477,
+                -0.1392399698830242,
+                0.03454407027774586,
+                0.00021217585208407354
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406475645503,
+              "axis_error_rad": 0.027016681167790556,
+              "hinge_error_rad": 0.027013641702395542,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294571629472,
+                0.016148419694542615,
+                -0.13923422961640794,
+                0.03355507367706352,
+                0.00019651374796362284
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579516240546,
+              "axis_error_rad": 0.028005803519763908,
+              "hinge_error_rad": 0.028002656259339745,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.77429916833302,
+                0.015647076150792055,
+                -0.13922848899258078,
+                0.032566066370576165,
+                0.00018086141008750124
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727478673361,
+              "axis_error_rad": 0.02899493642621457,
+              "hinge_error_rad": 0.028991681422418203,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289477021669,
+                0.016649784839388716,
+                -0.139239981172873,
+                0.03454407018959651,
+                0.00021219257793796218
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454065001071665,
+              "axis_error_rad": 0.027016680978870864,
+              "hinge_error_rad": 0.02701364167260365,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742946702562725,
+                0.016148419690806774,
+                -0.1392342202097265,
+                0.03355507373515333,
+                0.0001965024601575419
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579499519969,
+              "axis_error_rad": 0.028005803648880893,
+              "hinge_error_rad": 0.028002656281025558,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774298915110085,
+                0.015647076126493374,
+                -0.139228508640872,
+                0.032566066094734086,
+                0.0001808891082711688
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727488948088,
+              "axis_error_rad": 0.028994936243843243,
+              "hinge_error_rad": 0.0289916815065133,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896206769725,
+                0.01664978483354629,
+                -0.1392399681713419,
+                0.03454407026096411,
+                0.00021217639129224972
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406471869622,
+              "axis_error_rad": 0.027016681176252836,
+              "hinge_error_rad": 0.027013641722462324,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742946775702113,
+                0.016148419685909233,
+                -0.1392342208316938,
+                0.033555073726690296,
+                0.00019650186232891682
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579496395613,
+              "axis_error_rad": 0.02800580366688892,
+              "hinge_error_rad": 0.028002656289273224,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990246259804,
+                0.015647076141175466,
+                -0.13922849955703467,
+                0.03256606622428699,
+                0.00018087674851137108
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727485684786,
+              "axis_error_rad": 0.02899493631905581,
+              "hinge_error_rad": 0.02899168146749336,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289527561687,
+                0.016649784841896,
+                -0.13923997809415456,
+                0.034544070231346466,
+                0.00021218731775369648
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406495297599,
+              "axis_error_rad": 0.027016681024079746,
+              "hinge_error_rad": 0.027013641666549088,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742945372894847,
+                0.016148419694971883,
+                -0.1392342331099795,
+                0.033555073663873204,
+                0.00019651816994670728
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.000253457952476557,
+              "axis_error_rad": 0.028005803459519092,
+              "hinge_error_rad": 0.028002656240548547,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990271768146,
+                0.015647076140141533,
+                -0.13922850057641764,
+                0.03256606622403054,
+                0.00018087693805608526
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274863200044,
+              "axis_error_rad": 0.028994936315854297,
+              "hinge_error_rad": 0.02899168146283992,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            }
+          ],
+          "predicted_alignment": [
+            {
+              "tick": 16,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 17,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 18,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 19,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 20,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 22,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 23,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 24,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [],
+          "post_advance_probes": [],
+          "optical_replay": [],
+          "first_closure_lateral_m": null,
+          "final_closure_first_frame_current": false,
+          "qualifies": false,
+          "report_sha256": "8620c0cde0f32f6957bec2dc37bf6d0dd418052197a17c4559a046a764865b97"
+        },
+        "exact_10mm": {
+          "case": "exact_10mm",
+          "tested": true,
+          "passed": false,
+          "checks": {
+            "disturbance_exercised": true,
+            "fault_tear_overcut_error_free": true,
+            "strict_truth": true,
+            "caps_and_camera_budget": true,
+            "closure_evidence": false,
+            "increasing_narrow_prefix": false,
+            "sealed_live_measured_optics": false,
+            "exact_endpoint_and_no_withdrawal_growth": false,
+            "one_verified_closed_withdrawal": false
+          },
+          "structure": {
+            "prefix_rows": 0,
+            "farthest_row_end": 0
+          },
+          "injections": [],
+          "state": "FAILED",
+          "reason": "precision alignment not reached",
+          "closed": true,
+          "ready": true,
+          "closures": [],
+          "camera_attempts": 1,
+          "reviews": [],
+          "withdrawal": [],
+          "active_set_guarded_commands": [],
+          "precision": [],
+          "orientation_solves": [
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896086904616,
+                0.016649784840595146,
+                -0.13923997002667313,
+                0.03454407026784521,
+                0.00021217751503249137
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406478171685,
+              "axis_error_rad": 0.027016681150455003,
+              "hinge_error_rad": 0.02701364170304087,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294701916964,
+                0.0161484196988222,
+                -0.13923421997211072,
+                0.033555073789536344,
+                0.00019649989927196727
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.00025345795061415603,
+              "axis_error_rad": 0.028005803636146024,
+              "hinge_error_rad": 0.028002656235076535,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 16,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.77429915364772,
+                0.015647076132066316,
+                -0.13922848889169917,
+                0.032566066293867754,
+                0.00018086263216902053
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727463647433,
+              "axis_error_rad": 0.028994936483374586,
+              "hinge_error_rad": 0.028991681503763366,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289611454999,
+                0.016649784853526136,
+                -0.1392399699681095,
+                0.034544070315821254,
+                0.00021217718730984748
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064872882973,
+              "axis_error_rad": 0.02701668110776549,
+              "hinge_error_rad": 0.027013641652824594,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742945298463653,
+                0.01614841969769654,
+                -0.13923423341146837,
+                0.033555073666831754,
+                0.00019651870374093547
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579527341294,
+              "axis_error_rad": 0.028005803447700088,
+              "hinge_error_rad": 0.02800265623142853,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 17,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742991415374925,
+                0.01564707610575487,
+                -0.13922848989162537,
+                0.03256606619050483,
+                0.00018086377014648683
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274443728376,
+              "axis_error_rad": 0.028994936567617258,
+              "hinge_error_rad": 0.028991681590807554,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289637568802,
+                0.01664978485136086,
+                -0.13923997032447902,
+                0.034544070328003516,
+                0.00021217506425525863
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064860945945,
+              "axis_error_rad": 0.02701668113001648,
+              "hinge_error_rad": 0.027013641647255057,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294653965222,
+                0.016148419695461335,
+                -0.13923421984945375,
+                0.03355507373821696,
+                0.00019650386215010746
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579502911954,
+              "axis_error_rad": 0.02800580362310983,
+              "hinge_error_rad": 0.02800265627487153,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 18,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774299117316739,
+                0.015647076120444234,
+                -0.1392284894064984,
+                0.032566066225187325,
+                0.00018086564805822253
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274557224226,
+              "axis_error_rad": 0.028994936502621957,
+              "hinge_error_rad": 0.028991681551615262,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742895329369603,
+                0.016649784844826848,
+                -0.13923997758609613,
+                0.03454407024409186,
+                0.000212186548195607
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406496856321,
+              "axis_error_rad": 0.027016681024170163,
+              "hinge_error_rad": 0.027013641660782253,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294480035701,
+                0.01614841969652095,
+                -0.13923423746468494,
+                0.03355507362776995,
+                0.00019652434864728246
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579533863039,
+              "axis_error_rad": 0.028005803393196273,
+              "hinge_error_rad": 0.028002656228950266,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 19,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990269920815,
+                0.015647076117089497,
+                -0.13922849922026675,
+                0.03256606614237567,
+                0.00018087653902377584
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727466980305,
+              "axis_error_rad": 0.028994936404393733,
+              "hinge_error_rad": 0.028991681549673458,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896093226403,
+                0.016649784844541937,
+                -0.13923996974674377,
+                0.03454407028281545,
+                0.00021217742108435304
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454064797896466,
+              "axis_error_rad": 0.027016681137217023,
+              "hinge_error_rad": 0.027013641691807255,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742944924552115,
+                0.016148419693336344,
+                -0.13923423532204404,
+                0.033555073625847594,
+                0.00019652256260332268
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.00025345795279458553,
+              "axis_error_rad": 0.02800580342510481,
+              "hinge_error_rad": 0.0280026562492879,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 20,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774298937708698,
+                0.015647076119699323,
+                -0.13922850840921935,
+                0.03256606609613758,
+                0.00018088723397957927
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727485137152,
+              "axis_error_rad": 0.028994936273112573,
+              "hinge_error_rad": 0.02899168151721046,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896280442833,
+                0.016649784837885477,
+                -0.1392399698830242,
+                0.03454407027774586,
+                0.00021217585208407354
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406475645503,
+              "axis_error_rad": 0.027016681167790556,
+              "hinge_error_rad": 0.027013641702395542,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774294571629472,
+                0.016148419694542615,
+                -0.13923422961640794,
+                0.03355507367706352,
+                0.00019651374796362284
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579516240546,
+              "axis_error_rad": 0.028005803519763908,
+              "hinge_error_rad": 0.028002656259339745,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 21,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.77429916833302,
+                0.015647076150792055,
+                -0.13922848899258078,
+                0.032566066370576165,
+                0.00018086141008750124
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727478673361,
+              "axis_error_rad": 0.02899493642621457,
+              "hinge_error_rad": 0.028991681422418203,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289477021669,
+                0.016649784839388716,
+                -0.139239981172873,
+                0.03454407018959651,
+                0.00021219257793796218
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.00024454065001071665,
+              "axis_error_rad": 0.027016680978870864,
+              "hinge_error_rad": 0.02701364167260365,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742946702562725,
+                0.016148419690806774,
+                -0.1392342202097265,
+                0.03355507373515333,
+                0.0001965024601575419
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579499519969,
+              "axis_error_rad": 0.028005803648880893,
+              "hinge_error_rad": 0.028002656281025558,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 22,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774298915110085,
+                0.015647076126493374,
+                -0.139228508640872,
+                0.032566066094734086,
+                0.0001808891082711688
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727488948088,
+              "axis_error_rad": 0.028994936243843243,
+              "hinge_error_rad": 0.0289916815065133,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742896206769725,
+                0.01664978483354629,
+                -0.1392399681713419,
+                0.03454407026096411,
+                0.00021217639129224972
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406471869622,
+              "axis_error_rad": 0.027016681176252836,
+              "hinge_error_rad": 0.027013641722462324,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742946775702113,
+                0.016148419685909233,
+                -0.1392342208316938,
+                0.033555073726690296,
+                0.00019650186232891682
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.0002534579496395613,
+              "axis_error_rad": 0.02800580366688892,
+              "hinge_error_rad": 0.028002656289273224,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 23,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990246259804,
+                0.015647076141175466,
+                -0.13922849955703467,
+                0.03256606622428699,
+                0.00018087674851137108
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.0002623727485684786,
+              "axis_error_rad": 0.02899493631905581,
+              "hinge_error_rad": 0.02899168146749336,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.774289527561687,
+                0.016649784841896,
+                -0.13923997809415456,
+                0.034544070231346466,
+                0.00021218731775369648
+              ],
+              "target_m": [
+                -0.07463496626617436,
+                -1.0009098394220424,
+                0.7004860107353328
+              ],
+              "position_error_m": 0.0002445406495297599,
+              "axis_error_rad": 0.027016681024079746,
+              "hinge_error_rad": 0.027013641666549088,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742945372894847,
+                0.016148419694971883,
+                -0.1392342331099795,
+                0.033555073663873204,
+                0.00019651816994670728
+              ],
+              "target_m": [
+                -0.07451295294752958,
+                -1.001363063079652,
+                0.7006583507082244
+              ],
+              "position_error_m": 0.000253457952476557,
+              "axis_error_rad": 0.028005803459519092,
+              "hinge_error_rad": 0.028002656240548547,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            },
+            {
+              "event": "guided_v21_active_set",
+              "tick": 24,
+              "arm": "psm2",
+              "converged": false,
+              "q": [
+                -4.5,
+                -3.7742990271768146,
+                0.015647076140141533,
+                -0.13922850057641764,
+                0.03256606622403054,
+                0.00018087693805608526
+              ],
+              "target_m": [
+                -0.07439093962888481,
+                -1.0018162867372615,
+                0.7008306906811158
+              ],
+              "position_error_m": 0.00026237274863200044,
+              "axis_error_rad": 0.028994936315854297,
+              "hinge_error_rad": 0.02899168146283992,
+              "at_limit": [
+                "yaw_deg"
+              ]
+            }
+          ],
+          "predicted_alignment": [
+            {
+              "tick": 16,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 17,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 18,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 19,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 20,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 21,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 22,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 23,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            },
+            {
+              "tick": 24,
+              "event": "predicted_view",
+              "phase": "align",
+              "selected_m": null,
+              "candidates": [
+                {
+                  "distance_m": 0.001,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.0015,
+                  "clear": null
+                },
+                {
+                  "distance_m": 0.002,
+                  "clear": null
+                }
+              ]
+            }
+          ],
+          "closure_evidence": [],
+          "post_advance_probes": [],
+          "optical_replay": [],
+          "first_closure_lateral_m": null,
+          "final_closure_first_frame_current": false,
+          "qualifies": false,
+          "report_sha256": "ca430a83ec82d126311bda5713870d15e6486a45fdcfaf59c88589cc2322eb70"
+        }
+      },
+      "predictions_sha256": "690368e96e25c4f2c2d3b85899816dbd0f4c60dee61802da06a673cb831721c7",
+      "qualifies": false
+    }
+  }
+}

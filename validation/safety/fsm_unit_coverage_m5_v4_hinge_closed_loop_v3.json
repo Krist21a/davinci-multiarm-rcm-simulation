@@ -1,0 +1,1887 @@
+{
+  "states": {
+    "INIT": "初始化",
+    "LOCALIZE": "视觉定位",
+    "GRASP": "建立抓持",
+    "EXPOSE": "组织暴露",
+    "ALIGN": "切割对准",
+    "CUT": "切割执行",
+    "OCCLUDED": "遮挡暂停",
+    "CLEAR_VIEW": "让开观察",
+    "RETRACT_ADJUST": "牵拉调整",
+    "CAMERA_ADJUST": "相机调整",
+    "RELOCALIZE": "重新定位",
+    "RESUME": "恢复执行",
+    "DONE": "完成",
+    "FAILED": "失败停止"
+  },
+  "states_reached": [
+    "ALIGN",
+    "CAMERA_ADJUST",
+    "CLEAR_VIEW",
+    "CUT",
+    "DONE",
+    "EXPOSE",
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE",
+    "OCCLUDED",
+    "RELOCALIZE",
+    "RESUME",
+    "RETRACT_ADJUST"
+  ],
+  "states_missing": [],
+  "transitions": [
+    "ALIGN->CUT",
+    "ALIGN->DONE",
+    "ALIGN->FAILED",
+    "ALIGN->RELOCALIZE",
+    "CAMERA_ADJUST->FAILED",
+    "CAMERA_ADJUST->RESUME",
+    "CLEAR_VIEW->FAILED",
+    "CLEAR_VIEW->RESUME",
+    "CUT->CAMERA_ADJUST",
+    "CUT->CLEAR_VIEW",
+    "CUT->DONE",
+    "CUT->FAILED",
+    "CUT->OCCLUDED",
+    "CUT->RELOCALIZE",
+    "CUT->RETRACT_ADJUST",
+    "EXPOSE->ALIGN",
+    "EXPOSE->CLEAR_VIEW",
+    "GRASP->EXPOSE",
+    "GRASP->FAILED",
+    "INIT->FAILED",
+    "INIT->LOCALIZE",
+    "LOCALIZE->EXPOSE",
+    "LOCALIZE->GRASP",
+    "OCCLUDED->CAMERA_ADJUST",
+    "OCCLUDED->CLEAR_VIEW",
+    "OCCLUDED->RESUME",
+    "RELOCALIZE->FAILED",
+    "RELOCALIZE->RESUME",
+    "RESUME->ALIGN",
+    "RESUME->CLEAR_VIEW",
+    "RESUME->EXPOSE",
+    "RESUME->RETRACT_ADJUST",
+    "RETRACT_ADJUST->FAILED",
+    "RETRACT_ADJUST->RESUME"
+  ],
+  "scenarios": {
+    "assist_unreachable": {
+      "events": {
+        "unreachable": [
+          "psm3"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 13,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "camera_useless": {
+      "events": {
+        "occlude_until_camera": 12,
+        "camera_useless": true
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "camera adjustment exhausted",
+      "ticks": 21,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->FAILED",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CAMERA_ADJUST"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CAMERA_ADJUST",
+        "FAILED"
+      ]
+    },
+    "collision_fault": {
+      "events": {
+        "fault": 10
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "fault: psm2 shaft / Patient_HipBone",
+      "ticks": 10,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->FAILED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "FAILED"
+      ]
+    },
+    "cut_only": {
+      "events": {},
+      "cut_only": true,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 8,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "INIT->LOCALIZE",
+        "LOCALIZE->EXPOSE"
+      ],
+      "retractors": [],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "cut_only_relax": {
+      "events": {
+        "relax": 8
+      },
+      "cut_only": true,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "strain 0.010 outside band and no retraction arm",
+      "ticks": 7,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "INIT",
+        "LOCALIZE",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "INIT->LOCALIZE",
+        "LOCALIZE->EXPOSE",
+        "RETRACT_ADJUST->FAILED"
+      ],
+      "retractors": [],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "FAILED"
+      ]
+    },
+    "park_fails": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "park_fails": true
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 regrasp failed: jaws close on nothing; handover to psm3: cutter could not be parked for takeover",
+      "ticks": 10,
+      "visited": [
+        "ALIGN",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "FAILED"
+      ]
+    },
+    "handover_park": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "handover_point": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "handover_record": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "handover_tension": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "relax": 14
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 23,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->ALIGN",
+        "RESUME->EXPOSE",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "nominal": {
+      "events": {},
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 13,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "persistent_occlusion": {
+      "events": {
+        "occlude_until_camera": 12
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 24,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->RESUME",
+        "CUT->DONE",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CAMERA_ADJUST",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CAMERA_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "primary_unreachable": {
+      "events": {
+        "unreachable": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 cannot grasp: out of reach",
+      "ticks": 3,
+      "visited": [
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "GRASP->FAILED",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "FAILED"
+      ]
+    },
+    "role_mismatch": {
+      "events": {
+        "roles_ok": false
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "role check: psm2: identified 420006 lacks [cut]",
+      "ticks": 1,
+      "visited": [
+        "FAILED",
+        "INIT"
+      ],
+      "transitions": [
+        "INIT->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "FAILED"
+      ]
+    },
+    "slip_handover": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 17,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->RELOCALIZE",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm3"
+      ],
+      "handover": {
+        "lost": "psm1",
+        "taken_by": "psm3",
+        "requested_point": "left flap",
+        "taken_point": "left flap",
+        "substituted": false,
+        "cutter_parked": true,
+        "tick": 10
+      },
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "slip_regrasp": {
+      "events": {
+        "slip": {
+          "psm1": 12
+        }
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 18,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->RESUME",
+        "RESUME->EXPOSE"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RELOCALIZE",
+        "RESUME",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "takeover_unreachable": {
+      "events": {
+        "slip": {
+          "psm1": 9,
+          "psm3": 9
+        },
+        "regrasp_fails": [
+          "psm1"
+        ],
+        "takeover_unreachable": [
+          "psm3"
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "psm1 regrasp failed: jaws close on nothing; handover to psm3: no reachable takeover point on the lost side",
+      "ticks": 10,
+      "visited": [
+        "ALIGN",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RELOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->RELOCALIZE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RELOCALIZE->FAILED"
+      ],
+      "retractors": [
+        "psm1"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "RELOCALIZE",
+        "FAILED"
+      ]
+    },
+    "tear": {
+      "events": {
+        "tear": 13
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "tissue torn (1 constraints)",
+      "ticks": 11,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->FAILED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "FAILED"
+      ]
+    },
+    "tension_drop": {
+      "events": {
+        "relax": 12
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 18,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->RETRACT_ADJUST",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "transient_occlusion": {
+      "events": {
+        "occlude": [
+          12,
+          14
+        ]
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 19,
+      "visited": [
+        "ALIGN",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CUT->DONE",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->RESUME",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "view_drift": {
+      "events": {
+        "drift": 11
+      },
+      "cut_only": false,
+      "vision": false,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 18,
+      "visited": [
+        "ALIGN",
+        "CAMERA_ADJUST",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "CAMERA_ADJUST->RESUME",
+        "CUT->CAMERA_ADJUST",
+        "CUT->DONE",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CAMERA_ADJUST",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "DONE"
+      ]
+    },
+    "vision_occluded": {
+      "events": {
+        "occlude": [
+          10,
+          12
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 33,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->RESUME",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    },
+    "vision_clear_fail": {
+      "events": {
+        "front_hidden": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193,
+          194,
+          195,
+          196,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209,
+          210,
+          211,
+          212,
+          213,
+          214,
+          215,
+          216,
+          217,
+          218,
+          219,
+          220,
+          221,
+          222,
+          223,
+          224,
+          225,
+          226,
+          227,
+          228,
+          229,
+          230,
+          231,
+          232,
+          233,
+          234,
+          235,
+          236,
+          237,
+          238,
+          239,
+          240,
+          241,
+          242,
+          243,
+          244,
+          245,
+          246,
+          247,
+          248,
+          249,
+          250,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          261,
+          262,
+          263,
+          264,
+          265,
+          266,
+          267,
+          268,
+          269,
+          270,
+          271,
+          272,
+          273,
+          274,
+          275,
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          295,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          303,
+          304,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          312,
+          313,
+          314,
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          334,
+          335,
+          336,
+          337,
+          338,
+          339,
+          340,
+          341,
+          342,
+          343,
+          344,
+          345,
+          346,
+          347,
+          348,
+          349,
+          350,
+          351,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359,
+          360,
+          361,
+          362,
+          363,
+          364,
+          365,
+          366,
+          367,
+          368,
+          369,
+          370,
+          371,
+          372,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          380,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          391,
+          392,
+          393,
+          394,
+          395,
+          396,
+          397,
+          398,
+          399
+        ],
+        "clear_view_useless": true
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "clear-and-look exhausted",
+      "ticks": 12,
+      "visited": [
+        "CLEAR_VIEW",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "CLEAR_VIEW->FAILED",
+        "EXPOSE->CLEAR_VIEW",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "CLEAR_VIEW",
+        "FAILED"
+      ]
+    },
+    "vision_front_hidden": {
+      "events": {
+        "front_hidden": [
+          10,
+          11
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 32,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    },
+    "vision_nominal": {
+      "events": {},
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 27,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    },
+    "vision_occluded_then_hidden": {
+      "events": {
+        "occlude": [
+          10,
+          11
+        ],
+        "front_hidden": [
+          12
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 33,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "OCCLUDED",
+        "RESUME"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "CUT->OCCLUDED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "OCCLUDED->CLEAR_VIEW",
+        "RESUME->ALIGN"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "OCCLUDED",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    },
+    "vision_progress_poison": {
+      "events": {
+        "progress_bias_m": 0.009
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "FAILED",
+      "final_label": "失败停止",
+      "reason": "cut length below target",
+      "ticks": 9,
+      "visited": [
+        "ALIGN",
+        "EXPOSE",
+        "FAILED",
+        "GRASP",
+        "INIT",
+        "LOCALIZE"
+      ],
+      "transitions": [
+        "ALIGN->FAILED",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "FAILED"
+      ]
+    },
+    "vision_relax_resume_clear": {
+      "events": {
+        "relax": 14,
+        "front_hidden": [
+          18
+        ]
+      },
+      "cut_only": false,
+      "vision": true,
+      "final_state": "DONE",
+      "final_label": "完成",
+      "reason": "cut length 9.0 mm reached; scissors retracted",
+      "ticks": 32,
+      "visited": [
+        "ALIGN",
+        "CLEAR_VIEW",
+        "CUT",
+        "DONE",
+        "EXPOSE",
+        "GRASP",
+        "INIT",
+        "LOCALIZE",
+        "RESUME",
+        "RETRACT_ADJUST"
+      ],
+      "transitions": [
+        "ALIGN->CUT",
+        "ALIGN->DONE",
+        "CLEAR_VIEW->RESUME",
+        "CUT->CLEAR_VIEW",
+        "EXPOSE->ALIGN",
+        "GRASP->EXPOSE",
+        "INIT->LOCALIZE",
+        "LOCALIZE->GRASP",
+        "RESUME->ALIGN",
+        "RESUME->CLEAR_VIEW",
+        "RESUME->RETRACT_ADJUST",
+        "RETRACT_ADJUST->RESUME"
+      ],
+      "retractors": [
+        "psm1",
+        "psm3"
+      ],
+      "handover": null,
+      "path": [
+        "LOCALIZE",
+        "GRASP",
+        "EXPOSE",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "RETRACT_ADJUST",
+        "RESUME",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "CUT",
+        "CLEAR_VIEW",
+        "RESUME",
+        "ALIGN",
+        "DONE"
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "m5_guided_entry_clearance_v1",
+  "scope": "One nominal matched closed-jaw acquisition after the guided 7 mm abstention. Never authorizes another closure, a benchmark stop, or a move to ready pose. Source spool remains unchanged.",
+  "reference_run_sha256": "0be33afb9e0395285500679fef2ebfdd2c654cecf7c900a8c05d87ffa52cb2fc",
+  "reference_frame_sha256": "f5fc994b1dfb0842b989c660a5e230400c2451e5086e0931402191d23d9f8ca6",
+  "hold_then_clear": "Before any clearance, reproduce the original tick 39 closed review arrays exactly. Use only fresh wide-work direct front, visual material_start/direction and visual tip for a longitudinal entry target. Follow the actual jaw axis backwards to 2.5 mm behind the optically observed entry plane. Require positive retreat of no more than 8 mm and axis projection at least 0.8; use the existing guarded clear_view tool-pose command with no jaw or ECM move. Verify actual displacement against the commanded translation to 0.5 mm, the estimated entry margin after measured motion at least 2 mm and closed jaws. The actual jaw pose is motion readback, not an endpoint measurement. Never substitute a parked pose or hidden sheet geometry.",
+  "after": "Acquire one fresh wide observation. Require original mechanical/safety supervisor approval and then capture the same 20-degree RGB-D at the matched ECM pose. Always abstain and hold closed after acquisition; separate offline diagnostics compare both exposures, not an authorization. No retry or perturbation cases."
+}

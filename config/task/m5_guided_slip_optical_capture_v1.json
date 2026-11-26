@@ -1,0 +1,18 @@
+{
+  "id": "m5_guided_slip_optical_capture_v1",
+  "scope": "One diagnostic acquisition on the non-anatomical slip trajectory. No new closure, resume or ready withdrawal after the registered third closure; keep the original disturbed acceptance result.",
+  "pins": {
+    "validation/task/m5_guided_ahead_window_v1/decision.json": "be80404c8467ac54d1f6eb898a528e5af08fc50fdb003e79e9cd9f60e7cdcd5c",
+    "validation/task/m5_guided_ahead_window_v1/registration.json": "dbf08881089a46362a5324aae75b2b24f6219e48d6dd051fb560b0f42e56d7e4",
+    "validation/safety/regressions_m5_guided_ahead_window_v1.json": "523fcf8163c2dfa7889391de77036b7ad88e982eacfdd9ee284f94bd5b419eb1",
+    "validation/task/m5_guided_slip_terminal_trace_v1/slip_regrasp.json": "5392f9c0c7c785dc83e3eb58ecbb55e0f20ed104093e7a8c426c7b329338877f",
+    "validation/task/m5_guided_slip_terminal_trace_v1/registration.json": "5fdbd2222c7ef5942d04c451dc068762d99ced344c3f6434d8db298e2f4969ed",
+    "scripts/task/run_m5_guided_slip_terminal_trace_v1.py": "716aa0e4a595907134e5c2581775ca576e4b58172c95c5d9288ece82fed11046",
+    "scripts/task/run_m5_guided_10mm_closed_reacquire_v1.py": "001c50a13898259ffcdbeb0d362249b2b2a76a5d9ee2671a42bec7280711dd0a"
+  },
+  "closures": 3,
+  "max_first_backoff_m": 0.003,
+  "phases": ["closed", "entrance"],
+  "motion": "Use the old slip reader and unchanged guided v2 trace through the third closure. At the first terminal review require the existing mechanical guard, physical closure, a complete recorded trail, the existing review camera pose and a first reverse segment bounded by the unchanged retreat check. Reverse only this exact trail, guarding each segment anew, without an open or ready withdrawal and without any new ECM command. Terminal-only branch always stops; neither current wide progress nor the new narrow exposure nor truth authorizes further motion. Score-only constraint files do not gate motion.",
+  "optical_gate": "Require full pre-branch event, observation and RGB-D identity; paired wide and narrow same pose and simulated time, unchanged camera/budget, guarded trail, closed/not-ready at stop, no fault, tear or structural change. Seal v3 predictions using measured depth before independent structure scoring. The entrance frame must read BELOW(8) against the matched 8 mm prefix and 9 mm farthest damage; either frame yielding TARGET is a wrong verdict for this prefix. An abstention is not a pass."
+}

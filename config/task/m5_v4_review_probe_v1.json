@@ -1,0 +1,19 @@
+{
+  "id": "m5_v4_review_probe_v1",
+  "scope": "Acquisition only, sigma=0. Reproduce the sealed v3 outer_v5 nominal primary failure with its own optical FSM. Exactly one newly collected episode and at most four closures. No cutter, jaw, retractor or withdrawal command after the fourth closed entrance look. No retry, view sweep, physics change or M5 acceptance.",
+  "primary": [0.0, 4.5, 0.088],
+  "alternative": [-4.5, 4.5, 0.080],
+  "alternative_basis": "Previously physically achieved lateral recovery pose under the same RCM envelope. Its sealed lateral 20-degree half-cut negative is available. That earlier run is a different trajectory/fixture placement, not a held-out control of the translated fixture. Before a live probe verify the projected banks for rows 6..10 fit inside its calibrated field of view (at least eight measured valid pixels for each bank and row). Projection is only a framing screen, not an occlusion prediction.",
+  "reader": "Reuse v5 bank/ownership, local positive rows and width tests. From optical prefix p evaluate max(0,p-1)..n-1 on this frame, 4x4 eroded common core and shallow crossing veto. Positively identified old material or bridges veto the result. Require a positive growing ordinal, boundary PARTIAL or INTACT for BELOW and INTACT for TARGET, next row INTACT, no later observed opening. Never promote a partial row to OPEN. No increase on an old receipt, skipped closure or unbound episode.",
+  "offline_gate": "Uncut zero from intact_preflight, then replay both archived nominal sequences through 4 closures: BELOW(3,5,7), old v3 TARGET(9), v5 primary UNKNOWN on the new row 7. Frozen exact v3 fifth closure with one remaining face at row 9 cannot be promoted to TARGET(10). At the lateral slip negative (8 full rows, partial next row), no wrong known ordinal or TARGET for p=0..7. UNKNOWN on a negative is safe abstention, not demonstrated discrimination. Require green versioned regressions and framing screen before live.",
+  "live_gate": "Match the frozen nominal RGB-D hashes through tick 18 and ready/entrance joints. Acquire first 18 exposures using the old work/review schedule. Only if primary independent incremental review is UNKNOWN with certified history p=7 may one guarded ECM command be attempted. Both closed reviews and cutter joint readbacks must match; ECM pose must change and match request. Seal both predictions before joining structural snapshots. Require exact baseline and final constraints equality through the alternate look (prefix/full/partial=9), no tear, lost grasp, RCM failure, collision or cleanup error. At alternative require TARGET(9), row 6 overlap and new 7,8 OPEN, rows 9,10 INTACT. Report separately whether archived half-cut at the same camera pose is positively distinguished as BELOW(8) with PARTIAL row 8. No extrapolation from abstention or a different fixture; even both passes are a development view result only.",
+  "on_failure": "Keep UNKNOWN and stop. Never nominate another pose from these results. If no qualified view, report whether framing, mechanics, overlap, new rows, boundary or global topology failed before considering an independently registered physics comparison.",
+  "pins": {
+    "validation/task/m5_v3_positive_outer_v3/decision.json": "adf549774a8286c9a6bfefd3f53e5d35fa3bc7aa89fb4d256e922f9c4a264dc7",
+    "validation/task/m5_v3_positive_outer_v5/decision.json": "a297928242e6c3483d90175d1f024d728169840e616deffde5f6a540a7daa625",
+    "validation/task/m5_guided_slip_lateral_capture_v1/decision.json": "5e8e7cc232818743404c74351923fc52290ff8ab3d5fccd779beb84efef02462",
+    "config/task/m5_guided_slip_lateral_capture_v1.json": "d15b8c603a3704274f372a05edb9c400ad2cb989a80b46762a06d050ce16b63a",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/run_m5_v3_outer_positive_v5.py": "e8eab5b9a2eaeaae3071a915804437ce0785289e674eaed01401286bbeff4d09"
+  }
+}

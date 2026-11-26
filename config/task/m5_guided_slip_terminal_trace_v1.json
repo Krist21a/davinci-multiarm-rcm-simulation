@@ -1,0 +1,12 @@
+{
+  "id": "m5_guided_slip_terminal_trace_v1",
+  "scope": "One matched acquisition of existing working RGB-D and estimator state at the third closure; no new action, control or acceptance.",
+  "pins": {
+    "validation/task/m5_guided_entry_bin_slip_live_v1/registration.json": "1efbb5a574db0d8f88630e0a074aafa6c97ab8f2c80cecaa67a467dcbabf7960",
+    "validation/task/m5_guided_entry_bin_slip_live_v1/slip_regrasp.json": "238a49de65c9f154e528223f26b25f931346cef213fd135af77e506c3a7bc213",
+    "validation/task/m5_guided_entry_bin_slip_live_v1/decision.json": "57aa33f514f2c1cfa776be5be203d6eb99abbe795f6a56054e678106acb77271"
+  },
+  "ticks": [28, 29, 30],
+  "comparison": "Match all old control events, observations and transitions, exact structural constraints and earlier measured-exposure hashes before attributing cause. Snapshot the existing estimate inputs and prior before each call, and record its output and the awaiting-new-slit flag immediately before and after the original fix-update call. No render, camera/cutter move, simulated step or truth read beyond what the original runner performs.",
+  "offline": "Replay the opt-in estimator with the exact per-frame priors. Inspect main and lateral scan support, available direct and memory candidates, the existing forward-window checks, the distal-bank veto, material-chart validity and mode accepted by the fix update. Distinguish observed insufficiency from a physical cause not proved by the images. Never authorize from memory, structure or this replay."
+}

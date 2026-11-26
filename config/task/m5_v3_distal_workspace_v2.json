@@ -1,0 +1,12 @@
+{
+  "id": "m5_v3_distal_workspace_v2",
+  "scope": "Two-axis offline translation grid, followed only for a qualified selection by a separate no-cut fixture preflight. No existing scene or controller changes.",
+  "distal_v1_registration_sha256": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+  "distal_v1_decision_sha256": "d05df430bf1d06f447be202a425732f83e9c64d0f2d4ff1f4c7d9d159b16771e",
+  "delta_yaw_deg": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
+  "delta_pitch_deg": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
+  "mapping": "Use the shared midpoint of frozen material row 5 in RCM beam coordinates as the reference. A grid point translates the entire fixture by the yaw- and pitch-transverse differences from adding the requested angles to the two reference rays, with axial coordinate and sheet orientation unchanged.",
+  "thresholds": {"minimum_soft_yaw_headroom_deg": 1.5, "minimum_soft_pitch_headroom_deg": 1.5, "centered_yaw_deg": [-2.5, 1.0]},
+  "geometry": "Reuse sealed v1 wrist geometry, intercept, soft joint limits, 15 positions per view, all three fixed observed blade rotations per view, and the seven nominal/axis perturbations. Both views must pass on all samples. Select the lowest translation norm, breaking ties by ascending grid indices. A candidate with zero pitch shift must not be deployed. No inference about scene reachability from the model.",
+  "runtime": "For the sealed selected two-axis candidate only, run on a fresh verified scene. Preserve stock normal collision guards, do not open, close, or cut with the cutter, and stop on a refused step. Verify stock arm roles/homing, two actual grasps under load, full guarded cutter IK on the translated 0--10 mm route, native same-frame sheet and marker visibility at registered ECM work poses, and closed guarded return. Labels and mechanical readbacks are diagnostics only; no benchmark evidence."
+}

@@ -1,0 +1,103 @@
+{
+  "identity": {
+    "run_sha256": "6dd544a70402f9e84611a881d84fe52d3de401d700a9637051fff808d2fbcde5",
+    "registration_sha256": "227f4e69d03ebc2978567e6316c88a79832c56c9c1ed42b55c4083608e94f4fa",
+    "scorer_sha256": "6902558d29c515aaaef0adfdc945c4346e15e85784fbc42f26c2c132aa705954"
+  },
+  "predictions_sha256": "b5942de1a4362b116302dab261f271bcfab6bcfb26c34d27a89abb4bf8da344f",
+  "passed": false,
+  "checks": {
+    "pre_branch_exact": true,
+    "complete_paired_exposures": true,
+    "guarded_closed_reverse": true,
+    "original_camera_budget": true,
+    "no_terminal_actuation_beyond_reverse": true,
+    "clean_and_unchanged_structure": true,
+    "entrance_reads_below_8": false,
+    "neither_frame_mislabels_target": true
+  },
+  "reason": "slip optical capture complete; held closed without a permit",
+  "pairs": [
+    {
+      "event": "slip_optical_pair",
+      "phase": "closed",
+      "tick": 30,
+      "sim_time": 23.5000000000002,
+      "wide": "030_wide.npz",
+      "wide_sha256": "9541b4ee32f61e0d66580939be347e2fda58420050077f2f8b1d59552f377cff",
+      "narrow": "030_certificate.npz",
+      "narrow_sha256": "1dde59d48554edd12e42b6415b479c5e7b2212d82df2a29c27bc5487ac183bb4",
+      "structure": "closed_structure.npz",
+      "structure_sha256": "92da3f5509ee32aa70d6dcd7db76cb26b680ffb85917c6768630ec86dfe982a6"
+    },
+    {
+      "event": "slip_optical_pair",
+      "phase": "entrance",
+      "tick": 33,
+      "sim_time": 25.75000000000023,
+      "wide": "033_wide.npz",
+      "wide_sha256": "4aaf2b3b44296c46915e63a3fba943a105f4f157669bdda5877234f489d2edc0",
+      "narrow": "033_certificate.npz",
+      "narrow_sha256": "cbac3dead9ecec62041a45cc8486eaeb58391a52e804aa9b5c9d713064f7008a",
+      "structure": "entrance_structure.npz",
+      "structure_sha256": "92da3f5509ee32aa70d6dcd7db76cb26b680ffb85917c6768630ec86dfe982a6"
+    }
+  ],
+  "reverse_segments": [
+    {
+      "event": "guided_v2_segment",
+      "tick": 30,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 31,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    },
+    {
+      "event": "guided_v2_segment",
+      "tick": 32,
+      "phase": "slip_optical_reverse",
+      "accepted": true
+    }
+  ],
+  "predictions": [
+    {
+      "phase": "closed",
+      "tick": 30,
+      "narrow_sha256": "1dde59d48554edd12e42b6415b479c5e7b2212d82df2a29c27bc5487ac183bb4",
+      "verdict": "UNKNOWN",
+      "prefix_mm": null,
+      "reason": "no eligible open prefix from row zero"
+    },
+    {
+      "phase": "entrance",
+      "tick": 33,
+      "narrow_sha256": "cbac3dead9ecec62041a45cc8486eaeb58391a52e804aa9b5c9d713064f7008a",
+      "verdict": "UNKNOWN",
+      "prefix_mm": null,
+      "reason": "missing positive terminal boundary"
+    }
+  ],
+  "states": [
+    {
+      "phase": "closed",
+      "prefix_rows": 8,
+      "farthest_row_end": 9
+    },
+    {
+      "phase": "entrance",
+      "prefix_rows": 8,
+      "farthest_row_end": 9
+    }
+  ],
+  "final_structure": {
+    "prefix_rows": 8,
+    "farthest_row_end": 9
+  },
+  "final_state": "FAILED",
+  "authorizes_motion": false,
+  "changes_prior_acceptance": false
+}

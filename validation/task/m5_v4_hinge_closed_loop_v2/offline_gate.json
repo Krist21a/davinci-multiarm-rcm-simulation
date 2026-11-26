@@ -1,0 +1,358 @@
+{
+  "passed": false,
+  "gates": {
+    "margin": false,
+    "fk": true,
+    "late_axis": true,
+    "failed_controls": true,
+    "actual_coverage": true,
+    "tip_accuracy": true
+  },
+  "parts": {
+    "calibration/clean": {
+      "total": 6,
+      "valid": 6,
+      "max_optimism_mm": 0.07877988152853593,
+      "bound_mm": 0.06999999999999999,
+      "over_bound": 1,
+      "passed": false
+    },
+    "calibration/development": {
+      "total": 72,
+      "valid": 72,
+      "max_optimism_mm": 0.4002206686864152,
+      "bound_mm": 0.21999999999999997,
+      "over_bound": 5,
+      "passed": false
+    },
+    "calibration/check": {
+      "total": 72,
+      "valid": 67,
+      "max_optimism_mm": 0.19787741164138214,
+      "bound_mm": 0.21999999999999997,
+      "over_bound": 0,
+      "passed": false
+    },
+    "new_late/clean": {
+      "total": 3,
+      "valid": 3,
+      "max_optimism_mm": 0.05582857522770675,
+      "bound_mm": 0.06999999999999999,
+      "over_bound": 0,
+      "passed": true
+    },
+    "new_late/check": {
+      "total": 36,
+      "valid": 35,
+      "max_optimism_mm": 0.2553480397369817,
+      "bound_mm": 0.21999999999999997,
+      "over_bound": 1,
+      "passed": false
+    }
+  },
+  "controls": [
+    {
+      "group": "depth_noise_0p5",
+      "name": "005_work",
+      "case": "depth_noise_0p5",
+      "split": "actual",
+      "seed": 1,
+      "sigma": 0.0005,
+      "prefix": 0,
+      "closed": false,
+      "tick": 5,
+      "h": "b40e268fd2aefe78ea0f22cfc6d3c0fe54cf8051cfd7ff977c4af1353b270a17",
+      "mark": {
+        "valid": true,
+        "fits": {
+          "distal": {
+            "nfev": 26,
+            "status": 3,
+            "rank": 3,
+            "pixels": 80
+          },
+          "proximal": {
+            "nfev": 22,
+            "status": 3,
+            "rank": 3,
+            "pixels": 238
+          },
+          "third": {
+            "nfev": 25,
+            "status": 3,
+            "rank": 3,
+            "pixels": 383
+          }
+        },
+        "initial_rms_m": 0.00012995422956158038,
+        "fit_rms_m": 7.035265354461231e-05,
+        "reason": "",
+        "tip": [
+          -0.012155375239903034,
+          0.011638280373339947,
+          0.1309416687227386
+        ],
+        "jaw_axis": [
+          0.10327252847027125,
+          -0.254237304479022,
+          0.9616122804304229
+        ],
+        "opening_axis": [
+          0.8779163662175956,
+          0.47774186004419233,
+          0.03202450762787857
+        ]
+      },
+      "old_marker": {
+        "valid": true,
+        "fits": [
+          {
+            "nfev": 27,
+            "status": 3,
+            "rank": 3
+          },
+          {
+            "nfev": 21,
+            "status": 3,
+            "rank": 3
+          },
+          {
+            "nfev": 17,
+            "status": 2,
+            "rank": 3
+          }
+        ],
+        "fit_rms_m": 4.223980834040724e-05,
+        "tip": [
+          -0.012189237637632213,
+          0.011646238558146425,
+          0.1309616626212895
+        ]
+      },
+      "chart": true,
+      "tip": [
+        -0.0726899535280299,
+        -0.9986567813357232,
+        0.6957968245126274
+      ],
+      "old_tip": [
+        -0.07266199446332754,
+        -0.998629255935552,
+        0.6958052146086358
+      ],
+      "axis": [
+        -0.29316413318222817,
+        0.8978115245695837,
+        -0.3286171896988238
+      ],
+      "displacement": [
+        -0.0012111303640240378,
+        0.004583870191222084,
+        -0.0016891752165053564
+      ],
+      "aligned": true,
+      "sweep_room_mm": 4.505603480706844,
+      "old_pair": false,
+      "fk_mm": 0.00012325062159767512,
+      "tip_error_mm": 0.25397740509637556,
+      "old_tip_error_mm": 0.22442490138563614,
+      "axis_deg": 0.7137606735368245
+    },
+    {
+      "group": "relax",
+      "name": "018_work",
+      "case": "relax",
+      "split": "actual",
+      "seed": null,
+      "sigma": 0.0,
+      "prefix": 7,
+      "closed": false,
+      "tick": 18,
+      "h": "fb745e5b9092e263f41a52046773e728593973c2df97757dd6fa9544273b0cfd",
+      "mark": {
+        "valid": true,
+        "fits": {
+          "distal": {
+            "nfev": 6,
+            "status": 2,
+            "rank": 3,
+            "pixels": 84
+          },
+          "proximal": {
+            "nfev": 25,
+            "status": 3,
+            "rank": 3,
+            "pixels": 224
+          },
+          "third": {
+            "nfev": 20,
+            "status": 3,
+            "rank": 3,
+            "pixels": 343
+          }
+        },
+        "initial_rms_m": 1.6737556396495733e-05,
+        "fit_rms_m": 2.5434786054610366e-05,
+        "reason": "",
+        "tip": [
+          -0.011807208732314263,
+          0.010161881278257134,
+          0.13600030224600884
+        ],
+        "jaw_axis": [
+          0.10055755387845243,
+          -0.2688034651049817,
+          0.9579315609716266
+        ],
+        "opening_axis": [
+          0.8875286042940195,
+          0.45936480759332404,
+          0.035734438636393306
+        ]
+      },
+      "old_marker": {
+        "valid": false,
+        "fits": [
+          {
+            "nfev": 60,
+            "status": 0,
+            "rank": 3
+          },
+          {
+            "nfev": 17,
+            "status": 3,
+            "rank": 3
+          },
+          {
+            "nfev": 16,
+            "status": 3,
+            "rank": 3
+          }
+        ],
+        "fit_rms_m": 1.6737556396495733e-05,
+        "tip": null
+      },
+      "chart": true,
+      "tip": [
+        -0.07407351260147987,
+        -0.9938857101253585,
+        0.6940042311054476
+      ],
+      "axis": [
+        -0.29167416850463296,
+        0.8981573631430055,
+        -0.32899776664763936
+      ],
+      "displacement": [
+        -0.0002371490866280579,
+        0.0012066231588107046,
+        -0.00040145713940320515
+      ],
+      "old_pair": false,
+      "fk_mm": 9.41365655565787e-05,
+      "tip_error_mm": 0.15534791148079627,
+      "axis_deg": 1.563749521335313,
+      "optimism_mm": 0.04446277596517956
+    },
+    {
+      "group": "slip_regrasp",
+      "name": "013_work",
+      "case": "slip_regrasp",
+      "split": "actual",
+      "seed": null,
+      "sigma": 0.0,
+      "prefix": 5,
+      "closed": false,
+      "tick": 13,
+      "h": "eead0e483b128ee78bbff2542b76b10a2564b7c85e4b7ec9b232588f5b2abc6d",
+      "mark": {
+        "valid": true,
+        "fits": {
+          "distal": {
+            "nfev": 9,
+            "status": 2,
+            "rank": 3,
+            "pixels": 110
+          },
+          "proximal": {
+            "nfev": 10,
+            "status": 3,
+            "rank": 3,
+            "pixels": 286
+          },
+          "third": {
+            "nfev": 28,
+            "status": 3,
+            "rank": 3,
+            "pixels": 356
+          }
+        },
+        "initial_rms_m": 1.2580770145069327e-05,
+        "fit_rms_m": 2.177803180180041e-05,
+        "reason": "",
+        "tip": [
+          -0.011844018386213094,
+          0.010776796706644366,
+          0.13411473587675346
+        ],
+        "jaw_axis": [
+          0.08836760364933069,
+          -0.2636107899631497,
+          0.9605730154653934
+        ],
+        "opening_axis": [
+          0.8886198370714551,
+          0.4565722870572302,
+          0.043549188906694125
+        ]
+      },
+      "old_marker": {
+        "valid": false,
+        "fits": [
+          {
+            "nfev": 20,
+            "status": 3,
+            "rank": 3
+          },
+          {
+            "nfev": 60,
+            "status": 0,
+            "rank": 3
+          },
+          {
+            "nfev": 28,
+            "status": 3,
+            "rank": 3
+          }
+        ],
+        "fit_rms_m": 1.2580770145069327e-05,
+        "tip": null
+      },
+      "chart": true,
+      "tip": [
+        -0.07365217195336868,
+        -0.9956821716086554,
+        0.6947322659019006
+      ],
+      "axis": [
+        -0.2798174751597992,
+        0.9039851145504644,
+        -0.3232848484949134
+      ],
+      "displacement": [
+        -0.00027670654047817766,
+        0.0016306597017692326,
+        -0.0006102691012405126
+      ],
+      "old_pair": false,
+      "fk_mm": 0.00011058022232180338,
+      "tip_error_mm": 0.14815935225506224,
+      "axis_deg": 0.5484108198653561
+    }
+  ],
+  "max_tip_mm": 1.4248963763502052,
+  "median_native_nominal_tip_mm": 0.14530271036265613,
+  "registration_sha256": "eefe68940eabb08468aff490b71a1aeedf6dbf644fca30f55a44389bcd397a4d",
+  "predictions_sha256": "853c5bdbb23cd929f369c8af33f8097c958e4b7a1276e85b58506001ed6c8b08",
+  "measurements_sha256": "4539ad868f094d138f97e3dae430567e5d10c7a3562b7b81b8e4260ea601f238"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "m5_v3_work_denoise_v1",
+  "scope": "Offline development screen only; no live capture, commands, margin change or endpoint authorization. Do not retune on failed check draws.",
+  "sources": {
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "validation/task/m5_v3_sensor_margin_calibration_v1/registration.json": "422d8572e8cf091de07941dacf38936a4723cb62ec705b038340b363157190e2",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae"
+  },
+  "reader": "Keep the original two-dimensional outer-rim witness and station construction. Fit the inverse depth at the witnessed half-pixel from a connected same-code/pink support ellipse (5 px across, 2 px orthogonal), with the original per-edge continuity tolerance, at least eight samples and center leverage at most 0.25. Fit an affine plane, correcting the second-order inverse-depth noise bias. Fit a row-index slope to three to five consecutive ahead bilateral midpoints, preserving the original local step, chord, skew and minimum-bank limit checks.",
+  "sampling": "Replay the exact 15 sealed work frames and 360 draws from the pinned calibration protocol; use goal 10, the prior optical prefix, and the same ray marker fit on the same perturbed depth array. Replay the pinned outer-bank gate with v5 on both registered goals and both unchanged narrow controls.",
+  "clean_abs_room_delta_mm_lt": 0.03,
+  "clean_front_closed_open_delta_mm_lt": 0.05,
+  "late_pair_min_count": 69,
+  "late_noisy_axis_delta_deg_lt": 1.5,
+  "late_noisy_optimism_delta_mm_lt": 0.20,
+  "gate": "All 15 clean v4/v5 chart and marker pairs must be valid. Clean bias is the maximum absolute change in (limit - optical_tip) dot direction relative to v4 on the same frame. Preserve every outer-bank gate, and require the v5 closed/open front displacement to be strictly less than 0.05 mm for both goals. For all 72 noisy draws at prefix >= 6, require at least 69 same-frame valid chart/marker pairs (at least 95%); each valid pair must strictly satisfy the axis and optimistic room-change thresholds relative to its own clean v5 frame. Keep all refusals in the denominator and report both seed splits. These are sensitivity checks, not absolute errors versus a physical reference."
+}

@@ -1,0 +1,33 @@
+{
+  "id": "m5_v3_work_corner_v3",
+  "scope": "Offline gate for v11 on the non-anatomical coupon. No simulator or margin refit. Do not tune on registered results.",
+  "sources": {
+    "config/task/m5_v3_work_corner_v1.json": "fc7861ccf0d6e57b266a9ae4493d341e44c4cbaf2db9e7c5fd7cf948f31b5823",
+    "scripts/analysis/replay_m5_v3_work_corner_v1.py": "7c3e43b3494d338a47e83b3c85c80a723235b510cbc87a8b20768ba6fce07a3b",
+    "validation/task/m5_v3_work_corner_v1/decision.json": "5cf9fd079dea21eb1d435a1f0dc649ae86d989b36a9c81f82fc556a0eed53097",
+    "validation/task/m5_v3_work_corner_v1/registration.json": "74fc1d152ef1f236f317c9705e1a8ff05cc466ba4fa9d5b9c7b8c430d9156355",
+    "scripts/vision/m5_v3_perception_v9.py": "d81f0d313e34b4c93d75943edd20234bf55fba6c8360d64eda314d18d4d88684",
+    "scripts/vision/m5_v3_perception_v8.py": "6527d04b7ae2cebc1051a6632d16edaa81c592c8e1c224166008d9eabd9e1947",
+    "scripts/analysis/replay_m5_v3_work_denoise_v4.py": "8341bd434001337bf0bca8669c9fd284e8df2b0540ce0ed05fadd4ff479779a2",
+    "validation/task/m5_v3_work_denoise_v4/decision.json": "a80dfcf3a25a17be6b26d96ac5d9073f2efdd0d54595865a09bccd845684af00",
+    "validation/task/m5_v3_work_denoise_v4/registration.json": "9cf4a30753e93dd515442ad63d880cf4c07a3810d19bb107b363c3d6c8c92dbc",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/decision.json": "8d595036dc69af2383e89c0271a9fda8d506a0b4cffb3f946bf70a094fa92d9b",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/registration.json": "0e7eb0f250ca7a56eaea6ddbe4385b97b4572f77fae175d54ebe2b606773c002",
+    "scripts/analysis/calibrate_m5_v3_sensor_margin_v2.py": "e360d99ae2b5c2268283f1fdb94016469d362b9d42a2b10fa5ec9e9206c83ad9",
+    "validation/task/m5_v3_positive_outer_v4/nominal/run.json": "b65ffd8eccb4ce593079f5b1a02b0fbd9d4381d775fe638357083a22dc199ee8",
+    "validation/task/m5_v3_positive_outer_v4/nominal/015_work.npz": "b26e0fecc4d47b5e9b6879f317e08b76fe53fd30a644219132f2e6550bdc2256",
+    "config/task/m5_v3_work_corner_v2.json": "6d63ad786cc9a00d2e972df4c04798341f729fa5121ee506c7e2ffa5b7d0094f",
+    "scripts/vision/m5_v3_perception_v10.py": "4700d1c70b4dca18b2b9435e9660f1041649792efa9c69ad9d275195cb07cf2c",
+    "scripts/analysis/replay_m5_v3_work_corner_v2.py": "9f6b03a05c579839b418b1ca08f2755af97c169ab61d1b09fac4e2dbaf737d67",
+    "validation/task/m5_v3_work_corner_v2/decision.json": "2ba3dc0adeaf697840592391d495d2703e5658a1c4f32325748e11950aec3b9a"
+  },
+  "recovery": "Keep v9 admission, measured stations, outermost witnessed coded-midpoint ranking, and all main-path and geometry guards. Only candidate discovery expands to 8 neighbors; the >=4 support pairs and both connected-component checks remain strictly 4-neighbor. Each distinct 8-neighbor candidate coded pair (a,b) crosses (j-1,j) and must pass the unchanged raw depth-difference tolerance. Require one shared outward valid depth-continuous raw PINK w within Euclidean 2.0 px of the coded midpoint and 8-neighbor to both a and b. For each outermost triple reconstruct the two rim rays centered at (a+w)/2 and (b+w)/2 using the existing v8 ellipse and four-term inverse-depth estimator. Each unchanged 4-connected support must contain the three witnesses and at least four qualifying 4-neighbor coded pairs. Require the two fitted depths to pass the original station depth-consistency tolerance. Use the original station construction (midpoint of the two rim rays, harmonic mean depth), and original 0.35 mm scatter bound across tied triples. Fail closed if an outermost fit fails; no inward search, extrapolation, or margin change.",
+  "main_path": "Replay all 15 clean and 360 paired draws from work_denoise_v4, including the outer gate; exact equality to the sealed per-frame/seed scalars, refusals and outer outputs. Replay all 15 clean and 360 calibration depth draws with the original marker and true reference and match sealed v2 optical metrics exactly. The v3 FK gate and frozen fit are retained by hash; do not refit.",
+  "forced_path": "On all five late v2 frames, remove the original row-10 result for left only, right only, and both, and insert only the candidate from the same v11 corner primitive. Retain every other station and all geometry gates. Use the original five clean frames, 60 development and 60 check draws per variant, the frozen calibration seed sequence and same-exposure TCP/row-10 error formula. Require all five clean pairs, the original >=95% valid late pairs in each split, and every valid optimism score at or below the frozen c0+k*sigma. A geometry/marker refusal never permits motion and is counted in the denominator. Require that masking PINK around the row boundary, leaving only PINK strictly beyond 2.0 px, makes the fallback abstain.",
+  "sensor_margin": {
+    "c0_m": 0.0,
+    "k": 0.2
+  },
+  "recovery_frame": "For the pinned v4 nominal 015_work, prefix 7, require a currently valid marker, two complete 13-station sides and 13 checked bilateral stations, a complete original chart and direct row-10 limit for both goals 9 and 10. No use of structural truth on this frame.",
+  "gate": "All three offline gates must pass before registering a new positive batch: main-path identity, forced-path coverage/envelope plus occlusion abstention, and full archived stopped-frame geometry."
+}

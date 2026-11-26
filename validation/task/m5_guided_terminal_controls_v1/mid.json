@@ -1,0 +1,3219 @@
+{
+  "case": "mid",
+  "run_id": "922acfdf554a4430b3b8b45b9262a405",
+  "config": {
+    "_note": "Supervisor thresholds and budgets for scripts/task/cut_fsm.py. Exploratory simulation values, not clinical limits.",
+    "roles": {
+      "retract_primary": "psm1",
+      "cut": "psm2",
+      "retract_assist": "psm3",
+      "view": "ecm"
+    },
+    "tension": {
+      "low_strain": 0.04,
+      "low_strain_after_cut_start": 0.02,
+      "high_strain": 0.25,
+      "tear_is_failure": true,
+      "basis": "Tension = median constraint strain of the sheet. In the first CoppeliaSim run the cut itself lowered it from 0.065 to 0.036, which the single 0.04 bound reported as lost tension."
+    },
+    "grasp": {
+      "min_nodes": 3
+    },
+    "events": {
+      "relax_m": 0.0005,
+      "relax_basis": "Injected test perturbation, not a tissue property: the 'relax' event drives each arm holding tissue this far toward the cut line to model retractor creep. The default is sized inside the RETRACT_ADJUST recovery budget (4 attempts x 0.2 mm per arm) so the 'relax' scenario exercises recovery; the 'relax_large' scenario overrides it to exceed the budget and is expected to fail."
+    },
+    "view": {
+      "center_margin": 0.35,
+      "occlusion_wait_ticks": 6
+    },
+    "vision": {
+      "fix_max_age_ticks": 6,
+      "basis": "config/task/m5b_protocol.json: a remembered front fix stays usable for this many world ticks after its last valid estimate."
+    },
+    "perception": {
+      "mode": "shadow",
+      "markers": true,
+      "depth_noise_m": 0.0,
+      "camera_pose_error": {
+        "trans_m": 0.0,
+        "rot_deg": 0.0,
+        "mode": "per_tick"
+      },
+      "seed": 0,
+      "basis": "M4 shadow perception (scripts/vision/cut_perception.py): 'off' logs nothing, 'shadow' runs the estimator on the already-acquired image/depth each observe() and logs estimate + truth + errors into the report. It is never used for control unless cut.control_source is 'vision'. 'markers' stages two cyan/yellow spheres on the cutter yaw housing (non-respondable); kept on in both modes so the off-vs-shadow comparison isolates the estimator. depth_noise_m/camera_pose_error perturb ONLY the estimator inputs (seeded per run). camera_pose_error.mode: 'per_tick' draws a fresh error each tick (M5a semantics); 'fixed' draws the rotation axis and translation direction once per run (a calibration bias, config/task/m5b_protocol.json).",
+      "material_pattern": true,
+      "local_material_chart": true,
+      "front_recovery": true,
+      "predictive_view": true,
+      "exclude_tcp_marker": true,
+      "recovery_view_after_cut": true,
+      "ray_marker_fit": true
+    },
+    "cut": {
+      "length_m": 0.009,
+      "max_overcut_m": 0.001,
+      "advance_m": 0.003,
+      "align_tolerance_m": 0.0015,
+      "retract_step_m": 0.0002,
+      "vision_axis_tolerance_deg": 5.0,
+      "control_source": "vision",
+      "control_source_basis": "config/task/m5b_protocol.json: 'truth' (default, unchanged behaviour) or 'vision' \u2014 the cutter's front, alignment, advance, stop and visibility come from the cut_perception estimate; tension/grasped stay truth until M6, tear/overcut stay truth safety monitors.",
+      "clear_back_m": 0.003,
+      "clear_back_basis": "config/task/m5b_protocol.json CLEAR_VIEW attempt 1: cutter backs this far off along its jaw axis, jaws unchanged, to re-observe the front.",
+      "align_mode": "tool_pose",
+      "align_mode_basis": "shaft drives the scissors with setRCMTarget only; tool_pose instead solves one 6-DOF shaft+wrist command (setToolPose) so the jaw pointing axis tracks the cut line. Wrist articulation is verified in this scene. Default tool_pose: live full nominal and occlusion_transient both DONE with closure lateral error 0.01 mm vs 0.63 mm for shaft, same cut length, tearing and strain (validation/task/sim_full_*_tool_pose.json).",
+      "overcut_basis": "One 1 mm row of the current tissue grid is allowed in this discrete benchmark. Report actual overshoot; this is not a clinical safety margin or a bound on blade sweep.",
+      "retract_step_basis": "0.5 mm steps tore a constraint beside the grasp in the first full run: the position solver could not spread a 0.5 mm jump of the pinned nodes within one step."
+    },
+    "budgets": {
+      "localize_ticks": 5,
+      "expose_ticks": 40,
+      "align_ticks": 10,
+      "camera_adjust_attempts": 3,
+      "retract_adjust_attempts": 4,
+      "relocalize_attempts": 2,
+      "clear_view_attempts": 3,
+      "clear_view_attempts_basis": "config/task/m5b_protocol.json: consecutive clear-and-look attempts before FAILED (back-off, withdrawal-if-closed, look-only).",
+      "total_ticks": 400
+    },
+    "sheet": {
+      "seam_mode": "surface",
+      "guide_band_m": 0.0001
+    }
+  },
+  "cap_m": 0.002,
+  "observations": [
+    {
+      "tick": 1,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {},
+      "tension": 0.0,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.0,
+      "cut_progress_m": null,
+      "tissue_visible": false
+    },
+    {
+      "tick": 2,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2292052882606851,
+      "grasped": {},
+      "tension": 0.06949362518744762,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13579006025791096,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 3,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2292052882606851,
+      "grasped": {},
+      "tension": 0.06949362518744762,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13579006025791096,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 4,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 5,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 6,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 7,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 8,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 9,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 10,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 11,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 12,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.06933589258076123,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13537672268145506,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 13,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2324321402930624,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 14,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 15,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2324321402930624,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 16,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2324321402930624,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 17,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2324321402930624,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 18,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 19,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07032634352052525,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558589551018208,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 20,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23232446188260336,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07033517135090483,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558563137350377,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 21,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07033517135090483,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558563137350377,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 22,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07033517135090483,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558563137350377,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 23,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23232377324240674,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07036311486492863,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558838001084994,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 24,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23232377324240674,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07036311486492863,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558838001084994,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 25,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23232377324240674,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07036311486492863,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558838001084994,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 26,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.2324198946773805,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07037111791534856,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558881261970734,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 27,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23241991840880089,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07037056896346705,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558872076749107,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 28,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.0703670550123301,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.13558856459108348,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 29,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.25520212217627003,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.07037191491770622,
+      "torn": 0,
+      "cut_length_m": 0.0,
+      "faults": [],
+      "max_strain": 0.1355890559395201,
+      "cut_progress_m": 0.0,
+      "tissue_visible": true
+    },
+    {
+      "tick": 30,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08383214474677314,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.13558854673411247,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 31,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23347966611399637,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08381832701401426,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.13558622219284944,
+      "cut_progress_m": 0.003837714808657805,
+      "tissue_visible": true
+    },
+    {
+      "tick": 32,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23350861868070868,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08381832701401426,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.13558622219284944,
+      "cut_progress_m": 0.0038335369793001477,
+      "tissue_visible": true
+    },
+    {
+      "tick": 33,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23363910385285122,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08382619840818117,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.1355882733193019,
+      "cut_progress_m": 0.0038420133668315855,
+      "tissue_visible": true
+    },
+    {
+      "tick": 34,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23355993928034213,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08382609363449012,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.13558815853846196,
+      "cut_progress_m": 0.0038422779724558813,
+      "tissue_visible": true
+    },
+    {
+      "tick": 35,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.23346747412909216,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.08382462711977112,
+      "torn": 0,
+      "cut_length_m": 0.003,
+      "faults": [],
+      "max_strain": 0.1355879926208785,
+      "cut_progress_m": 0.003847756650609912,
+      "tissue_visible": true
+    },
+    {
+      "tick": 36,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.21987666163639047,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11755770169361679,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.13583209333442348,
+      "cut_progress_m": 0.006504979091754862,
+      "tissue_visible": true
+    },
+    {
+      "tick": 37,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.21772702052084228,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11705651289440488,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.1359322101368834,
+      "cut_progress_m": 0.0071035172649429375,
+      "tissue_visible": true
+    },
+    {
+      "tick": 38,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.21797383949396903,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11705651289440488,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.1359322101368834,
+      "cut_progress_m": 0.007095209662849476,
+      "tissue_visible": true
+    },
+    {
+      "tick": 39,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.04120903840355172,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11659833946781917,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.13576997112090328,
+      "cut_progress_m": 0.0070017139485832785,
+      "tissue_visible": true
+    },
+    {
+      "tick": 40,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.041659548054915695,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11658491773593749,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.1357670660216037,
+      "cut_progress_m": 0.006993830434785946,
+      "tissue_visible": true
+    },
+    {
+      "tick": 41,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.04178237448404776,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11658491773593749,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.1357670660216037,
+      "cut_progress_m": 0.006984020796211519,
+      "tissue_visible": true
+    },
+    {
+      "tick": 42,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.041731127828122536,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11654812977714057,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.13575274884256694,
+      "cut_progress_m": 0.006984359154504578,
+      "tissue_visible": true
+    },
+    {
+      "tick": 43,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.04164937603211385,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.1165403112193858,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.1357494378005808,
+      "cut_progress_m": 0.006960828183311549,
+      "tissue_visible": true
+    },
+    {
+      "tick": 44,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.04149898966058636,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.11652955337489368,
+      "torn": 0,
+      "cut_length_m": 0.007,
+      "faults": [],
+      "max_strain": 0.13574760030213895,
+      "cut_progress_m": 0.006979689773291608,
+      "tissue_visible": true
+    },
+    {
+      "tick": 45,
+      "cut_site_visible": true,
+      "scissors_visible": true,
+      "cut_site_offset": 0.04103039478644828,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.13066013521399755,
+      "torn": 0,
+      "cut_length_m": 0.009000000000000001,
+      "faults": [],
+      "max_strain": 0.15827669749190387,
+      "cut_progress_m": 0.008953650614967225,
+      "tissue_visible": true
+    },
+    {
+      "tick": 46,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.13097522595556288,
+      "torn": 0,
+      "cut_length_m": 0.009000000000000001,
+      "faults": [],
+      "max_strain": 0.16619540615195105,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    },
+    {
+      "tick": 47,
+      "cut_site_visible": false,
+      "scissors_visible": true,
+      "cut_site_offset": null,
+      "grasped": {
+        "psm1": 20,
+        "psm3": 24
+      },
+      "tension": 0.13097522595556288,
+      "torn": 0,
+      "cut_length_m": 0.009000000000000001,
+      "faults": [],
+      "max_strain": 0.16619540615195105,
+      "cut_progress_m": null,
+      "tissue_visible": true
+    }
+  ],
+  "registration_sha256": "6df71a673362838f96c3ffeaedb736767e664ef8108504fe41f0b8c2041df7a6",
+  "error": null,
+  "cleanup_error": null,
+  "final_state": "FAILED",
+  "final_label": "\u5931\u8d25\u505c\u6b62",
+  "reason": "clear-and-look action refused",
+  "ticks": 38,
+  "visited": [
+    "ALIGN",
+    "CAMERA_ADJUST",
+    "CLEAR_VIEW",
+    "CUT",
+    "EXPOSE",
+    "FAILED",
+    "GRASP",
+    "INIT",
+    "LOCALIZE",
+    "RESUME"
+  ],
+  "transitions": [
+    "ALIGN->ALIGN",
+    "ALIGN->CLEAR_VIEW",
+    "ALIGN->CUT",
+    "CAMERA_ADJUST->RESUME",
+    "CLEAR_VIEW->CAMERA_ADJUST",
+    "CLEAR_VIEW->FAILED",
+    "CLEAR_VIEW->RESUME",
+    "CUT->ALIGN",
+    "CUT->CLEAR_VIEW",
+    "EXPOSE->ALIGN",
+    "EXPOSE->CLEAR_VIEW",
+    "GRASP->EXPOSE",
+    "INIT->LOCALIZE",
+    "LOCALIZE->GRASP",
+    "RESUME->ALIGN",
+    "RESUME->CLEAR_VIEW",
+    "RESUME->EXPOSE"
+  ],
+  "retractors": [
+    "psm1",
+    "psm3"
+  ],
+  "handover": null,
+  "log": [
+    {
+      "tick": 1,
+      "world_tick": 1,
+      "frm": "INIT",
+      "to": "LOCALIZE",
+      "label": "\u89c6\u89c9\u5b9a\u4f4d",
+      "reason": "roles satisfied, arms at home",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {},
+        "tension": 0.0,
+        "max_strain": 0.0,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": false
+      }
+    },
+    {
+      "tick": 2,
+      "world_tick": 2,
+      "frm": "LOCALIZE",
+      "to": "GRASP",
+      "label": "\u5efa\u7acb\u6293\u6301",
+      "reason": "cut site and grasp points localized",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2292052882606851,
+        "grasped": {},
+        "tension": 0.0695,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 3,
+      "world_tick": 3,
+      "frm": "GRASP",
+      "to": "EXPOSE",
+      "label": "\u7ec4\u7ec7\u66b4\u9732",
+      "reason": "grasped by ['psm1', 'psm3']",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2292052882606851,
+        "grasped": {},
+        "tension": 0.0695,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 4,
+      "world_tick": 4,
+      "frm": "EXPOSE",
+      "to": "CLEAR_VIEW",
+      "label": "\u8ba9\u5f00\u89c2\u5bdf",
+      "reason": "front unknown; clearing the view",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0693,
+        "max_strain": 0.1354,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 11,
+      "world_tick": 11,
+      "frm": "CLEAR_VIEW",
+      "to": "CAMERA_ADJUST",
+      "label": "\u76f8\u673a\u8c03\u6574",
+      "reason": "setup view not restored while holding",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0693,
+        "max_strain": 0.1354,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 13,
+      "world_tick": 13,
+      "frm": "CAMERA_ADJUST",
+      "to": "RESUME",
+      "label": "\u6062\u590d\u6267\u884c",
+      "reason": "view restored by the camera",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2324321402930624,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 14,
+      "world_tick": 14,
+      "frm": "RESUME",
+      "to": "CLEAR_VIEW",
+      "label": "\u8ba9\u5f00\u89c2\u5bdf",
+      "reason": "front unknown; clearing the view",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 15,
+      "world_tick": 15,
+      "frm": "CLEAR_VIEW",
+      "to": "RESUME",
+      "label": "\u6062\u590d\u6267\u884c",
+      "reason": "view restored",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2324321402930624,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 16,
+      "world_tick": 16,
+      "frm": "RESUME",
+      "to": "EXPOSE",
+      "label": "\u7ec4\u7ec7\u66b4\u9732",
+      "reason": "preconditions met, resuming",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2324321402930624,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 17,
+      "world_tick": 17,
+      "frm": "EXPOSE",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "tissue exposed, strain 0.070",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2324321402930624,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 18,
+      "world_tick": 18,
+      "frm": "ALIGN",
+      "to": "CLEAR_VIEW",
+      "label": "\u8ba9\u5f00\u89c2\u5bdf",
+      "reason": "front unknown; clearing the view",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 20,
+      "world_tick": 20,
+      "frm": "CLEAR_VIEW",
+      "to": "RESUME",
+      "label": "\u6062\u590d\u6267\u884c",
+      "reason": "view restored",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23232446188260336,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 21,
+      "world_tick": 21,
+      "frm": "RESUME",
+      "to": "CLEAR_VIEW",
+      "label": "\u8ba9\u5f00\u89c2\u5bdf",
+      "reason": "front unknown; clearing the view",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0703,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 23,
+      "world_tick": 23,
+      "frm": "CLEAR_VIEW",
+      "to": "RESUME",
+      "label": "\u6062\u590d\u6267\u884c",
+      "reason": "view restored",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23232377324240674,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0704,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 24,
+      "world_tick": 24,
+      "frm": "RESUME",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "preconditions met, resuming",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23232377324240674,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0704,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 26,
+      "world_tick": 26,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.05 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.2324198946773805,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0704,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.0,
+        "faults": [],
+        "cut_progress_m": 0.0,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 27,
+      "note": "post-advance optical retry: camera moved",
+      "world_tick": 28
+    },
+    {
+      "tick": 28,
+      "world_tick": 31,
+      "frm": "CUT",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "fresh post-bite look; re-align before advancing",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23347966611399637,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0838,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.003,
+        "faults": [],
+        "cut_progress_m": 0.00384,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 30,
+      "world_tick": 33,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.03 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.23363910385285122,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.0838,
+        "max_strain": 0.1356,
+        "torn": 0,
+        "cut_length_m": 0.003,
+        "faults": [],
+        "cut_progress_m": 0.00384,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 32,
+      "world_tick": 37,
+      "frm": "CUT",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "fresh post-bite look; re-align before advancing",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.21772702052084228,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.1171,
+        "max_strain": 0.1359,
+        "torn": 0,
+        "cut_length_m": 0.007,
+        "faults": [],
+        "cut_progress_m": 0.0071,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 33,
+      "world_tick": 40,
+      "frm": "ALIGN",
+      "to": "ALIGN",
+      "label": "\u5207\u5272\u5bf9\u51c6",
+      "reason": "registered diagnostic bite; native guards still required",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.041659548054915695,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.1166,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.007,
+        "faults": [],
+        "cut_progress_m": 0.00699,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 35,
+      "world_tick": 42,
+      "frm": "ALIGN",
+      "to": "CUT",
+      "label": "\u5207\u5272\u6267\u884c",
+      "reason": "blades aligned (0.05 mm)",
+      "obs": {
+        "cut_site_visible": true,
+        "scissors_visible": true,
+        "cut_site_offset": 0.041731127828122536,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.1165,
+        "max_strain": 0.1358,
+        "torn": 0,
+        "cut_length_m": 0.007,
+        "faults": [],
+        "cut_progress_m": 0.00698,
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 37,
+      "world_tick": 46,
+      "frm": "CUT",
+      "to": "CLEAR_VIEW",
+      "label": "\u8ba9\u5f00\u89c2\u5bdf",
+      "reason": "front unknown; clearing the view",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.131,
+        "max_strain": 0.1662,
+        "torn": 0,
+        "cut_length_m": 0.009,
+        "faults": [],
+        "tissue_visible": true
+      }
+    },
+    {
+      "tick": 38,
+      "world_tick": 47,
+      "frm": "CLEAR_VIEW",
+      "to": "FAILED",
+      "label": "\u5931\u8d25\u505c\u6b62",
+      "reason": "clear-and-look action refused",
+      "obs": {
+        "cut_site_visible": false,
+        "scissors_visible": true,
+        "cut_site_offset": null,
+        "grasped": {
+          "psm1": 20,
+          "psm3": 24
+        },
+        "tension": 0.131,
+        "max_strain": 0.1662,
+        "torn": 0,
+        "cut_length_m": 0.009,
+        "faults": [],
+        "tissue_visible": true
+      }
+    }
+  ],
+  "events": [
+    {
+      "tick": 25,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 18,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "tick": 25,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 7.020349945815895e-05,
+      "err_along_m": 0.00867047893614472,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 27,
+      "budget_m": 0.009274664188010082
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 27,
+      "budget_m": 0.009274664188010082
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 27,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.009274664188010082,
+      "requested_m": 0.003,
+      "commanded_m": 0.003
+    },
+    {
+      "tick": 27,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.003,
+      "candidates": [
+        {
+          "distance_m": 0.003,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 29,
+      "budget_m": 0.006119789927838484
+    },
+    {
+      "tick": 29,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.00012470632928116067,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.0,
+        0.0
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "event": "routine_post_bite_backoff",
+      "tick": 30,
+      "accepted": true,
+      "commanded": true,
+      "residual_m": 3.884778069176717e-06
+    },
+    {
+      "tick": 31,
+      "event": "post_closure_reacquired",
+      "mode": "slit",
+      "progress_m": 0.003837714808657805,
+      "progress_cell_m": [
+        0.003,
+        0.006
+      ]
+    },
+    {
+      "event": "local_endpoint_shadow",
+      "tick": 31,
+      "status": "BELOW",
+      "reason": "",
+      "banks": [
+        {
+          "pairs": 9,
+          "offset_m": 0.004905771814041511
+        },
+        {
+          "pairs": 9,
+          "offset_m": 0.005298077575324072
+        }
+      ],
+      "depths_m": [
+        0.13629355963321224,
+        0.13588555042478903
+      ]
+    },
+    {
+      "event": "retained_coded_exposure",
+      "tick": 31,
+      "phase": "post_bite",
+      "sim_time": 16.6500000000001,
+      "preceding_closure_tick": 29,
+      "file": "031_post_bite.npz",
+      "frame_sha256": "7ad6c72dcc770ce4e80027ab7b5242811a9467c5abdfdc8080b9de413bccf174"
+    },
+    {
+      "tick": 32,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "tick": 32,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 0.0001983629322952938,
+      "err_along_m": 0.003499826493123254,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 34,
+      "budget_m": 0.005715993749180392
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 34,
+      "budget_m": 0.005715993749180392
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 34,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.005715993749180392,
+      "requested_m": 0.003,
+      "commanded_m": 0.003
+    },
+    {
+      "tick": 34,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.003,
+      "candidates": [
+        {
+          "distance_m": 0.003,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 35,
+      "budget_m": 0.002706928984847881
+    },
+    {
+      "tick": 35,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.0002344443948688317,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.003,
+        0.006
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "tick": 36,
+      "event": "post_closure_reacquired",
+      "mode": "slit",
+      "progress_m": 0.006504979091754862,
+      "progress_cell_m": [
+        0.006,
+        0.009000000000000001
+      ]
+    },
+    {
+      "event": "routine_post_bite_backoff",
+      "tick": 36,
+      "accepted": true,
+      "commanded": true,
+      "residual_m": 3.834617765337323e-06
+    },
+    {
+      "event": "local_endpoint_shadow",
+      "tick": 37,
+      "status": "BELOW",
+      "reason": "",
+      "banks": [
+        {
+          "pairs": 9,
+          "offset_m": 0.0016635844177533428
+        },
+        {
+          "pairs": 8,
+          "offset_m": 0.0015719570906933932
+        }
+      ],
+      "depths_m": [
+        0.13939885310123593,
+        0.13946588347896613
+      ]
+    },
+    {
+      "event": "endpoint_review_armed",
+      "tick": 37,
+      "progress_m": 0.0071035172649429375
+    },
+    {
+      "event": "retained_coded_exposure",
+      "tick": 37,
+      "phase": "post_bite",
+      "sim_time": 19.500000000000142,
+      "preceding_closure_tick": 35,
+      "file": "037_post_bite.npz",
+      "frame_sha256": "71160abc297966af20c7d7c8f5b1aa4659854fcd4d9700c7a39ce2510d89f607"
+    },
+    {
+      "event": "closed_active_look",
+      "tick": 38,
+      "target": [
+        0,
+        4.5,
+        0.088
+      ],
+      "accepted": true
+    },
+    {
+      "event": "guided_prefix_review",
+      "tick": 39,
+      "physically_closed": true,
+      "noise_sigma_m": 0.0,
+      "file": "039_certificate.npz",
+      "frame_sha256": "f5fc994b1dfb0842b989c660a5e230400c2451e5086e0931402191d23d9f8ca6",
+      "decision": "UNKNOWN",
+      "prefix": null,
+      "local_mm": null,
+      "states": [
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ]
+      ],
+      "faces": [
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 1,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 43,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ]
+      ],
+      "corners": [
+        null,
+        {
+          "polygon": [
+            [
+              1140.3037254103056,
+              692.3043048312168
+            ],
+            [
+              1171.6856086405069,
+              692.3043048312168
+            ],
+            [
+              1171.6856086405069,
+              725.7075349673663
+            ],
+            [
+              1140.3037254103056,
+              725.7075349673663
+            ]
+          ],
+          "source": "cap"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1165.5591662312831,
+              732.8643773262194
+            ],
+            [
+              1165.5591662312831,
+              739.1976063446488
+            ],
+            [
+              1134.4325271071593,
+              722.8931763272506
+            ],
+            [
+              1134.4325271071593,
+              716.5599473088212
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1159.4350173997675,
+              754.1978563462665
+            ],
+            [
+              1159.4350173997675,
+              760.737161053501
+            ],
+            [
+              1128.549099625042,
+              745.2942021661382
+            ],
+            [
+              1128.549099625042,
+              738.7548974589038
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1151.3163016445897,
+              775.6488888968531
+            ],
+            [
+              1151.3163016445897,
+              781.4902395719394
+            ],
+            [
+              1121.6707103557906,
+              770.7100245578306
+            ],
+            [
+              1121.6707103557906,
+              764.8686738827444
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1144.2034202728812,
+              802.142146620049
+            ],
+            [
+              1144.2034202728812,
+              808.4607850424206
+            ],
+            [
+              1112.7991703847715,
+              795.0018208046594
+            ],
+            [
+              1112.7991703847715,
+              788.6831823822877
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1140.0752130959786,
+              812.3678410077474
+            ],
+            [
+              1140.0752130959786,
+              818.4109130745198
+            ],
+            [
+              1110.9147927711476,
+              805.9135900781639
+            ],
+            [
+              1110.9147927711476,
+              799.8705180113914
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1069.9800606212007,
+              810.0070551624985
+            ],
+            [
+              1069.9800606212007,
+              815.9871052422333
+            ],
+            [
+              1069.0114045857151,
+              815.9871052422333
+            ],
+            [
+              1038.0204629792204,
+              794.7827767746317
+            ],
+            [
+              1038.0204629792204,
+              788.1399620390383
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1130.9856620503608,
+              841.1820873034675
+            ],
+            [
+              1130.9856620503608,
+              847.1711214604313
+            ],
+            [
+              1100.0339983028189,
+              835.9159710067797
+            ],
+            [
+              1100.0339983028189,
+              829.9269368498159
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1073.8491018812872,
+              815.0627188694509
+            ],
+            [
+              1073.8491018812872,
+              821.7562033880936
+            ],
+            [
+              1043.1531440575022,
+              803.3386286938227
+            ],
+            [
+              1043.1531440575022,
+              796.6451441751801
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1099.1572460976906,
+              824.1593859088971
+            ],
+            [
+              1129.8395025099244,
+              824.1593859088971
+            ],
+            [
+              1129.8395025099244,
+              855.8510274901856
+            ],
+            [
+              1099.1572460976906,
+              855.8510274901856
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1067.7358257488513,
+              829.0262102217353
+            ],
+            [
+              1067.7358257488513,
+              835.1256072294423
+            ],
+            [
+              1038.2540128392268,
+              819.6827528482104
+            ],
+            [
+              1038.2540128392268,
+              813.5833558405034
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1122.7296453634701,
+              857.3716297970043
+            ],
+            [
+              1122.7296453634701,
+              863.345141536155
+            ],
+            [
+              1093.2661354419251,
+              847.9118744343932
+            ],
+            [
+              1093.2661354419251,
+              841.9383626952426
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1027.3468140353525,
+              833.3662090286556
+            ],
+            [
+              1055.6425080917766,
+              833.3662090286556
+            ],
+            [
+              1055.6425080917766,
+              863.6434659838687
+            ],
+            [
+              1027.3468140353525,
+              863.6434659838687
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1111.6494528213543,
+              884.9128020767145
+            ],
+            [
+              1111.6494528213543,
+              891.2437675456569
+            ],
+            [
+              1081.3734088614924,
+              875.3848873762054
+            ],
+            [
+              1081.3734088614924,
+              869.053921907263
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1056.5161357243646,
+              856.2345413563942
+            ],
+            [
+              1056.5161357243646,
+              862.7815943679705
+            ],
+            [
+              1026.4819940315529,
+              847.7645235215646
+            ],
+            [
+              1026.4819940315529,
+              841.2174705099883
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1082.4786192397887,
+              867.4866542166349
+            ],
+            [
+              1111.51891145556,
+              867.4866542166349
+            ],
+            [
+              1111.51891145556,
+              898.5227866563657
+            ],
+            [
+              1082.4786192397887,
+              898.5227866563657
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1014.5492128952658,
+              864.5674149130309
+            ],
+            [
+              1042.441724456741,
+              864.5674149130309
+            ],
+            [
+              1042.441724456741,
+              894.4399197579296
+            ],
+            [
+              1014.5492128952658,
+              894.4399197579296
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1098.449576400597,
+              914.5747408467614
+            ],
+            [
+              1098.449576400597,
+              920.8106103537502
+            ],
+            [
+              1068.5650951866633,
+              908.0029755477788
+            ],
+            [
+              1068.5650951866633,
+              901.7671060407899
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        null,
+        {
+          "polygon": [
+            [
+              1036.2406606298998,
+              905.5901169636059
+            ],
+            [
+              1036.2406606298998,
+              911.5667656010511
+            ],
+            [
+              1007.7506838150291,
+              896.6434444123092
+            ],
+            [
+              1007.7506838150291,
+              890.6667957748641
+            ]
+          ],
+          "source": "end-edge"
+        },
+        {
+          "polygon": [
+            [
+              1090.2424471481777,
+              936.1878425832991
+            ],
+            [
+              1090.2424471481777,
+              942.7030939945141
+            ],
+            [
+              1060.759887188249,
+              925.013558018557
+            ],
+            [
+              1060.759887188249,
+              918.4983066073419
+            ]
+          ],
+          "source": "end-edge"
+        }
+      ],
+      "reason": "no unique supported local front",
+      "verdict": "UNKNOWN"
+    },
+    {
+      "event": "diagnostic_entry_clearance",
+      "tick": 39,
+      "accepted": true,
+      "requested_m": 0.005026127363933537,
+      "residual_m": 1.1585760702295825e-05,
+      "estimated_tip_after_m": -0.0025001615035118224
+    },
+    {
+      "event": "guided_prefix_review",
+      "tick": 40,
+      "physically_closed": true,
+      "noise_sigma_m": 0.0,
+      "file": "040_certificate.npz",
+      "frame_sha256": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d",
+      "decision": "UNKNOWN",
+      "prefix": null,
+      "local_mm": null,
+      "states": [
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ],
+        [
+          "UNKNOWN",
+          "UNKNOWN"
+        ],
+        [
+          "PRESENT",
+          "PRESENT"
+        ]
+      ],
+      "faces": [
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 1,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 43,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ],
+        [
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          },
+          {
+            "box_pixels": 0,
+            "interior_pixels": 0,
+            "blocks": 0
+          }
+        ]
+      ],
+      "corners": [
+        null,
+        {
+          "polygon": [
+            [
+              1140.3075226152027,
+              692.3054101120339
+            ],
+            [
+              1171.6874025720454,
+              692.3054101120339
+            ],
+            [
+              1171.6874025720454,
+              725.7096764510239
+            ],
+            [
+              1140.3075226152027,
+              725.7096764510239
+            ]
+          ],
+          "source": "cap"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1165.5595105923933,
+              732.8649471983246
+            ],
+            [
+              1165.5595105923933,
+              739.1973972318018
+            ],
+            [
+              1134.4380512856874,
+              722.8956804520986
+            ],
+            [
+              1134.4380512856874,
+              716.5632304186214
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1159.4378476879917,
+              754.2639772628199
+            ],
+            [
+              1159.4378476879917,
+              760.6738704251718
+            ],
+            [
+              1128.5468903813407,
+              745.2283917718463
+            ],
+            [
+              1128.5468903813407,
+              738.8184986094944
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1151.3162324033128,
+              776.5892798416121
+            ],
+            [
+              1151.3162324033128,
+              782.6817765040846
+            ],
+            [
+              1120.6805308462508,
+              769.5521901224865
+            ],
+            [
+              1120.6805308462508,
+              763.459693460014
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1144.202868900556,
+              800.8665051758901
+            ],
+            [
+              1144.202868900556,
+              806.9173994790598
+            ],
+            [
+              1113.7868680605477,
+              795.8570355372385
+            ],
+            [
+              1113.7868680605477,
+              789.8061412340688
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        {
+          "polygon": [
+            [
+              1141.0730181578422,
+              811.7957601818347
+            ],
+            [
+              1141.0730181578422,
+              817.8382553820301
+            ],
+            [
+              1110.9188632358391,
+              804.915046129743
+            ],
+            [
+              1110.9188632358391,
+              798.8725509295476
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1069.9806130253494,
+              810.0073464608375
+            ],
+            [
+              1069.9806130253494,
+              815.9877249913362
+            ],
+            [
+              1069.0121837124432,
+              815.9877249913362
+            ],
+            [
+              1038.0198418055877,
+              794.7824384234877
+            ],
+            [
+              1038.0198418055877,
+              788.1394503631059
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1130.9882139057254,
+              841.1832994410868
+            ],
+            [
+              1130.9882139057254,
+              847.1717652176226
+            ],
+            [
+              1100.036202593305,
+              835.9164883767424
+            ],
+            [
+              1100.036202593305,
+              829.9280226002068
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1073.8453741762216,
+              815.0606441291164
+            ],
+            [
+              1073.8453741762216,
+              821.7538048823496
+            ],
+            [
+              1043.152314285365,
+              803.3379689478356
+            ],
+            [
+              1043.152314285365,
+              796.6448081946023
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1099.1558661946476,
+              824.161801988681
+            ],
+            [
+              1129.8409516794595,
+              824.161801988681
+            ],
+            [
+              1129.8409516794595,
+              855.8526842931026
+            ],
+            [
+              1099.1558661946476,
+              855.8526842931026
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1067.7362415431148,
+              829.0263805850909
+            ],
+            [
+              1067.7362415431148,
+              835.1258724600768
+            ],
+            [
+              1038.2535275117943,
+              819.6825460627185
+            ],
+            [
+              1038.2535275117943,
+              813.5830541877326
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1122.7298561983175,
+              857.3717029994314
+            ],
+            [
+              1122.7298561983175,
+              863.34528920833
+            ],
+            [
+              1093.265857567943,
+              847.9117661162289
+            ],
+            [
+              1093.265857567943,
+              841.9381799073303
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1027.3468140353525,
+              833.3662090286556
+            ],
+            [
+              1055.6424398600911,
+              833.3662090286556
+            ],
+            [
+              1055.6424398600911,
+              863.6433977151182
+            ],
+            [
+              1027.3468140353525,
+              863.6433977151182
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1111.6494528213543,
+              884.9128120885191
+            ],
+            [
+              1111.6494528213543,
+              891.2437575338522
+            ],
+            [
+              1081.3734829981497,
+              875.384916197888
+            ],
+            [
+              1081.3734829981497,
+              869.0539707525547
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1056.5162049610983,
+              856.2345661468408
+            ],
+            [
+              1056.5162049610983,
+              862.7816388142575
+            ],
+            [
+              1026.4819940315529,
+              847.7645333494847
+            ],
+            [
+              1026.4819940315529,
+              841.2174606820681
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        {
+          "polygon": [
+            [
+              1082.4786192397887,
+              867.4866542166349
+            ],
+            [
+              1111.51891145556,
+              867.4866542166349
+            ],
+            [
+              1111.51891145556,
+              898.5227866563657
+            ],
+            [
+              1082.4786192397887,
+              898.5227866563657
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1014.5492128952658,
+              864.5674149130309
+            ],
+            [
+              1042.441724456741,
+              864.5674149130309
+            ],
+            [
+              1042.441724456741,
+              894.4399197579296
+            ],
+            [
+              1014.5492128952658,
+              894.4399197579296
+            ]
+          ],
+          "source": "cap"
+        },
+        {
+          "polygon": [
+            [
+              1098.449576400597,
+              914.5747408467614
+            ],
+            [
+              1098.449576400597,
+              920.8106103537502
+            ],
+            [
+              1068.5650951866633,
+              908.0029755477788
+            ],
+            [
+              1068.5650951866633,
+              901.7671060407899
+            ]
+          ],
+          "source": "ink-edge"
+        },
+        null,
+        null,
+        {
+          "polygon": [
+            [
+              1036.2406606298998,
+              905.5901169636059
+            ],
+            [
+              1036.2406606298998,
+              911.5667656010511
+            ],
+            [
+              1007.7506838150291,
+              896.6434444123092
+            ],
+            [
+              1007.7506838150291,
+              890.6667957748641
+            ]
+          ],
+          "source": "end-edge"
+        },
+        {
+          "polygon": [
+            [
+              1090.2424471481777,
+              936.1878425832991
+            ],
+            [
+              1090.2424471481777,
+              942.7030939945141
+            ],
+            [
+              1060.759887188249,
+              925.013558018557
+            ],
+            [
+              1060.759887188249,
+              918.4983066073419
+            ]
+          ],
+          "source": "end-edge"
+        }
+      ],
+      "reason": "no unique supported local front",
+      "verdict": "UNKNOWN"
+    },
+    {
+      "event": "diagnostic_final_bite_armed",
+      "tick": 40,
+      "matched": true
+    },
+    {
+      "tick": 41,
+      "event": "predicted_view",
+      "phase": "align",
+      "selected_m": 0.001,
+      "candidates": [
+        {
+          "distance_m": 0.001,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "tick": 41,
+      "event": "vision_align",
+      "refused": false,
+      "err_lat_m": 0.00027446624207486597,
+      "err_along_m": 0.007978261427268485,
+      "axes_ok": true,
+      "moved": true,
+      "fix_age": 0
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 43,
+      "budget_m": 0.002641945926822294
+    },
+    {
+      "event": "diagnostic_final_advance_request",
+      "tick": 43,
+      "requested_m": 0.002641945926822294,
+      "fixed_cap_m": 0.002
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 43,
+      "budget_m": 0.002641945926822294
+    },
+    {
+      "event": "advance_reserve",
+      "tick": 43,
+      "reserve_m": 0.00015,
+      "native_budget_m": 0.002641945926822294,
+      "requested_m": 0.002,
+      "commanded_m": 0.002
+    },
+    {
+      "tick": 43,
+      "event": "predicted_view",
+      "phase": "advance",
+      "selected_m": 0.002,
+      "candidates": [
+        {
+          "distance_m": 0.002,
+          "clear": 15,
+          "at_front": 3
+        }
+      ]
+    },
+    {
+      "event": "native_sweep_budget",
+      "tick": 44,
+      "budget_m": 0.0006989879043072765
+    },
+    {
+      "tick": 44,
+      "event": "closure",
+      "fix_age": 0,
+      "scissors_valid": true,
+      "lateral_truth_m": 0.0001835360737912272,
+      "verified_rows_m": [
+        0.0,
+        0.003,
+        0.006,
+        0.009000000000000001,
+        0.013000000000000001
+      ],
+      "progress_cell_m": [
+        0.006,
+        0.009000000000000001
+      ],
+      "direct_front": true,
+      "material_source": "current"
+    },
+    {
+      "tick": 45,
+      "event": "post_closure_reacquired",
+      "mode": "slit",
+      "progress_m": 0.008953650614967225,
+      "progress_cell_m": [
+        0.006,
+        0.009000000000000001
+      ]
+    },
+    {
+      "event": "routine_post_bite_backoff",
+      "tick": 45,
+      "accepted": true,
+      "commanded": true,
+      "residual_m": 6.125444094163326e-05
+    },
+    {
+      "event": "local_endpoint_shadow",
+      "tick": 46,
+      "status": "UNKNOWN",
+      "reason": "inconsistent endpoints or beyond row 9",
+      "banks": [
+        {
+          "pairs": 3,
+          "offset_m": -0.0006252760714460622
+        },
+        {
+          "pairs": 5,
+          "offset_m": -0.0005167713134905061
+        }
+      ],
+      "depths_m": [
+        0.1322362826491452,
+        0.13220260827234914
+      ]
+    },
+    {
+      "event": "retained_coded_exposure",
+      "tick": 46,
+      "phase": "post_bite",
+      "sim_time": 24.35000000000021,
+      "preceding_closure_tick": 44,
+      "file": "046_post_bite.npz",
+      "frame_sha256": "33d3f089cc5c0bad1e1a01a4185e9be7cb0d581a9bc3889fa0d46ee54b9d3d95"
+    }
+  ],
+  "actual_closed": true,
+  "actual_ready": false,
+  "truth_purposes": {
+    "grasp_signal_and_safety_monitor": {
+      "tissue_stats": 47
+    },
+    "tension_until_m6": {
+      "cut_line_tension": 47,
+      "nodes": 46,
+      "cut_length": 46
+    },
+    "safety_monitor": {
+      "cut_length": 47
+    },
+    "scoring": {
+      "nodes": 141,
+      "cut_length": 141,
+      "cut_front": 49,
+      "cut_line_tension": 46
+    },
+    "retractor_planning": {
+      "cut_front": 1,
+      "nodes": 2,
+      "cut_length": 1
+    }
+  },
+  "controller_sha256": "271f7fd7c643b7b915c9e839099d42240795f6558e2fecc606b080073a55f2e5"
+}

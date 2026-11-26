@@ -1,0 +1,21 @@
+{
+  "id": "m5_v3_work_corner_v1",
+  "scope": "Offline gate for v9 on the non-anatomical coupon. No simulator or margin refit. Do not tune on registered results.",
+  "sources": {
+    "scripts/vision/m5_v3_perception_v8.py": "6527d04b7ae2cebc1051a6632d16edaa81c592c8e1c224166008d9eabd9e1947",
+    "scripts/analysis/replay_m5_v3_work_denoise_v4.py": "8341bd434001337bf0bca8669c9fd284e8df2b0540ce0ed05fadd4ff479779a2",
+    "validation/task/m5_v3_work_denoise_v4/decision.json": "a80dfcf3a25a17be6b26d96ac5d9073f2efdd0d54595865a09bccd845684af00",
+    "validation/task/m5_v3_work_denoise_v4/registration.json": "9cf4a30753e93dd515442ad63d880cf4c07a3810d19bb107b363c3d6c8c92dbc",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/decision.json": "8d595036dc69af2383e89c0271a9fda8d506a0b4cffb3f946bf70a094fa92d9b",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/registration.json": "0e7eb0f250ca7a56eaea6ddbe4385b97b4572f77fae175d54ebe2b606773c002",
+    "scripts/analysis/calibrate_m5_v3_sensor_margin_v2.py": "e360d99ae2b5c2268283f1fdb94016469d362b9d42a2b10fa5ec9e9206c83ad9",
+    "validation/task/m5_v3_positive_outer_v4/nominal/run.json": "b65ffd8eccb4ce593079f5b1a02b0fbd9d4381d775fe638357083a22dc199ee8",
+    "validation/task/m5_v3_positive_outer_v4/nominal/015_work.npz": "b26e0fecc4d47b5e9b6879f317e08b76fe53fd30a644219132f2e6550bdc2256"
+  },
+  "recovery": "Retain a valid v8 chart exactly. Recover only on a late frame (prefix >= 6) with a missing required bilateral station, and only fill missing side stations; never replace measured ones. For j in 1..12 use distinct 4-neighbor (j-1,j) pairs with raw depth difference <= the unchanged v8 tolerance. A corner candidate is their midpoint; require a valid raw PINK pixel within Euclidean 2.0 px, at least 0.25 px outward by the original signed across vector and within depth tolerance of both endpoints. Select the outermost witnessed midpoint(s). Fit the same v8 ellipse centered on that ray; its original 4-component must include both endpoints, a qualifying PINK witness, and at least four distinct row-boundary pairs. Equal-outermost candidates retain the original 0.35 mm scatter check. No extrapolation, secondary fit, truth or change to bilateral geometry/limits. A failed outermost fit does not search inward.",
+  "main_path": "Replay all 15 clean and 360 paired draws from work_denoise_v4, including the outer gate; exact equality to the sealed per-frame/seed scalars, refusals and outer outputs. Replay all 15 clean and 360 calibration depth draws with the original marker and true reference and match sealed v2 optical metrics exactly. The v3 FK gate and frozen fit are retained by hash; do not refit.",
+  "forced_path": "On all five late v2 frames, remove the original row-10 result for left only, right only, and both, and insert only the candidate from the same v9 corner primitive. Retain every other station and all geometry gates. Use the original five clean frames, 60 development and 60 check draws per variant, the frozen calibration seed sequence and same-exposure TCP/row-10 error formula. Require all five clean pairs, the original >=95% valid late pairs in each split, and every valid optimism score at or below the frozen c0+k*sigma. A geometry/marker refusal never permits motion and is counted in the denominator. Require that masking PINK around the row boundary, leaving only PINK strictly beyond 2.0 px, makes the fallback abstain.",
+  "sensor_margin": {"c0_m": 0.0, "k": 0.2},
+  "recovery_frame": "For the pinned v4 nominal 015_work, prefix 7, require a currently valid marker, two complete 13-station sides and 13 checked bilateral stations, a complete original chart and direct row-10 limit for both goals 9 and 10. No use of structural truth on this frame.",
+  "gate": "All three offline gates must pass before registering a new positive batch: main-path identity, forced-path coverage/envelope plus occlusion abstention, and full archived stopped-frame geometry."
+}

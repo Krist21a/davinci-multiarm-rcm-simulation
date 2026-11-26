@@ -1,0 +1,50 @@
+{
+  "id": "m5_v3_frozen_fixture_v1",
+  "provenance": "Offline replay of the registered outer_v3 nominal ready-frame layout using its sealed v1 FK and grid translation. Runtime must use only the explicit world coordinates.",
+  "sources": {
+    "validation/task/m5_v3_rigid_fk_v1.json": "38b921173221d6c9dd1f2781d3e3ac09ac49fb6ae6452363afba62f91a6b5672",
+    "validation/task/m5_v3_positive_outer_v3/nominal/run.json": "6953e4f3769a392e10d45d2e20cb0640dbdcead14f87295eda65944b60ad8894",
+    "validation/task/m5_v3_positive_outer_v3/nominal/registration.json": "5b3ed56bbace56ad8471b46de49083430b23b8f97d312feb6bf4599dfed7fa73",
+    "validation/task/m5_v3_distal_workspace_v2/decision.json": "fb4ac6c9c49f087aaee4acb106bac7714e136c9506137e160a482c3a3be0f5a7",
+    "validation/task/m5_v3_sensor_margin_calibration_v2/001_work.npz": "aeac16290682ab603ed0d9ed573450cfed25a3f130a18ce8e4263d5c4d3a092a",
+    "validation/task/m5_v3_sensor_margin_calibration_v2/scoring/001_work.npz": "b88e2fc6217c00b65e026ece5eaf4cd05ace90c4fe164d6c5f4727d4c097d7fa",
+    "scripts/task/workspace.py": "e6dc9fd1c4549732f8d55a0ea7987183b299c86c971229ace6b269ec082ae079",
+    "scripts/task/capture_m5_v3_readonly_v4.py": "ec717b58b1f2bab256c56153f362e6bdc93418e620ae0b82ecba8610beea581c"
+  },
+  "ready_q": [
+    -3.75,
+    -3.75,
+    0.013999999999999999,
+    -0.13606776444037622,
+    0.0,
+    0.0
+  ],
+  "sheet_origin": [
+    -0.0713167525066295,
+    -1.0022233040330597,
+    0.6969862404404868
+  ],
+  "u": [
+    0.9072368183703948,
+    0.14799896250607847,
+    -0.393722824446701
+  ],
+  "v": [
+    -0.28860308105996446,
+    0.8999809223284414,
+    -0.32671486199367133
+  ],
+  "grasp_points": {
+    "psm1": [
+      -0.08362589594477882,
+      -0.9980754161067448,
+      0.6993904063186651
+    ],
+    "psm3": [
+      -0.06275944912225973,
+      -0.9946714399691049,
+      0.6903347813563909
+    ]
+  },
+  "first_frame": "After motion, independently compare RGB, depth, camera, joints and nodes of the initial loaded, uncut work exposure to the pinned calibration reference; require exact array equality. Scoring sidecars are never read by the controller."
+}

@@ -1,0 +1,31 @@
+{
+  "id": "m5_v3_work_denoise_v4",
+  "scope": "Offline development gate only. No simulator, motion, margin change or clinical claims. Do not retune this version on replay outcomes.",
+  "sources": {
+    "config/task/m5_v3_work_denoise_v3.json": "525b95eb187255fc7da549779117026b749b29a9a12fa1b339b0052c6a792a8e",
+    "validation/task/m5_v3_work_denoise_v3/decision.json": "a6a0e6a4802a1bf71868618cf134b99b699e21fdc1a45a06d5b58a2d108eb374",
+    "validation/task/m5_v3_work_denoise_v3/registration.json": "2a5f402051031feff2a24d11162fbd38eea7637334cb65238d89e8fad67adbb0",
+    "scripts/analysis/replay_m5_v3_work_denoise_v3.py": "9b3f52ed5d61254596f4ed161438a50087b0aec5cbaf3a4e85ec0dbb4f2f38ba",
+    "scripts/analysis/replay_m5_v3_work_denoise_v1.py": "aa7d9ba67de970be54efef7046e7da3c04f8afeaeff856f27a228ebe650ef278",
+    "scripts/vision/m5_v3_perception_v7.py": "59b7da086386e232b8d46af98c185093b01a093adc5f204954001f0283522f9a",
+    "scripts/vision/m5_v3_perception_v6.py": "fb73ea8745f5210c8e14f0a9e197a6213a086b0589c1fb412f818446769339c3",
+    "scripts/vision/m5_v3_perception_v5.py": "9328141b10af1e11e0c589e410a2abfad83364b327489b5112c7b58193ca156f",
+    "scripts/vision/m5_v3_perception_v4.py": "b55a2c2a1fb1b1077fefb565fb47179b083c1f2cf51a28f586faaaee66ccacc9",
+    "config/task/m5_v3_sensor_margin_calibration_v1.json": "d48d431675caced2c9d88c3b1b322109b330a502579eb57386cbcac2f7ce1b1d",
+    "validation/task/m5_v3_sensor_margin_calibration_v1/registration.json": "422d8572e8cf091de07941dacf38936a4723cb62ec705b038340b363157190e2",
+    "validation/task/m5_v3_outer_bank_v1.json": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b",
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae"
+  },
+  "reader": "Only replace the six-term inverse-depth basis by [1, y, x, x*x] and the target by [1, 0, 0, 0]. The v7 normalized y is across (10.5 px) and x is along (2.35 px). Preserve same-side support, all fit/refusal guards, bias corrections, optical witness and conservative minimum bank projection.",
+  "direction": "Exactly v7, including all-station input, iterative chord/skew checks, mandatory stations, and refusal conditions.",
+  "sampling": "Reuse the exact 15 sealed 70-degree work frames and 360 draws, the original prefix and goal 10, and the unchanged ray marker fit on the same noisy depth. The reused seeds are a paired development screen, not independent confirmation. Rerun the four-frame legacy outer-bank gate, both goals and both unchanged narrow controls.",
+  "clean_abs_fixed_axis_limit_delta_mm_lt": 0.03,
+  "clean_front_closed_open_delta_mm_lt": 0.05,
+  "clean_axis_closed_open_delta_deg_lt": 0.5,
+  "late_pair_min_count": 69,
+  "late_noisy_axis_delta_deg_lt": 1.5,
+  "late_noisy_optimism_delta_mm_lt": 0.20,
+  "gate": "Use the same seven gates as v3, replacing only candidate v7 by v8. All 15 clean charts and marker fits must pair and have the same observed limit row as v4. Compare the two selected bank points' minimum longitudinal projection on the fixed clean v4 axis, not a projection of the candidate chart's already-projected limit. Retain the legacy outer gate and both stricter closed/open consistency gates. Require at least 69 of 72 same-exposure late pairs and both per-draw noise bounds. All seven must pass before any scoring-only reference collection. This does not replace the absolute same-exposure calibration."
+}

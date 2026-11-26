@@ -1,0 +1,18 @@
+{
+  "id": "m5_guided_benchmark_v2_4",
+  "scope": "Opt-in on the registered non-anatomical guided sheet; preserve v1 through v2.3.",
+  "case_order": ["nominal", "exact_10mm", "depth_noise_0p5", "occlusion_transient", "slip_regrasp", "relax"],
+  "reader_registration_sha256": "9a425d8517373025dc1f62cd47626de4180c2793da827bef7bea2bdc733c4668",
+  "reader_v4_replay_registration_sha256": "9ab1c1908f6068e2a258e24c3747310e17ad11a162637f157fa6a8521dda6acc",
+  "reader_v4_replay_decision_sha256": "4ed3b16d5b68bc2f888126a7012c7611462ca00b7ac992934614e7b9a3cf577e",
+  "base_protocol_sha256": "f779b3755ea7f21948bc3950575b94a945f92d4ccb869ac0833965265204b7ff",
+  "fixture_protocol_sha256": "8835b51df3d71062aa8ab596e4dd9628d3f02f9298ffd32ff3061f146acd9b86",
+  "v2_1_diagnostic_sha256": "992e8e87aaff687b20f7595d871139cf916a152d77630a0037012ceb698d7ea5",
+  "initial_view": [4.5, 0.0, 0.08],
+  "max_recorded_waypoints": 8,
+  "review_advance_cap_m": 0.002,
+  "absolute_limit_m": 0.01,
+  "alignment": "Precisely align to the native 1 mm stop distance before opening. Internal tolerance is 0.4 mm, and with noise the cross-track maximum is 0.28 mm using three consecutive stationary same-epoch observations. Raw fresh native post-advance evidence still gates every closure. Before the first closure and before any seen slit, reset the visual direction estimate after grasper or ECM actions; do not reset afterward.",
+  "review": "On first review clear to the anchor with current work view evidence; only then move or reuse the registered ECM pose. Keep the matched guarded reverse and return path. A live v4 TARGET and growing prefix permit same-tick closed withdrawal only. BELOW returns closed to recorded trail[1] and requires current direct wide slit with either a current chart or native same-bite verification. Later closure still requires the post-advance current chart.",
+  "sequencing": "Both positives must pass independent replay and structural scoring under the same registration before disturbances. Each case once on a fresh scene. Intermediate closure lengths are diagnostic, not gates. Final registered structural and optical endpoint: nominal 9-10 mm, exact 10 mm; verified closed withdrawal with no growth. Gen2 safety controls, sweep limit and existing budgets remain unchanged."
+}

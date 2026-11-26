@@ -1,0 +1,12 @@
+{
+  "id": "m5_temporal_coded_capture_v1",
+  "scope": "One optical acquisition on the conventional non-anatomical sheet in the current scene. No visual stop, holdout, controller change or Level 0 credit.",
+  "scene_sha256": "8bff1b9e5af8c98a969d8ba6d6c2ea722c3e8070540439edeb84e27eda81c8d7",
+  "base_config_sha256": "694acf9925f49b41aee407c89d1238ac3fb0f7ce4567a2cbdf0bf78ab8f1d3e7",
+  "native_controller_sha256": "d403b81dd20b1d0cba44300c2f6a52163d63bd3c06a4f8e8a2ac51a143469ca2",
+  "execution": "Original nominal full truth-feedback comparison, unchanged parameters, one run. Read only the instrument camera during acquisition. The passive left/right row, face and cap inks are attached to existing triangles only during each frozen exposure. Restore the original RGB-D, angle and resolution before any motion. Never run the surface-seam Lua or alter topology, jaw, camera pose, guards or timing.",
+  "capture": "Zero seed at the first loaded ALIGN observation with both grippers holding. Every actual close_scissors attempt retains its preceding exposure; every accepted closure is paired to the first following observation, exactly adjacent. Keep refused, failed and missing pairs; never reconstruct or stitch them from another run.",
+  "optics": {"wide": {"size": [1280, 960], "hfov_deg": 70}, "narrow": {"size": [2560, 1920], "hfov_deg": 20}},
+  "replay": "Use only RGB-D and original camera/instrument calibration for per-face evidence. Cam_R/cam_t, readback timing and the explicit closure log are only for binding exposures, not material or length features. Report registered material face identities and direct face transitions even on abstentions. Only the original wide lane contributes to TemporalEvidence, with its unchanged zero seed, tip gate and positive before/after rules. Report narrow separately; it cannot be substituted, borrowed or counted as a stop.",
+  "integrity": "Freeze the source and input hashes before prediction. Independently check the original truth reference's complete (tick, cut_length_m, nodes_sha256) trace after sealing predictions. The structure log is not an optical reader input. A broken seed or missing evidence invalidates the chain, not just one row; no threshold or sample replacements."
+}

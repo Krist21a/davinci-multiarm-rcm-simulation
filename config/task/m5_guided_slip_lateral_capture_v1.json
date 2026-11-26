@@ -1,0 +1,16 @@
+{
+  "id": "m5_guided_slip_lateral_capture_v1",
+  "scope": "One acquisition-only comparison at the already registered second ECM recovery target. No acceptance or control changes.",
+  "pins": {
+    "validation/task/m5_guided_slip_row9_geometry_v1/diagnosis.json": "70195c508244e1fc43a12992fc7f92727fbcbe2fd120c5cbedb86a0e8e7f9ea1",
+    "validation/task/m5_guided_slip_optical_capture_v1/registration.json": "227f4e69d03ebc2978567e6316c88a79832c56c9c1ed42b55c4083608e94f4fa",
+    "validation/task/m5_guided_slip_optical_capture_v1/slip_regrasp.json": "6dd544a70402f9e84611a881d84fe52d3de401d700a9637051fff808d2fbcde5",
+    "validation/task/m5_guided_slip_optical_capture_v1/decision.json": "d6f5385517181c6e3601196d9bf877c73a38072b0689f588bc8ca18deeb6bf35",
+    "scripts/task/capture_m5_guided_slip_optical_v1.py": "b13ee0f1b12d1a201467436749572faca40b4b290ca62cda19203cba18e59c1f"
+  },
+  "target": [-4.5, 4.5, 0.08],
+  "camera_attempts_before": 1,
+  "camera_limit": 3,
+  "maximum_additional_attempts": 1,
+  "gate": "Match original control, views and structure-file hashes through the original closed entrance exposure. At that waypoint with physical closure, no cutter motion after the baseline exposure. One existing guarded ECM move charged before request, no retry or replacement. Keep a matched pair with unchanged narrow intrinsics. Use the new measured narrow frame alone, no view fusion. Seal v3 decisions and row-9 two-face graph before comparing structural labels. Missing 2x2 measured patch on either face is not proof of cutting. Report row-9 two-face continuity and frozen BELOW(8) as separate checks. No later advance, closure, ready withdrawal or new disturbed acceptance."
+}

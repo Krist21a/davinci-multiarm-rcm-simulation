@@ -1,0 +1,25 @@
+{
+  "id": "m5_v3_positive_outer_v4",
+  "scope": "One fresh run each of nominal and exact_10mm on the same non-anatomical fixture. No retry, event injection, camera sweep, or clinical claims. Both run at sigma=0.",
+  "sources": {
+    "config/task/m5_v3_positive_outer_v3.json": "6ccb09e56727d4ae7835283ee55d7e6b76fded2b5cd1d2fefb2953d247a28eae",
+    "validation/task/m5_v3_positive_outer_v3/nominal/registration.json": "5b3ed56bbace56ad8471b46de49083430b23b8f97d312feb6bf4599dfed7fa73",
+    "validation/task/m5_v3_work_denoise_v4/decision.json": "a80dfcf3a25a17be6b26d96ac5d9073f2efdd0d54595865a09bccd845684af00",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/decision.json": "8d595036dc69af2383e89c0271a9fda8d506a0b4cffb3f946bf70a094fa92d9b",
+    "validation/task/m5_v3_sensor_margin_calibration_v3/registration.json": "0e7eb0f250ca7a56eaea6ddbe4385b97b4572f77fae175d54ebe2b606773c002",
+    "validation/task/m5_v3_rigid_fk_v2.json": "9d2817b90461ac8d8009be5526955b39840163729d5e1f0ea3c05520e8bdb8f3",
+    "scripts/task/m5_v3_rigid_fk_v2.py": "0cf47db89401afc41cd520dd95b0aa99da1dd79bfa90648f4d0eec22b897b718",
+    "scripts/vision/m5_v3_perception_v8.py": "6527d04b7ae2cebc1051a6632d16edaa81c592c8e1c224166008d9eabd9e1947",
+    "scripts/vision/m5_v3_corridor_v5.py": "e4c19586bbae952d7e95f167dcd2a4df1bddc6a0642573afb0b83cf2e8f5a50b",
+    "scripts/task/m5_v3_controller_v5.py": "a8cd2cb74ac55fa2fd0818fa17f0e083197d00d5e6c3c5a16962d99f0d052a6b"
+  },
+  "controller": "scripts/task/m5_v3_controller_v6.py",
+  "outer_replay_sha256": "f5d62d4903d4f0bda12ac768c8456b432597f6c75e6b2eee16aea609714b3f79",
+  "corridor_v5_decision_sha256": "7aa38d155e16b63ad4a77713496148d0358e7c9907a1aad1631c89d3a6528041",
+  "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+  "cases": {"nominal": 9, "exact_10mm": 10},
+  "views": {"work_deg": 70, "work_size": [1280, 960], "review_deg": 20, "review_size": [2560, 1920], "ecm_work": [3.0, 0.0, 0.08], "ecm_review": [0.0, 4.5, 0.088]},
+  "sensor_margin": {"c0_m": 0.0, "k": 0.2},
+  "change": "Use v8 work geometry and v2 joint-only FK and replace only the residual 0.250 mm with the frozen sensor_margin. The v5 narrow certificate, 0.300 mm cut radius, 0.150 mm reserve, local step limits, five-bite bound and all mechanical, IK, collision, joint and no-truth guards remain. Export final constraints only under scoring after motion.",
+  "success": "Nominal requires exactly four closures and BELOW(3), BELOW(5), BELOW(7), TARGET(9). Exact 10 requires those four receipts then one more guarded closure and TARGET(10) with both row-9 faces cut. Both require independent narrow and structural replay, exact contiguous goal and farthest row, no tear or faults and verified closed return to original ready joints. No disturbance authorization."
+}

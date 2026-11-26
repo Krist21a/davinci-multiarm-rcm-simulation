@@ -1,0 +1,227 @@
+{
+  "registration_sha256": "9c7b250a0d474dd62399f03fc7dd2ed983cf146c0fa409af150492c905a74b84",
+  "offline_gate_sha256": "bdd3e114404ed63682aa84739497bca8c0ca9a3710865ebd9845cb794a1ce552",
+  "completed": 5,
+  "passed": 2,
+  "all_passed": false,
+  "cases": {
+    "nominal": {
+      "decision_sha256": "b564a37df3551cefcf07bf44208398df77ea1332bdede4568e48b22e296caada",
+      "passed": true,
+      "state": "DONE",
+      "closures": 4,
+      "closed": true,
+      "ready": true,
+      "prefix": 9,
+      "full": 9,
+      "partial": 9,
+      "gates": {
+        "mechanics": true,
+        "verification": true,
+        "envelope": true,
+        "disturbance": true,
+        "nominal_signature": true
+      },
+      "reason": null,
+      "sealed_refusal_diagnostic": null,
+      "paired_pre_event_work_nodes": {
+        "compared": 7,
+        "identical": 7
+      }
+    },
+    "depth_noise_0p5": {
+      "decision_sha256": "9adbd2a9c39b3f90cd3fd5ddb989e43caa015c2c0d570fe7a6dd5e8d0d75219e",
+      "passed": false,
+      "state": "FAILED",
+      "closures": 0,
+      "closed": false,
+      "ready": false,
+      "prefix": 0,
+      "full": 0,
+      "partial": 0,
+      "gates": {
+        "mechanics": true,
+        "verification": false,
+        "envelope": true,
+        "disturbance": true,
+        "nominal_signature": true
+      },
+      "reason": "work tick 5: missing chart/inverse support",
+      "sealed_refusal_diagnostic": {
+        "frame": "005_work",
+        "closed": false,
+        "prefix": 0,
+        "v11_chart": false,
+        "axis_accepted": false,
+        "first_fit_skew_mm": {
+          "1": 0.7556186456149049,
+          "2": 0.45905860805317084
+        },
+        "markers": {
+          "distal": {
+            "initial_refusal": "",
+            "pixels": 80,
+            "status": 3,
+            "nfev": 27,
+            "rank": 3,
+            "refined": true
+          },
+          "proximal": {
+            "initial_refusal": "",
+            "pixels": 238,
+            "status": 3,
+            "nfev": 21,
+            "rank": 3,
+            "refined": true
+          },
+          "third": {
+            "initial_refusal": "",
+            "pixels": 383,
+            "status": 2,
+            "nfev": 17,
+            "rank": 3,
+            "refined": true
+          }
+        }
+      },
+      "paired_pre_event_work_nodes": {
+        "compared": 1,
+        "identical": 1
+      }
+    },
+    "occlusion_transient": {
+      "decision_sha256": "50cac8d646d2873e7dad6d4d95165d39760cdc144a7faae30a94c2eccf64d71e",
+      "passed": true,
+      "state": "DONE",
+      "closures": 4,
+      "closed": true,
+      "ready": true,
+      "prefix": 9,
+      "full": 9,
+      "partial": 9,
+      "gates": {
+        "mechanics": true,
+        "verification": true,
+        "envelope": true,
+        "disturbance": true,
+        "nominal_signature": true
+      },
+      "reason": null,
+      "sealed_refusal_diagnostic": null,
+      "paired_pre_event_work_nodes": {
+        "compared": 7,
+        "identical": 7
+      }
+    },
+    "relax": {
+      "decision_sha256": "ca7b9e15e041e620e768d87f72d60333fe7592e962d74f18b30c83d8181015d4",
+      "passed": false,
+      "state": "FAILED",
+      "closures": 3,
+      "closed": false,
+      "ready": false,
+      "prefix": 7,
+      "full": 7,
+      "partial": 7,
+      "gates": {
+        "mechanics": true,
+        "verification": false,
+        "envelope": true,
+        "disturbance": true,
+        "nominal_signature": true
+      },
+      "reason": "work tick 18: missing marker",
+      "sealed_refusal_diagnostic": {
+        "frame": "018_work",
+        "closed": false,
+        "prefix": 7,
+        "v11_chart": true,
+        "markers": {
+          "distal": {
+            "initial_refusal": "",
+            "pixels": 84,
+            "status": 0,
+            "nfev": 60,
+            "rank": 3,
+            "refined": false
+          },
+          "proximal": {
+            "initial_refusal": "",
+            "pixels": 224,
+            "status": 3,
+            "nfev": 17,
+            "rank": 3,
+            "refined": true
+          },
+          "third": {
+            "initial_refusal": "",
+            "pixels": 343,
+            "status": 3,
+            "nfev": 16,
+            "rank": 3,
+            "refined": true
+          }
+        }
+      },
+      "paired_pre_event_work_nodes": {
+        "compared": 7,
+        "identical": 7
+      }
+    },
+    "slip_regrasp": {
+      "decision_sha256": "f36d295608168ff6510ebe56607467aaf57df511b734c440a639f4704fc3d849",
+      "passed": false,
+      "state": "FAILED",
+      "closures": 2,
+      "closed": false,
+      "ready": false,
+      "prefix": 5,
+      "full": 5,
+      "partial": 5,
+      "gates": {
+        "mechanics": true,
+        "verification": false,
+        "envelope": true,
+        "disturbance": true,
+        "nominal_signature": true
+      },
+      "reason": "work tick 13: missing marker",
+      "sealed_refusal_diagnostic": {
+        "frame": "013_work",
+        "closed": false,
+        "prefix": 5,
+        "v11_chart": true,
+        "markers": {
+          "distal": {
+            "initial_refusal": "",
+            "pixels": 110,
+            "status": 3,
+            "nfev": 20,
+            "rank": 3,
+            "refined": true
+          },
+          "proximal": {
+            "initial_refusal": "",
+            "pixels": 286,
+            "status": 0,
+            "nfev": 60,
+            "rank": 3,
+            "refined": false
+          },
+          "third": {
+            "initial_refusal": "",
+            "pixels": 356,
+            "status": 3,
+            "nfev": 28,
+            "rank": 3,
+            "refined": true
+          }
+        }
+      },
+      "paired_pre_event_work_nodes": {
+        "compared": 7,
+        "identical": 7
+      }
+    }
+  }
+}

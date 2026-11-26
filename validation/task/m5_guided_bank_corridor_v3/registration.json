@@ -1,0 +1,53 @@
+{
+  "protocol": {
+    "id": "m5_guided_bank_corridor_v3",
+    "scope": "Development replay only. The row-6 failure was already observed on both matched controls. Success on those frames would be a diagnostic, not independent confirmation or motion authority.",
+    "prediction_pins": {
+      "validation/task/m5_guided_bank_corridor_v2/registration.json": "8fa86a391643773f0552959dc451a74e8c31fff0616100056db39ab43578ab72",
+      "validation/task/m5_guided_reverse_capture_v1/predictions.json": "c36dbdb63e0a785251d5622006b8c146304c446ff37b0d1dcc18d61c9965b40d"
+    },
+    "scoring_pins": {
+      "validation/task/m5_guided_bank_corridor_v2/decision.json": "111e7772ed9598ce444795376d223e26a3f6752780655a17ed5663a9eeb509c1",
+      "validation/task/m5_guided_reverse_capture_v1/decision.json": "066183bd54470db1beede2956f814fb2ce3f80425ca3c0e19922ebe4ade28246"
+    },
+    "inputs": "All pinned v2 replay inputs and both paired reverse exposures for each case, deduplicated by sealed exposure digest. Use raw depth and the existing deterministic 0.5 mm noise variant. Do not load the scoring decisions until after writing predictions.",
+    "shore_graph": "Keep v2 anchors, chord raster and flank depths. Only reconsider unresolved chords of at least nine samples with no central-face code on the chord and at least four positively deep samples. Every nondeep sample must be in the first or last four samples, on the corresponding bank. Require a four-connected path of at most 12 pixel steps to the unique v2 patch of that same bank and current row. Usable pixels have finite valid depth, same-side whole-bank ink of the current or adjacent row or the current row's near/far cap, no center ink, and absolute flank and neighbor depth agreement within the existing v2 1 mm + 3 sigma bound. Never jump a pixel. Archive each successful support path.",
+    "crossing": "Do not relabel any bank sample as deep. Require all remaining deep samples in the same four-connected positive-depth component in a two-pixel Manhattan dilation of the original chord. Keep open hulls, conservative flank thresholds, central-face veto and common corridor test without weakening v2. No changes to terminal INTACT/PARTIAL rules or travel guards. Core, detached, invalid or unclassified samples still veto the chord.",
+    "synthetic": "Exercise 4-connected near-shore acceptance, detached same-code island, depth jump, wrong-side code, uninked foreground, invalid depth, a core island and a central-face bridge. Both original and deterministic noisy depths must give each expected result.",
+    "gate": "Require the true cleared 7 mm calibration to remain BELOW, the three obstructed guided frames to remain UNKNOWN, and the cleared matched 8/9 mm frames to read BELOW(8)/TARGET(9) exactly in both variants. Across all scored records, no known verdict with an incorrect prefix is allowed. Historical mismatched specimens may still abstain. The 10 mm control, independent optical confirmation and nominal closed-loop stop and withdrawal are not covered here."
+  },
+  "sources": {
+    "config/task/m5_guided_bank_corridor_v3.json": "60d1592be0b8d20bcc5b90536818d8e3b7f40cbff02f36e5218404c05578ff6d",
+    "scripts/analysis/replay_m5_guided_bank_corridor_v3.py": "82ccdfe6691d2a2c1449630d612d8121137df4ceeb57d319a6a6573ecbb355eb",
+    "scripts/analysis/replay_cell_v2.py": "8fb72b7d988fd7ed7da4e4e1f34f46dec8a70d03197024039db52d06f719cb61",
+    "scripts/analysis/cell_v2_controls.py": "b3ae243d7eb6e06dc24cbd6792ee9030bc806da15469afe2cbb2c6e56c9fd996",
+    "scripts/vision/m5_guided_bank_corridor_v3.py": "fec9756eb147dc81c0107f814efbec02100db20b09b7b5ac492c7595ef36a972",
+    "scripts/vision/m5_guided_bank_corridor_v2.py": "ae7e92c28329a4b40e56e4f394798dce6af6c27f04e02310aadf78db98c67170",
+    "scripts/vision/m5_guided_bank_corridor_v1.py": "640980cb18a918148b468b23a4c730e8e59830c8053957bc2f334e49870bc6c6",
+    "scripts/vision/cell_certificate_v1.py": "4fcea1b307f06e02e3ae0911caae315fb625eebf1d98d18da7638f90c70c6ae6",
+    "scripts/vision/ruler_readout.py": "9d68e9d05d5246e305c2ae237a15ee2e49a8986b5dd9194e302f3667833bb168"
+  },
+  "images": {
+    "seam_rim_look_v1/near/high/182b29cd05f34e9cb2193a5574df27f6.npz": "3875db18fbafe71a421eb2587cdd3cc977f9531a56ef2cff4f23822f8a539002",
+    "seam_rim_look_v1/near/high/445e000226e842b3bfc0d85a568fc90c.npz": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+    "seam_rim_look_v1/near/high/4d9fa502445f4f22ad97b1dc11288e30.npz": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+    "seam_rim_look_v1/near/high/5c4a01d942944cfaa0c04942b5f9f8cc.npz": "58878d933aa2284b6ae1cc5a21b4b2a3cf7110afbd6f7ba31c12f3ebc9885f9e",
+    "seam_rim_look_v1/near/high/fb4a263269e34bc2837e6ae2fb898904.npz": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+    "seam_rim_look_v1/b/high/463d6b4c99fb427493f4d285b9b070ed.npz": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+    "seam_rim_look_v1/b/high/522328869db543e88d3c3fba4459c4ed.npz": "fa3e966bc0983266ddbc535667beabe166e4f7afb67aaafe491df7ff8d1e9cae",
+    "seam_rim_look_v1/b/high/992bdb0f34f94b4bb2a75c4fee87e92d.npz": "8b5cf3f7d340b197b89cee85ac102ebb7184e684ef5aa65ef05d1d67db341c03",
+    "seam_rim_look_v1/b/high/f32928ff34b546099847c618fcb900af.npz": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+    "seam_rim_look_v1/b/high/f7acc8c2cfbb40ed84ce4813e53a9005.npz": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+    "seam_rim_look_v1/c/high/2bdaa99110cf42e3bb75048f334fe757.npz": "551c5b4b8e2de6f297513375116b327b4d5fe6001d22bb20cd9482ccc9312244",
+    "seam_rim_look_v1/c/high/310d514f59194435a76a0fd68d9b87de.npz": "e305c87560beff7ae6fc52e6ecf8d212065ca209ec9d63577a9637a4ffc313fd",
+    "seam_rim_look_v1/c/high/5783c39ed48b4a4aa707d0a5944ae5d9.npz": "d1001852bc1632805e7f2d8210e8764dd0e87826cf6a7db423589139e3c721b5",
+    "seam_rim_look_v1/c/high/a432bb868c1c411d9c470f2442d7d08b.npz": "77fcf216dcc6106c48f77716a84e31753ecbce1a5d678488c8d7ee87d8ee3494",
+    "seam_rim_look_v1/c/high/ffed28e749794cdc8439454370b2330f.npz": "9b67ebc5ee943b524eff3b9e486b2e5cdf9c06249cdf3bb71a22d4fa1c6ffabc",
+    "guided/039_certificate.npz": "f5fc994b1dfb0842b989c660a5e230400c2451e5086e0931402191d23d9f8ca6",
+    "guided/040_certificate.npz": "f04c29feae9217f0c24f869e90b9899487e6625686aef43ecd963ed4415a550d",
+    "reverse/short/045_certificate.npz": "beda6717454a7090a08894a7632e8bda70348ed6b80f2b793fe5abef36ddb644",
+    "reverse/short/047_certificate.npz": "5553d898cdedcaaffccb333b04bdb81e2ff3197ce0203cf59cf25b77413193fb",
+    "reverse/mid/045_certificate.npz": "c3b6e8f0acfddee2e9388c8ad358f9387bac2fb636b2b5e78898306d9b1edf55",
+    "reverse/mid/047_certificate.npz": "ba606a9a62d78b11cfb21f07368ef8abc60b10a2b4f3ab731473e04a06ef7787"
+  }
+}

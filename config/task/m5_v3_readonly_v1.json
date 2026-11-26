@@ -1,0 +1,13 @@
+{
+  "id": "m5_v3_readonly_v1",
+  "scope": "One fresh, uncut two-axis fixture. Only non-cutting guarded poses and passive images. Opening for the last two exposures is permitted; closing on the specimen is forbidden. Never command motion from structural measurements.",
+  "fixture_decision_sha256": "4e21129ac3c723add86eca5a922983d9d3b5c3e93a85e51549f1fc8e8650b3b9",
+  "distal_registration_sha256": "139d33876645c42f511faa007999e20572a06f0664c01c905bbc8274e43fd757",
+  "distal_decision_sha256": "d05df430bf1d06f447be202a425732f83e9c64d0f2d4ff1f4c7d9d159b16771e",
+  "corner_reader": "Use the sealed v4 endpoint reader only at 20 degrees, and a sparse paired-bank chart at 70 degrees. No terminal designation from passive intact data.",
+  "work_reader": "The last fresh optical review owns the material prefix. The current work frame places two consecutive forward bilateral stations, measures the goal and hard sweep rows directly, and either measures the boundary on both sides or extrapolates the observed pitch by one row for alignment only. A covered entrance, crossed slit mask or partial transition supplies no positive evidence and is not a negative when both required stations are independently visible.",
+  "fk": "Fit one static neutral twist from six sealed command/closure TCP pairs, reuse the sealed pitch intercept and the installed 420179 CAD geometry. Check against six separate pre-advance snapshots within 0.20 mm and 0.20 degree. During live evaluation use only the validated constants plus joint readback; never use a world TCP matrix or remote toolPoseFK for the readout or advance target.",
+  "views": {"work_deg": 70, "work_size": [1280, 960], "review_deg": 20, "review_size": [2560, 1920], "ecm_work": [3.0, 0.0, 0.08], "ecm_review": [0.0, 4.5, 0.088]},
+  "guarded_waypoints_mm": {"entry_clear": -3, "align": -1, "advanced": 2},
+  "gate": "Keep guards, grips and spring topology unchanged. Compare closed alignment and open advance work charts: both require current marker fit, valid chart, forward sweep room, and agreement within 0.4 mm front and 5 degrees direction. At the registered review ECM view, closed -3 mm must show both numbered shores and both face codes of all 13 intervals with depth valid and row zero optically intact. Pass neither phase from truth, a different capture, or a rendered cut. This plan does not authorize any cutting benchmark on a failed gate."
+}

@@ -1,0 +1,21 @@
+{
+  "id": "m5_guided_disturbance_fault_trace_v1",
+  "scope": "One diagnostic-only replica of each of the noise and slip failures; no replacement of acceptance results, no recovery changes and no new motion.",
+  "pins": {
+    "registration": "8322a349e5d2c4b604d9a1557d76c1418ee5edf36d9e8936c27da59868e69548",
+    "decision": "9c762d001acc392e0d8a3cd04c7a2a87bb6a9bb4b410ef58abc4b67b723cf5e6",
+    "depth_noise_0p5": "510be5dc804975b44a441cf17201a85024f316f44fb5d4064734f0964b5ddd35",
+    "slip_regrasp": "8713cbc413c5aa16bd2bd3f81532ce61848b9a586efa458236435df39b76929f",
+    "relax": "9f34c8da7aed7bd3dea6658a7faa655ab1babf5fb1ebb9ee0d346f4665c9dd0f"
+  },
+  "windows": {
+    "depth_noise_0p5": [29, 43],
+    "slip_regrasp": [29, 32]
+  },
+  "working_frame_ticks": {
+    "depth_noise_0p5": [30, 31, 34, 43],
+    "slip_regrasp": [29, 30, 31, 32]
+  },
+  "instrumentation": "Log outputs of existing calls only, including selected original working frames, pre-filter cut estimate reason and support, tool state refusal, FK response and solve residuals, and accepted or refused guarded commands. Do not invoke extra FK, simulator renders, steps, poses, or controller actions. Preserve the original RNG sequence. State histories and existing events must match exactly after removing diagnostics. Hash and compare final constraints and identical optical evidence before attributing the added traces to old runs.",
+  "classification": "Noisy ALIGN: compare existing candidates with returned solver stage (missing state, rejected FK, nonconvergence with recorded residuals/at_limit, or valid solver output), separate from visibility and motion refusals. Slip: locate first invalid front estimate after verified ALIGN; capture its estimator rejection, confirm no forward advance, and classify the separate clear_view refusal. Do not infer the specific collision from a combined Lua rejection. Relax: report temporal ordering only from existing record, including loss before the intervention if observed. No new pass, retry or M6/M7 authorization."
+}

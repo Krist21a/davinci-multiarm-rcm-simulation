@@ -1,0 +1,14 @@
+{
+  "id": "m5_guided_reverse_capture_v1",
+  "scope": "One fresh nominal reproduction each of the previously observed short and mid third bites. Acquisition only. No 10 mm attempt, additional closure, retreat to ready pose, or motion authority from optical output.",
+  "pins": {
+    "scripts/task/capture_m5_guided_terminal_controls_v1.py": "6177758e4ca732719a758062d38b97f4953938625df5b90d16bbb15af27dcaa7",
+    "config/task/m5_guided_terminal_controls_v1.json": "4706228b32677e3e9372301529757178cc94fcd6a015223c3d42a070e6d2a3fa",
+    "validation/task/m5_guided_terminal_controls_v1/short.json": "1e4efb8b0368516dcf5c0f9feb4953eb2a6365f265538b1fec20abd94503d64b",
+    "validation/task/m5_guided_terminal_controls_v1/mid.json": "ebc997e0d3610b70412da36e2ec709e20659169ae725d5a0488284a579383623"
+  },
+  "cases": {"short": 0.001, "mid": 0.002},
+  "approach": "Use the exact v1 acquisition prefix, require both sealed 7 mm image arrays to match, then record the physically measured 6-DOF cutter commands and TCP from the cleared checkpoint and after each accepted third-bite cutter move. Closure remains subject to the original wide front, alignment, reserve and upper-bound guards. No structure length or offline optical verdict is an input to any approach, path or recording decision.",
+  "reverse": "On the first observation after the third closure, intercept the routine back-off. Require physical jaws closed, original mechanical supervision and the same ECM target. The immediate post-closure cutter command and TCP must match the final forward waypoint, within 1e-6 command units, 0.5 mm in position and 1 degree in orientation. Capture a pre-reverse narrow reference, then replay the preceding distinct cutter commands in exact reverse order with the original guarded setToolPose and 15 settling steps. Enforce at most 4 reverse segments. Inspect the same closed, pose and safety interlocks on every new observation; one refusal fails closed, without retry or fallback. Use no old optics to certify the new endpoint.",
+  "gate": "At the recorded cleared pose capture identical review optics without requiring a live wide front. Persist pre/post structure for offline scoring; require identical constraints, independent exact 8 and 9 mm on separate trajectories, no faults and exact BELOW(8)/TARGET(9) on the cleared RGB-D (raw and deterministic 0.5 mm noise). This is not the missing 10 mm control nor an approved controller."
+}

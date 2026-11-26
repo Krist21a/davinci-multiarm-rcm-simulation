@@ -1,0 +1,353 @@
+{
+  "passed": false,
+  "authorizes_motion": false,
+  "gates": {
+    "main_path": true,
+    "forced_path": false,
+    "stopped_frame": true
+  },
+  "main_path": {
+    "passed": true,
+    "denoise_frames": 15,
+    "denoise_draws": 360,
+    "outer_identical": true,
+    "denoise_differences": [],
+    "calibration_frames": 15,
+    "calibration_draws": 360,
+    "calibration_differences": []
+  },
+  "forced_path": {
+    "passed": false,
+    "variants": {
+      "left": {
+        "clean": {
+          "draws": 5,
+          "paired": 5,
+          "chart_valid": 5,
+          "max_optimism_mm": -0.046445095080168836,
+          "margin_mm": 0.0,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        },
+        "development": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 60,
+          "max_optimism_mm": 0.0873269394523127,
+          "margin_mm": 0.1,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        },
+        "check": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 59,
+          "max_optimism_mm": 0.06047011826820775,
+          "margin_mm": 0.1,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        }
+      },
+      "right": {
+        "clean": {
+          "draws": 5,
+          "paired": 5,
+          "chart_valid": 5,
+          "max_optimism_mm": -0.003854552947890696,
+          "margin_mm": 0.0,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        },
+        "development": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 60,
+          "max_optimism_mm": 0.15782089494757306,
+          "margin_mm": 0.1,
+          "violations": 3,
+          "worst": {
+            "frame": "015_work.npz",
+            "prefix_mm": 7,
+            "closed": true,
+            "part": "development",
+            "seed": 6107,
+            "sigma_m": 0.0005,
+            "variant": "right",
+            "accepted_sides": [
+              1
+            ],
+            "chart_valid": true,
+            "marker_valid": true,
+            "optimism_mm": 0.15782089494757306
+          },
+          "passed": false
+        },
+        "check": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 59,
+          "max_optimism_mm": 0.09408661547846019,
+          "margin_mm": 0.1,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        }
+      },
+      "bilateral": {
+        "clean": {
+          "draws": 5,
+          "paired": 5,
+          "chart_valid": 5,
+          "max_optimism_mm": -0.001963706921866105,
+          "margin_mm": 0.0,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        },
+        "development": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 60,
+          "max_optimism_mm": 0.14562835809675176,
+          "margin_mm": 0.1,
+          "violations": 3,
+          "worst": {
+            "frame": "015_work.npz",
+            "prefix_mm": 7,
+            "closed": true,
+            "part": "development",
+            "seed": 6107,
+            "sigma_m": 0.0005,
+            "variant": "bilateral",
+            "accepted_sides": [
+              0,
+              1
+            ],
+            "chart_valid": true,
+            "marker_valid": true,
+            "optimism_mm": 0.14562835809675176
+          },
+          "passed": false
+        },
+        "check": {
+          "draws": 60,
+          "paired": 58,
+          "chart_valid": 59,
+          "max_optimism_mm": 0.08622268256137244,
+          "margin_mm": 0.1,
+          "violations": 0,
+          "worst": null,
+          "passed": true
+        }
+      }
+    },
+    "occlusion_passed": true,
+    "occlusion_controls": [
+      {
+        "frame": "015_work.npz",
+        "side": 0,
+        "removed": 3,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "015_work.npz",
+        "side": 1,
+        "removed": 2,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "016_work.npz",
+        "side": 0,
+        "removed": 3,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "016_work.npz",
+        "side": 1,
+        "removed": 2,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "017_work.npz",
+        "side": 0,
+        "removed": 3,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "017_work.npz",
+        "side": 1,
+        "removed": 2,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "019_work.npz",
+        "side": 0,
+        "removed": 2,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "019_work.npz",
+        "side": 1,
+        "removed": 4,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "020_work.npz",
+        "side": 0,
+        "removed": 2,
+        "qualified_before": true,
+        "refused_after": true
+      },
+      {
+        "frame": "020_work.npz",
+        "side": 1,
+        "removed": 4,
+        "qualified_before": true,
+        "refused_after": true
+      }
+    ]
+  },
+  "stopped_frame": {
+    "passed": true,
+    "marker_valid": true,
+    "goals": {
+      "9": {
+        "side_rows": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        ],
+        "recovered": [
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ]
+        ],
+        "checked": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "limit_row": 10,
+        "passed": true
+      },
+      "10": {
+        "side_rows": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        ],
+        "recovered": [
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            11
+          ]
+        ],
+        "checked": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "limit_row": 10,
+        "passed": true
+      }
+    },
+    "frame_sha256": "b26e0fecc4d47b5e9b6879f317e08b76fe53fd30a644219132f2e6550bdc2256"
+  },
+  "registration_sha256": "71f88e5e0aa15886cc8f9b8c731e7fd551c0afb6a53bce0568cbb20cd5cd30d9",
+  "forced_draws_sha256": "e92333ae1f42c247a864a48ab71ed4442ff166a3b38ac3b77dbdb3a3c05ff116"
+}
